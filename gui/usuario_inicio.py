@@ -5,6 +5,7 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
 from gui.pantalla_bienvenida_usuario import PantallaBienvenida
 from gui.pantalla_preguntas import PantallaPreguntas
+from gui.pantalla_resumen import PantallaResumen
 
 class VentanaUsuario(QMainWindow):
     
@@ -123,8 +124,8 @@ class VentanaUsuario(QMainWindow):
         # Preguntas del submenú
         self.botones_sub = [] #array de preguntas
         for i in range(1, 11): # De 1 a 10
-            sub_boton = QPushButton(f"Pregunta {i}")
-            sub_boton.setStyleSheet("""
+            self.sub_boton = QPushButton(f"Pregunta {i}")
+            self.sub_boton.setStyleSheet("""
                 QPushButton { 
                     color: white; 
                     border: none; 
@@ -135,9 +136,9 @@ class VentanaUsuario(QMainWindow):
                 }
                 QPushButton:hover { background-color: rgba(85, 85, 85, 0.3); }
             """)
-            sub_boton.setFont(QFont("Arial", 9))
-            self.botones_sub.append(sub_boton)
-            self.submenu_preguntas_layout.addWidget(sub_boton)
+            self.sub_boton.setFont(QFont("Arial", 9))
+            self.botones_sub.append(self.sub_boton)
+            self.submenu_preguntas_layout.addWidget(self.sub_boton)
             
         self.submenu_preguntas_widget.hide() # Ocultar el submenú contenedor
 
@@ -228,9 +229,11 @@ class VentanaUsuario(QMainWindow):
 
         self.pantalla_bienvenida = PantallaBienvenida()
         self.pantalla_preguntas = PantallaPreguntas()
+        self.pantalla_resumen = PantallaResumen()
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                          
         self.stacked_widget.addWidget(self.pantalla_preguntas)
+        self.stacked_widget.addWidget(self.pantalla_resumen)
         # Aquí se pueden añadir más pantallas al stacked_widget según sea necesario
 
         # Establecer la pantalla inicial
@@ -304,8 +307,10 @@ class VentanaUsuario(QMainWindow):
         # ------------------- 4. Conexiones de botones -------------------
         self.boton_hamburguesa.clicked.connect(self.movimiento_menu)
         self.boton_ajustes.clicked.connect(self.movimiento_menu_ajustes)
-        self.botones_sub[0].clicked.connect(self.mostrar_pantalla_preguntas)
+        for i, boton in enumerate(self.botones_sub):
+            boton.clicked.connect(lambda checked, num=i+1: self.abrir_pregunta(num))       
         self.pantalla_bienvenida.boton_iniciar.clicked.connect(self.mostrar_pantalla_preguntas)
+        self.pantalla_preguntas.boton_finalizar.clicked.connect(self.mostrar_pantalla_resumen)
 
     # ------------------- 5. Movimientos de Menú y Submenú -------------------    
     def movimiento_menu(self):
@@ -404,4 +409,13 @@ class VentanaUsuario(QMainWindow):
 
     # ------------------- 6. Funciones para cambiar pantallas -------------------
     def mostrar_pantalla_preguntas(self):
-        self.stacked_widget.setCurrentWidget(self.pantalla_preguntas)    
+        self.stacked_widget.setCurrentWidget(self.pantalla_preguntas)  
+        self.pantalla_preguntas.cargar_pregunta(1)   
+
+    def abrir_pregunta(self, numero):
+        self.stacked_widget.setCurrentWidget(self.pantalla_preguntas)  
+        self.pantalla_preguntas.numero_pregunta = numero
+        self.pantalla_preguntas.cargar_pregunta(numero)       
+
+    def mostrar_pantalla_resumen(self):
+        self.stacked_widget.setCurrentWidget(self.pantalla_resumen)

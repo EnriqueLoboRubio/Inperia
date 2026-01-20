@@ -47,7 +47,7 @@ class VentanaLogin(QMainWindow):
         self.izq.setMaximumSize(800, 1000) 
         
         # Overlay      
-        self.texto_over = QLabel("INPERIA\nUSUARIO", self.izq)
+        self.texto_over = QLabel("INPERIA\nINTERNO", self.izq)
         self.texto_over.setFont(QFont("Arial", 32, QFont.Bold))
         self.texto_over.setStyleSheet("""
             QLabel {
@@ -215,7 +215,7 @@ class VentanaLogin(QMainWindow):
             self.input_contraseña.clear()
             self.tipo_pantalla = "usuario"            
             
-            self.animacion_cambio_panel(QPixmap("assets/inicio_usuario.jpg"), "INPERIA\nUSUARIO")
+            self.animacion_cambio_panel(QPixmap("assets/inicio_usuario.jpg"), "INPERIA\nINTERNO")
             self.animar_indicador(self.boton_usuario)
             self.actualizar_estilos_botones(es_usuario=True)
 
