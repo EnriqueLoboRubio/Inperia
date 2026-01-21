@@ -1,8 +1,10 @@
 import sqlite3
 from utils.encriptar import encriptar_contrasena, verificar_contrasena
 
-# Función para crear la base de datos y la tabla de usuarios
-def crear_bd():
+# -------------------------------- USUARIO ------------------------------- #
+
+# Función para crear la tabla de usuarios
+def crear_usuario():
     conexion = sqlite3.connect('db/usuarios.db')
     cursor = conexion.cursor()
     cursor.execute('''
@@ -11,7 +13,7 @@ def crear_bd():
             nombre TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
             contrasena TEXT NOT NULL,
-            tipo_usuario TEXT NOT NULL CHECK(tipo_usuario IN ('profesional', 'usuario'))
+            rol TEXT NOT NULL CHECK(rol IN ('profesional', 'interno'))
         )
     ''')
 
@@ -19,15 +21,15 @@ def crear_bd():
     conexion.close()
 
 # Función para agregar un nuevo usuario a la base de datos
-def agregar_usuario(nombre, email, contrasena, tipo_usuario):
+def agregar_usuario(nombre, email, contrasena, rol):
     conexion = sqlite3.connect('db/usuarios.db')
     cursor = conexion.cursor()
     try: 
         contrasena_encriptada = encriptar_contrasena(contrasena)
         cursor.execute('''
-            INSERT INTO usuarios (nombre, email, contrasena, tipo_usuario)
+            INSERT INTO usuarios (nombre, email, contrasena, rol)
             VALUES (?, ?, ?, ?)
-        ''', (nombre, email, contrasena_encriptada, tipo_usuario))
+        ''', (nombre, email, contrasena_encriptada, rol))
     except sqlite3.IntegrityError:
         print("Error: El email ya está en uso.")
         return False
@@ -39,15 +41,15 @@ def agregar_usuario(nombre, email, contrasena, tipo_usuario):
 def verificar_login(email, contrasena):
     conexion = sqlite3.connect("db/usuarios.db")
     cursor = conexion.cursor()
-    cursor.execute("SELECT contrasena, tipo_usuario FROM usuarios WHERE email=?", (email,))
+    cursor.execute("SELECT contrasena, rol FROM usuarios WHERE email=?", (email,))
     resultado = cursor.fetchone()
     
     conexion.close()
     
     if resultado:
-        contrasena_encriptada, tipo_usuario = resultado
+        contrasena_encriptada, rol = resultado
         if verificar_contrasena(contrasena, contrasena_encriptada):
-            return tipo_usuario #login correcto
+            return rol #login correcto
     return None #login incorrecto
 
 def eliminar_usuario(email):
