@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
 from PyQt5.QtGui import QFont, QIcon
-from gui.pantalla_bienvenida_profesional import PantallaBienvenida
+from gui.pantalla_bienvenida_profesional import PantallaBienvenidaProfesional
 
 
 class VentanaProfesional(QMainWindow):
@@ -203,7 +203,7 @@ class VentanaProfesional(QMainWindow):
         # PANTALLAS
         self.stacked_widget = QStackedWidget()
 
-        self.pantalla_bienvenida = PantallaBienvenida()        
+        self.pantalla_bienvenida = PantallaBienvenidaProfesional()        
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                                  
         # Aquí se pueden añadir más pantallas al stacked_widget según sea necesario

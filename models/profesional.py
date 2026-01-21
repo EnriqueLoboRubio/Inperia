@@ -7,3 +7,13 @@ class Profesional(Usuario):
         super().__init__(id_usuario, nombre, contrasena, tipo_rol.PROFESIONAL)
 
         self.tipo = tipo    
+        self.entrevistas = []
+
+    def get_tipo(self):
+        return self.tipo
+    
+    def add_entrevista(self, entrevista):
+        self.entrevistas.append(entrevista)
+
+    def get_entrevistas(self):
+        return self.entrevistas

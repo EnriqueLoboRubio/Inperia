@@ -1,11 +1,6 @@
-from PyQt5.QtWidgets import QApplication
-from gui.usuario_inicio import VentanaUsuario
-from gui.profesional_inicio import VentanaProfesional
-from gui.login import VentanaLogin
-import sys
+from controllers.main_controller import MainController
 
-app = QApplication(sys.argv)
-ventana_login = VentanaLogin()
-ventana_login.show()
-
-sys.exit(app.exec_())
+if __name__ == "__main__":
+    controller = MainController()
+    
+    controller.ejecutar()

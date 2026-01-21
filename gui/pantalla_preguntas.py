@@ -5,6 +5,11 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 import json, os
 
+# Importar modelos
+from models.entrevista import Entrevista
+from models.pregunta import Pregunta
+
+
 def cargar_datos_preguntas():
     #Carga las preguntas desde el archivo JSON        
     ruta_base = os.path.dirname(os.path.dirname(__file__)) # Sube un nivel de carpetaa

@@ -10,6 +10,7 @@ class tipo_estado_solicitud(Enum):
     ACEPTADA = "Aceptada"
     RECHAZADA = "Rechazada"
     CANCELADA = "Cancelada"
+    FINALIZADA = "Finalizada"
 
 class tipo_profesional(Enum):
     PSICOLOGO = "Psicólogo"
@@ -20,6 +21,6 @@ class tipo_situacion_legal(Enum):
     PROVISIONAL = "Provisional"
     CONDENADO = "Condenado"
     LIBERTAD_CONDICIONAL = "Libertad Condicional"
-    
+
 
             

@@ -12,6 +12,8 @@ class Interno(Usuario):
         self.edad = edad
         self.condena = condena
         self.fecha_ingreso = fecha_ingreso
+        self.solicitudes = []
+        self.entrevistas = []
 
     def set_num_RC(self, num_RC):
         self.num_RC = num_RC
@@ -48,3 +50,15 @@ class Interno(Usuario):
         
     def get_fecha_ingreso(self):
         return self.fecha_ingreso    
+    
+    def add_solicitud(self, solicitud):
+        self.solicitudes.append(solicitud)
+
+    def get_solicitudes(self):
+        return self.solicitudes
+    
+    def add_entrevista(self, entrevista):
+        self.entrevistas.append(entrevista)
+
+    def get_entrevistas(self):
+        return self.entrevistas

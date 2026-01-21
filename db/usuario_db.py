@@ -13,7 +13,7 @@ def crear_usuario():
             nombre TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
             contrasena TEXT NOT NULL,
-            rol TEXT NOT NULL CHECK(rol IN ('profesional', 'interno'))
+            rol TEXT NOT NULL CHECK(rol IN ('profesional', 'interno', 'administrador'))
         )
     ''')
 
@@ -52,6 +52,7 @@ def verificar_login(email, contrasena):
             return rol #login correcto
     return None #login incorrecto
 
+# Función para eliminar un usuario de la base de datos
 def eliminar_usuario(email):
     conexion = sqlite3.connect('db/usuarios.db')
     cursor = conexion.cursor()
@@ -59,6 +60,7 @@ def eliminar_usuario(email):
     conexion.commit()
     conexion.close()
 
+# Función para encontrar un usuario por su email
 def encontrar_usuario(email):
     conexion = sqlite3.connect('db/usuarios.db')
     cursor = conexion.cursor()
@@ -66,3 +68,11 @@ def encontrar_usuario(email):
     usuario = cursor.fetchone()
     conexion.close()
     return usuario
+
+# Función para borrar la tabla de usuarios (para pruebas)
+def borrar_usuarios():
+    conexion = sqlite3.connect('db/usuarios.db')
+    cursor = conexion.cursor()
+    cursor.execute('DROP TABLE IF EXISTS usuarios')
+    conexion.commit()
+    conexion.close()

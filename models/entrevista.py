@@ -41,5 +41,22 @@ class Entrevista:
 
     def get_comentarios(self):
         return self.comentarios
+    
+    def add_pregunta(self, pregunta):
+        self.preguntas.append(pregunta)
+
+    def get_preguntas(self):
+        return self.preguntas
+    
+    def to_json(self):
+        "Devuelve un diccionario con el formato JSON de la entrevista, para mandar a LLM"
+        return {
+            "id_entrevista": self.id_entrevista,
+            "id_profesional": self.id_profesional,
+            "id_interno": self.id_interno,            
+            "fecha": self.fecha,
+            "puntuacion_global": self.puntuacion if self.puntuacion != -1 else None,
+            "respuestas": [pregunta.to_json() for pregunta in self.preguntas],
+        }
 
 

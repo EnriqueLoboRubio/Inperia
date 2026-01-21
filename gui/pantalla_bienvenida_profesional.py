@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 
-class PantallaBienvenida(QWidget):
+class PantallaBienvenidaProfesional(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
             

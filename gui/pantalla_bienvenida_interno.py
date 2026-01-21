@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 
-class PantallaBienvenida(QWidget):
+class PantallaBienvenidaInterno(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
             
@@ -26,7 +26,7 @@ class PantallaBienvenida(QWidget):
         
         principal_layout.addStretch(1)
 
-        # Botón iniciar nueva entrevistas        
+        # Botón iniciar nueva entrevista       
         self.boton_iniciar = QPushButton("Iniciar nueva entrevista")
         self.boton_iniciar.setFont(QFont("Arial", 14))        
         self.boton_iniciar.setStyleSheet("""                                   

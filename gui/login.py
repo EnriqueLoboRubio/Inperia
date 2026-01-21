@@ -1,27 +1,21 @@
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QLabel, QLineEdit, QPushButton,
-    QHBoxLayout, QVBoxLayout, QMessageBox, QGraphicsOpacityEffect,
-    QApplication 
+    QHBoxLayout, QVBoxLayout, QMessageBox, QGraphicsOpacityEffect 
 )
 from PyQt5.QtGui import QIcon, QPixmap, QFont
-from PyQt5.QtCore import Qt, QSize, QParallelAnimationGroup, QEasingCurve, QPropertyAnimation, QRect, QTimer
-from db.db import crear_bd, agregar_usuario, verificar_login, eliminar_usuario, encontrar_usuario
-import re
-
-#crear_bd()
-#agregar_usuario("usuario1", "a@gmail.com", "1234", "usuario")
-#agregar_usuario("profesional1", "b@gmail.com", "1234", "profesional")
-#agregar_usuario("1", "1", "1", "usuario")
-#agregar_usuario("2", "2", "2", "profesional")
+from PyQt5.QtCore import Qt, QSize, QParallelAnimationGroup, QEasingCurve, QPropertyAnimation, QRect, QTimer, pyqtSignal
 
 class VentanaLogin(QMainWindow):
+
+    # Señal de login exitoso
+    signal_solicitar_login = pyqtSignal(str, str, str)  # correo, rol, tipo de pantalla actual
 
     def __init__(self):
         super().__init__()  
         self.setup_window()
         self.ANIMATION_DURATION = 250 #duracion para animacion de deslizador
         self.initUI()
-        self.tipo_pantalla = "usuario" #pantalla inicial
+        self.tipo_pantalla = "interno" #pantalla inicial
         self.intentos_fallidos = 0
         
         QTimer.singleShot(0, self.ajustar_indicador_inicial) 
@@ -40,7 +34,7 @@ class VentanaLogin(QMainWindow):
 
         #----Panel Izquierdo----
         self.izq = QLabel()
-        pixmap = QPixmap("assets/inicio_usuario.jpg")
+        pixmap = QPixmap("assets/inicio_interno.jpg")
         self.izq.setPixmap(pixmap)
         self.izq.setAlignment(Qt.AlignCenter)
         self.izq.setScaledContents(True)
@@ -94,15 +88,15 @@ class VentanaLogin(QMainWindow):
         self.indicador_deslizante.lower() 
 
         # Botones
-        icono_usuario = QIcon("assets/usuario.png")
+        icono_interno = QIcon("assets/interno.png")
         icono_profesional = QIcon("assets/profesional.png")
         
-        self.boton_usuario = QPushButton(self.contenedor_botones_iconos)
-        self.boton_usuario.setIcon(icono_usuario)
-        self.boton_usuario.setIconSize(QSize(50, 50))
-        self.boton_usuario.setFixedSize(TAM_BOTON, TAM_BOTON)
-        self.boton_usuario.move(0, 0)
-        self.boton_usuario.setStyleSheet("""
+        self.boton_interno = QPushButton(self.contenedor_botones_iconos)
+        self.boton_interno.setIcon(icono_interno)
+        self.boton_interno.setIconSize(QSize(50, 50))
+        self.boton_interno.setFixedSize(TAM_BOTON, TAM_BOTON)
+        self.boton_interno.move(0, 0)
+        self.boton_interno.setStyleSheet("""
             QPushButton { background: transparent; border: none; padding: 10px; }
             QPushButton:hover { background-color: rgba(128, 128, 128, 0.6); border-radius: 10px; }
         """) 
@@ -148,7 +142,7 @@ class VentanaLogin(QMainWindow):
         boton_entrar.setFixedWidth(200)         
         boton_entrar.setStyleSheet("background-color: #222; color: white; border-radius: 8px;")
         boton_entrar.setCursor(Qt.PointingHandCursor)  
-        boton_entrar.clicked.connect(self.verificar_usuario)      
+        boton_entrar.clicked.connect(self.click_entrar)      
 
         formulario = QVBoxLayout()
         formulario.setSpacing(20) 
@@ -171,10 +165,10 @@ class VentanaLogin(QMainWindow):
         layout_principal.addWidget(der, 2)
         
         self.boton_profesional.clicked.connect(self.cambiar_profesional)
-        self.boton_usuario.clicked.connect(self.cambiar_usuario) 
+        self.boton_interno.clicked.connect(self.cambiar_usuario) 
 
     def ajustar_indicador_inicial(self):
-        self.indicador_deslizante.setGeometry(self.boton_usuario.geometry())
+        self.indicador_deslizante.setGeometry(self.boton_interno.geometry())
         self.indicador_deslizante.raise_()
         self.indicador_deslizante.lower()
 
@@ -193,7 +187,7 @@ class VentanaLogin(QMainWindow):
             QPushButton { background: transparent; border: none; padding: 10px; }
             QPushButton:hover { background-color: rgba(128, 128, 128, 0.6); border-radius: 10px; }
         """
-        self.boton_usuario.setStyleSheet(style_base)
+        self.boton_interno.setStyleSheet(style_base)
         self.boton_profesional.setStyleSheet(style_base)
 
 
@@ -209,14 +203,14 @@ class VentanaLogin(QMainWindow):
             self.actualizar_estilos_botones(es_usuario=False)
             
     def cambiar_usuario(self):  
-        if self.tipo_pantalla != "usuario":    
+        if self.tipo_pantalla != "interno":    
             self.intentos_fallidos = 0
             self.input_correo.clear()
             self.input_contraseña.clear()
-            self.tipo_pantalla = "usuario"            
+            self.tipo_pantalla = "interno"            
             
-            self.animacion_cambio_panel(QPixmap("assets/inicio_usuario.jpg"), "INPERIA\nINTERNO")
-            self.animar_indicador(self.boton_usuario)
+            self.animacion_cambio_panel(QPixmap("assets/inicio_interno.jpg"), "INPERIA\nINTERNO")
+            self.animar_indicador(self.boton_interno)
             self.actualizar_estilos_botones(es_usuario=True)
 
     def animacion_cambio_panel(self, nuevo_pixmap, nuevo_texto):
@@ -282,55 +276,23 @@ class VentanaLogin(QMainWindow):
             self.grupo_salida.finished.connect(cambiar_y_animar_entrada)
             self.grupo_salida.start()         
 
-    def verificar_usuario(self):
-
-        def validar_formato_correo(correo):
-            patron = r"^[\w\.-]+@[\w\.-]+\.\w{2,4}$"
-            return re.match(patron, correo) is not None
-            
-        correo = self.input_correo.text()
-        contrasena = self.input_contraseña.text()
-        usuario = encontrar_usuario(correo)
-        tipo_usuario = verificar_login(correo, contrasena)
-
-        # verificar campos rellenos
-        if not correo or not contrasena:
-            QMessageBox.warning(self, "Error", "Por favor, completa todos los campos.")
-            return
+    def click_entrar(self):
+        """
+        Recoge los datos y manda señal al controlador de login
+        """
+        correo = self.input_correo.text().strip()
+        contrasena = self.input_contraseña.text().strip()
+        tipo = "interno" if self.tipo_pantalla == "interno" else "profesional"
         
-        # verificar formato de correo y contraseña
-        if not validar_formato_correo(correo):
-            QMessageBox.warning(self, "Error", "Formato del correo electrónico no válido")        
-            return
-        
-        if usuario is not None:
-            if tipo_usuario is not None:           
-                if self.tipo_pantalla == tipo_usuario:
-                    QMessageBox.information(self, "Inicio de sesión", f"Bienvenido, {tipo_usuario.capitalize()}")
+        self.signal_solicitar_login.emit(correo, contrasena, self.tipo_pantalla)
 
-                    if tipo_usuario == "usuario":
-                        from gui.usuario_inicio import VentanaUsuario
-                        self.ventana_usuario = VentanaUsuario()                    
-                        self.ventana_usuario.show()                    
-                        self.close()
-                    else:
-                        from gui.profesional_inicio import VentanaProfesional
-                        self.ventana_profesional = VentanaProfesional()
-                        self.ventana_profesional.show()
-                        self.close()
-                else:
-                    QMessageBox.warning(self, "Error", f"Tipo de usuario incorrecto.")          
-            else:          
-                QMessageBox.warning(self, "Error", f"Usuario o contraseña incorrectos. \n Tiene {3 - self.intentos_fallidos - 1} intentos restantes.")          
-                self.intentos_fallidos += 1
-            if self.intentos_fallidos >= 3:
-                QMessageBox.critical(self, "Cuenta suprimida", "Ha superado el número máximo de intentos. La cuenta ha sido elimnaada.\n Contacte con el administrador.")
-                eliminar_usuario(correo)
-                self.input_correo.clear()
-                self.input_contraseña.clear()
-                self.intentos_fallidos = 0
-        else:
-            QMessageBox.warning(self, "Error", "El usuario no existe")
+    def mostrar_mensaje_error(self, mensaje):
+        if "CRITICO" in mensaje:
+            QMessageBox.critical(self, "Cuenta Suprimida", mensaje.replace("CRITICO: ", ""))
             self.input_correo.clear()
             self.input_contraseña.clear()
-            self.intentos_fallidos = 0
+        else:
+            QMessageBox.warning(self, "Error de acceso", mensaje)
+            if "existe" in mensaje:
+                self.input_correo.clear()
+                self.input_contraseña.clear()

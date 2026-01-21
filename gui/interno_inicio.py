@@ -3,11 +3,11 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
-from gui.pantalla_bienvenida_usuario import PantallaBienvenida
+from gui.pantalla_bienvenida_interno import PantallaBienvenidaInterno
 from gui.pantalla_preguntas import PantallaPreguntas
 from gui.pantalla_resumen import PantallaResumen
 
-class VentanaUsuario(QMainWindow):
+class VentanaInterno(QMainWindow):
     
     # Constantes para el menú principal
     MENU_ANCHURA_CERRADO = 70
@@ -23,7 +23,7 @@ class VentanaUsuario(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setup_window()
-        self.setWindowTitle("INPERIA - Usuario")        
+        self.setWindowTitle("INPERIA - Interno")        
         
         # Estados iniciales del menú y submenús
         self.menu_abierto = False
@@ -227,7 +227,7 @@ class VentanaUsuario(QMainWindow):
         # PANTALLAS
         self.stacked_widget = QStackedWidget()
 
-        self.pantalla_bienvenida = PantallaBienvenida()
+        self.pantalla_bienvenida = PantallaBienvenidaInterno()
         self.pantalla_preguntas = PantallaPreguntas()
         self.pantalla_resumen = PantallaResumen()
 
