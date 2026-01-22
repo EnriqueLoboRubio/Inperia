@@ -30,21 +30,19 @@ class InternoController(QObject):
         self.ventana_interno.pantalla_preguntas.boton_siguiente.clicked.connect(
             self.siguiente_pregunta
         )
+
         self.ventana_interno.pantalla_preguntas.boton_finalizar.clicked.connect(
             self.finalizar_entrevista
-        )
-
-        #quitar coneziones de botones en pantalla de interno y manejar desde el controlador
+        )        
 
     def iniciar_entrevista(self):
-
         self.ventana_interno.mostrar_pantalla_preguntas()    
 
     def pregunta_atras(self):
-        pass
+        self.ventana_interno.pantalla_preguntas.ir_pregunta_atras()
 
     def siguiente_pregunta(self):
-        pass
+        self.ventana_interno.pantalla_preguntas.ir_pregunta_siguiente()
 
     def finalizar_entrevista(self):
-        pass
+        self.ventana_interno.mostrar_pantalla_resumen() 

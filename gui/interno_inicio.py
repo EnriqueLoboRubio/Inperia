@@ -308,9 +308,7 @@ class VentanaInterno(QMainWindow):
         self.boton_hamburguesa.clicked.connect(self.movimiento_menu)
         self.boton_ajustes.clicked.connect(self.movimiento_menu_ajustes)
         for i, boton in enumerate(self.botones_sub):
-            boton.clicked.connect(lambda checked, num=i+1: self.abrir_pregunta(num))       
-        self.pantalla_bienvenida.boton_iniciar.clicked.connect(self.mostrar_pantalla_preguntas)
-        self.pantalla_preguntas.boton_finalizar.clicked.connect(self.mostrar_pantalla_resumen)
+            boton.clicked.connect(lambda checked, num=i+1: self.abrir_pregunta(num))                       
 
     # ------------------- 5. Movimientos de Menú y Submenú -------------------    
     def movimiento_menu(self):
