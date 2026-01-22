@@ -1,10 +1,10 @@
-from abc import ABC, abstractmethod
-from utils.enums import RolUsuario
+from abc import ABC
 
 class Usuario(ABC):
-    def __init__(self, id_usuario, nombre, contrasena, rol):
+    def __init__(self, id_usuario, nombre, email, contrasena, rol):
         self.id_usuario = id_usuario
         self.nombre = nombre
+        self.email = email
         self.contrasena = contrasena
         self.rol = rol
 
@@ -16,6 +16,12 @@ class Usuario(ABC):
 
     def get_nombre(self):
          return self.nombre
+    
+    def set_email(self, email):
+        self.email = email
+        
+    def get_email(self):
+        return self.email
 
     def set_contrasena(self, contrasena):
         self.contrasena = contrasena

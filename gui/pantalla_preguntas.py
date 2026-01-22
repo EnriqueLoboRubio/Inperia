@@ -188,9 +188,6 @@ class PantallaPreguntas(QWidget):
         
         # ------------------- 6. Conexiones de botones ------------------- 
         self.boton_voz.clicked.connect(self.cambiar_color_voz)
-        self.boton_atras.clicked.connect(self.ir_pregunta_atras)
-        self.boton_siguiente.clicked.connect(self.ir_pregunta_siguiente)
-        self.boton_finalizar.clicked.connect(self.finalizar_entrevista)
 
         # ------------------- 7. Añadir el widgets al layout principal -------------------
         principal_layout.addWidget(self.pregunta_widget)
@@ -293,7 +290,7 @@ class PantallaPreguntas(QWidget):
         # Guardar la respuesta actual
         self.lista_respuestas[self.numero_pregunta-1] = self.respuesta_widget.toPlainText()
 
-        #Guardar info en base de datos
+        #Guardar info en base de datos / objeto entrevista
 
         # Señal para pasar a la pantalla de resumen
         #self.entrevista_finalizada.emit()

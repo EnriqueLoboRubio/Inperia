@@ -5,7 +5,7 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
 from gui.pantalla_bienvenida_interno import PantallaBienvenidaInterno
 from gui.pantalla_preguntas import PantallaPreguntas
-from gui.pantalla_resumen import PantallaResumen
+from gui.pantalla_resumen_profesional import PantallaResumen
 
 class VentanaInterno(QMainWindow):
     
@@ -209,7 +209,7 @@ class VentanaInterno(QMainWindow):
         self.boton_usuario = QPushButton()
         self.boton_usuario.setToolTip("Perfil de usuario")
         self.boton_usuario.setFixedSize(50, 50)
-        self.boton_usuario.setIcon(QIcon("assets/usuario.png"))
+        self.boton_usuario.setIcon(QIcon("assets/interno.png"))
         self.boton_usuario.setIconSize(QSize(40, 40))
         self.boton_usuario.setStyleSheet("""
             QPushButton { 

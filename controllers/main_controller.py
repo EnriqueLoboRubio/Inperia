@@ -45,7 +45,7 @@ class MainController:
             
         self.ventana_login.show()
 
-    def manejar_login_exitoso(self, usuario_id, rol):
+    def manejar_login_exitoso(self, usuario, rol):
         """
         Esta función se ejecuta cuando el Login emite la señal de éxito.
         Recibe el ID del usuario y su rol
@@ -54,24 +54,24 @@ class MainController:
         self.ventana_login.close()
 
         if rol == "interno":
-            self.iniciar_sesion_interno(usuario_id)
+            self.iniciar_sesion_interno(usuario)
         elif rol == "profesional":
-            self.iniciar_sesion_profesional(usuario_id)
+            self.iniciar_sesion_profesional(usuario)
         elif rol == "administrador":
             # implementar la vista del administrador
             print("Inicio de sesión como Administrador - Funcionalidad no implementada")    
         else:
             print(f"Rol desconocido: {rol}")            
 
-    def iniciar_sesion_interno(self, usuario_id):
+    def iniciar_sesion_interno(self, usuario):
         # vista del interno
         #self.ventana_actual = VentanaInterno()
         #self.ventana_actual.show()
         
-        self.controlador_interno = InternoController(usuario_id)
+        self.controlador_interno = InternoController(usuario)
         self.controlador_interno.inicio()
 
-    def iniciar_sesion_profesional(self, usuario_id):
+    def iniciar_sesion_profesional(self, usuario):
         self.ventana_actual = VentanaProfesional()
         self.ventana_actual.show()
 

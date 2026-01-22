@@ -1,13 +1,13 @@
 from PyQt5.QtCore import QObject, pyqtSignal
 
-from utils.encriptar import verificar_contrasena
-from db.usuario_db import crear_usuario, agregar_usuario, verificar_login, eliminar_usuario, encontrar_usuario
+from db.usuario_db import *
+from models.usuario import Usuario
 import re
 
 class LoginController(QObject):
 
     # Señales
-    signal_login_exitoso = pyqtSignal(str, str)  # ID del usuario y rol
+    signal_login_exitoso = pyqtSignal(object, str)  # usuario y rol
     signal_login_fallido = pyqtSignal(str)       # Mensaje de error
 
     def __init__(self):
@@ -31,7 +31,7 @@ class LoginController(QObject):
             return
         
         # Consultar en la base de datos
-        usuario_existe = encontrar_usuario(correo)
+        usuario_existe = encontrar_usuario_por_email(correo)
         rol_detectado =  verificar_login(correo, contrasena)
 
         if usuario_existe:
@@ -39,7 +39,18 @@ class LoginController(QObject):
                 # Verificar que el rol coincida con la pantalla seleccionada
                 if (rol_detectado == tipo_pantalla_seleccionada):
                     self.intentos_fallidos = 0  # Resetear contador de intentos fallidos
-                    self.signal_login_exitoso.emit(correo, rol_detectado)
+
+                    # Crear objeto Usuario
+                    datos_usuario = encontrar_usuario_por_email(correo)
+                    objeto_usuario = Usuario(
+                        id_usuario=datos_usuario[0],
+                        nombre=datos_usuario[1],
+                        email=datos_usuario[2],
+                        contrasena=datos_usuario[3],
+                        rol=datos_usuario[4]
+                    )
+
+                    self.signal_login_exitoso.emit(objeto_usuario, rol_detectado)
                     return
                 else:
                     self.signal_login_fallido.emit("Tipo de usuario incorrecto para la pantalla seleccionada.")

@@ -1,16 +1,46 @@
 from PyQt5.QtCore import pyqtSignal, QObject
 
 from gui.interno_inicio import VentanaInterno
+from db.interno_db import *
+from models.interno import Interno
 
 class InternoController(QObject):
 
-    def __init__(self, interno_id):
+    def __init__(self, usuario):
         super().__init__()
-        self.interno_id = interno_id        
+        self.usuario = usuario
         self.ventana_interno = VentanaInterno()
         self.conectar_senales()
+        self.interno = self.cargar_interno()
 
-    # Buscar interno por id y cargar datos
+    # Buscar interno por id de usuario y cargar datos
+    def cargar_interno(self):
+        datos_interno = encontrar_interno_por_id(self.usuario.get_id_usuario())
+        if datos_interno:
+            interno = Interno(
+                id_usuario=datos_interno[0],
+                nombre=self.usuario.get_nombre(),
+                contrasena=self.usuario.get_contrasena(),
+                rol=self.usuario.get_rol(),
+                num_RC=datos_interno[1],
+                situacion_legal=datos_interno[2],
+                delito=datos_interno[3],
+                fecha_nac=datos_interno[4],
+                condena=datos_interno[5],
+                fecha_ingreso=datos_interno[6],
+                modulo=datos_interno[7]
+            )
+            return interno
+        else:
+            return None
+        
+    #Buscar solicitudes del interno
+    def cargar_solicitudes(self):
+        pass
+
+    #Buscar entrevistas del interno
+    def cargar_entrevistas(self):
+        pass
 
     def inicio(self):
         self.ventana_interno.show()
@@ -46,3 +76,11 @@ class InternoController(QObject):
 
     def finalizar_entrevista(self):
         self.ventana_interno.mostrar_pantalla_resumen() 
+
+        #Debe comprobar los datos de la entrevista: si hay algunas respuestas incompletas, mensaje de error
+
+        # Guardarlos en el objeto Interno, creando primero el objeto Entrevista
+
+        #
+
+        #Y en la base de datos (aún no implementado)
