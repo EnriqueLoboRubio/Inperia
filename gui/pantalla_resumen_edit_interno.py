@@ -1,12 +1,10 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
-    QScrollArea, QFrame, QSizePolicy, QLayout
+    QScrollArea, QFrame, QSizePolicy
 )
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 import json, os
-
-
 
 def cargar_datos_preguntas():
     #Carga las preguntas desde el archivo JSON        
@@ -38,7 +36,7 @@ def cargar_datos_preguntas():
 
 
 
-class PantallaResumen(QWidget):
+class PantallaResumenEditable(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -48,7 +46,7 @@ class PantallaResumen(QWidget):
         principal_layout = QVBoxLayout(self)       
 
         # ------------------- 1. Título Superior -------------------
-        titulo_pantalla = QLabel("Entrevista de interno X")
+        titulo_pantalla = QLabel("Resumen Editable de Entrevista")
         titulo_pantalla.setFont(QFont("Arial", 20, QFont.Bold))
         titulo_pantalla.setAlignment(Qt.AlignLeft)
         principal_layout.addWidget(titulo_pantalla)
@@ -61,10 +59,10 @@ class PantallaResumen(QWidget):
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff) # Sin scroll horizontal
         
         scroll_content_widget = QWidget()
-        scroll_content_layout = QVBoxLayout(scroll_content_widget)       
+        scroll_content_layout = QVBoxLayout(scroll_content_widget)        
         scroll_content_layout.setAlignment(Qt.AlignTop)
         scroll_content_layout.setSpacing(20) # Espacio entre tarjetas
-        scroll_content_layout.setContentsMargins(50, 20, 50, 0)
+        scroll_content_layout.setContentsMargins(50, 20, 50, 20)
 
         # --- crear 10 tarjetas ---
         for i in range(1, 11):
@@ -74,20 +72,17 @@ class PantallaResumen(QWidget):
 
             # crear la tarjeta
             tarjeta = self.crear_tarjeta_pregunta(i, titulo_json)
-            scroll_content_layout.addWidget(tarjeta) 
+            scroll_content_layout.addWidget(tarjeta)
 
         scroll_area.setWidget(scroll_content_widget)                
         
-        principal_layout.addWidget(scroll_area, 1) # máximo espacio posible 
+        principal_layout.addWidget(scroll_area, 1) # máximo espacio posible
 
-        # ------------------- 3. Botón Atrás Inferior -------------------
+        # ------------------- 3. Botones Inferior -------------------
         boton_layout = QHBoxLayout()
-        
-        self.boton_atras = QPushButton("Atrás")
-        self.boton_atras.setFont(QFont("Arial", 12))
-        self.boton_atras.setFixedSize(150, 50)
-        self.boton_atras.setCursor(Qt.PointingHandCursor)
-        self.boton_atras.setStyleSheet("""                                   
+        boton_layout.setContentsMargins(0, 0, 0, 0)
+
+        estilo_boton = """                                   
             QPushButton { 
                 color: white; 
                 border: 1px solid rgba(255, 255, 255, 0.4); 
@@ -99,18 +94,37 @@ class PantallaResumen(QWidget):
             QPushButton:hover { 
                 background-color: rgba(71, 70, 70, 0.7); 
             }
-        """)
+        """
+        
+        #Boton atrás
+        self.boton_atras = QPushButton("Atrás")
+        self.boton_atras.setFont(QFont("Arial", 12))
+        self.boton_atras.setFixedSize(150, 50)
+        self.boton_atras.setCursor(Qt.PointingHandCursor)
+        self.boton_atras.setStyleSheet(estilo_boton)
         self.boton_atras.setToolTip("Volver a la pantalla de preguntas")
+
+        #Boton enviar
+        self.boton_enviar = QPushButton("Enviar")
+        self.boton_enviar.setFont(QFont("Arial", 12))
+        self.boton_enviar.setFixedSize(150, 50)
+        self.boton_enviar.setCursor(Qt.PointingHandCursor)       
+        self.boton_enviar.setStyleSheet(estilo_boton.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930"))
+        self.boton_enviar.setToolTip("Enviar respuestas")
+
         
         boton_layout.addWidget(self.boton_atras)
         boton_layout.addStretch() # botón a la izquierda
+
+        boton_layout.addWidget(self.boton_enviar)
+       #boton_layout.addStretch(1) # botón a la derecha
 
         principal_layout.addLayout(boton_layout)
 
 
     # ------------------- Funciones Auxiliares -------------------
     
-    def crear_tarjeta_pregunta(self, numero, titulo): #Cambiar a  objeto pregunta
+    def crear_tarjeta_pregunta(self, numero, titulo):
         
         tarjeta_frame = QFrame()        
 
@@ -143,19 +157,6 @@ class PantallaResumen(QWidget):
 
         top_tarjeta_layout.addStretch() # Nivel a la derecha
 
-        # Nivel de respuesta
-        lbl_nivel = QLabel("Nivel: 0")
-        lbl_nivel.setFont(QFont("Arial", 11, QFont.Bold))
-        lbl_nivel.setAlignment(Qt.AlignCenter)
-        lbl_nivel.setStyleSheet(("""
-            background-color: transparent; 
-            border: 1.5px solid #808080; 
-            color: #555555;
-            border-radius: 10px; 
-            padding: 2px 12px;
-        """))        
-        top_tarjeta_layout.addWidget(lbl_nivel)
-
         tarjeta_layout.addLayout(top_tarjeta_layout)
                 
         # Contenido (Respuesta, Nivel, Análisis)        
@@ -165,27 +166,20 @@ class PantallaResumen(QWidget):
         lbl_respuesta.setWordWrap(True) # texto salta de línea si es muy largo
         lbl_respuesta.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         lbl_respuesta.setAlignment(Qt.AlignJustify)
-        tarjeta_layout.addWidget(lbl_respuesta)
-
-        lbl_analisis = QLabel("<b>Análisis IA:</b> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
-        lbl_analisis.setFont(QFont("Arial", 11))
-        lbl_analisis.setWordWrap(True) 
-        lbl_analisis.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-        lbl_analisis.setAlignment(Qt.AlignJustify)
-        tarjeta_layout.addWidget(lbl_analisis)
+        tarjeta_layout.addWidget(lbl_respuesta)        
 
         # Botón de entrar
         boton_layout = QHBoxLayout()
         boton_layout.addStretch() #icono a la derecha
                
-        icono_entrar = QIcon("assets/entrar.png")
+        icono_editar = QIcon("assets/editar.png")
 
-        self.boton_entrar = QPushButton()
-        self.boton_entrar.setFixedSize(45, 45)
-        self.boton_entrar.setIcon(icono_entrar)
-        self.boton_entrar.setIconSize(QSize(25, 25))
-        self.boton_entrar.setCursor(Qt.PointingHandCursor)
-        self.boton_entrar.setStyleSheet("""
+        self.boton_editar = QPushButton()
+        self.boton_editar.setFixedSize(45, 45)
+        self.boton_editar.setIcon(icono_editar)
+        self.boton_editar.setIconSize(QSize(25, 25))
+        self.boton_editar.setCursor(Qt.PointingHandCursor)
+        self.boton_editar.setStyleSheet("""
             QPushButton {
                 background-color: #B0B0B0; 
                 border: none;
@@ -195,9 +189,9 @@ class PantallaResumen(QWidget):
                 background-color: #909090;
             }
         """)
-        self.boton_entrar.setToolTip("Ver detalles de la respuesta")
+        self.boton_editar.setToolTip("Editar respuesta")
 
-        boton_layout.addWidget(self.boton_entrar)
+        boton_layout.addWidget(self.boton_editar)
         
         tarjeta_layout.addLayout(boton_layout)
 

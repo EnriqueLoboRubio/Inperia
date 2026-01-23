@@ -2,34 +2,36 @@ import sys
 import os
 from PyQt5.QtWidgets import QApplication
 
-# Aseguramos que Python encuentre la carpeta 'gui'
-# Esto añade el directorio actual al path de búsqueda de módulos
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
 
-# Importamos la clase de la pantalla de bienvenida
-from gui.pantalla_bienvenida_interno import PantallaBienvenidaInterno
-from gui.pantalla_resumen_profesional import PantallaResumen
-from gui.pantalla_preguntas import PantallaPreguntas
+from gui.pantalla_resumen_profesional import PantallaResumen as PantallaResumenProfesional
+from gui.pantalla_resumen_interno import PantallaResumen as PantallaResumenInterno
+from gui.pantalla_resumen_edit_interno import PantallaResumenEditable as PantallaResumenEditInterno
+
 
 def main():
     app = QApplication(sys.argv)
 
-    # Creamos la instancia de la pantalla
-    ventana = PantallaResumen()
-    #ventana = PantallaBienvenidaInterno()
-    #ventana = PantallaPreguntas()
+    ventanaResumenProf = PantallaResumenProfesional()
+    ventanaResumenInterno = PantallaResumenInterno()
+    ventanaResumenEditInterno = PantallaResumenEditInterno()
     
-    # Configuraciones básicas de la ventana para la prueba
-    ventana.resize(1200, 900) # Un tamaño razonable para ver el diseño
-    ventana.setWindowTitle("Prueba - Pantalla Resumen Profesional")
     
-    # Mostramos la ventana
-    ventana.show()
+    # Configuraciones 
+    ventanaResumenProf.resize(1200, 900)
+    ventanaResumenProf.setWindowTitle("Prueba - Pantalla Resumen Profesional")
 
-    # Conectar el botón a una acción de prueba para verificar que funciona
-    # (Esto imprimirá en la consola cuando pulses el botón)
-    #ventana.boton_iniciar.clicked.connect(lambda: print("¡Botón 'Iniciar nueva entrevista' pulsado!"))
+    ventanaResumenInterno.resize(1200, 900)
+    ventanaResumenInterno.setWindowTitle("Prueba - Pantalla Resumen Interno")
+
+    ventanaResumenEditInterno.resize(1200, 900)
+    ventanaResumenEditInterno.setWindowTitle("Prueba - Pantalla Resumen Editable Interno")
+    
+
+    ventanaResumenProf.show()
+    #ventanaResumenInterno.show()
+    #ventanaResumenEditInterno.show()
 
     sys.exit(app.exec_())
 

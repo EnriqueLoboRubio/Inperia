@@ -164,6 +164,7 @@ class PantallaPreguntas(QWidget):
         self.boton_atras.setFont(QFont("Arial", 12))
         self.boton_atras.setStyleSheet(estilo_boton)
         self.boton_atras.setFixedSize(150,50)
+        self.boton_atras.setToolTip("Ir a la pregunta anterior")
         self.boton_atras.hide()  # Ocultar el botón atrás inicialmente
 
         #Boton siguiente
@@ -171,12 +172,14 @@ class PantallaPreguntas(QWidget):
         self.boton_siguiente.setFont(QFont("Arial", 12))
         self.boton_siguiente.setStyleSheet(estilo_boton)    
         self.boton_siguiente.setFixedSize(150,50)   
+        self.boton_siguiente.setToolTip("Ir a la siguiente pregunta")
 
         #boton finalizar
         self.boton_finalizar = QPushButton("Finalizar")
         self.boton_finalizar.setFont(QFont("Arial", 12))
         self.boton_finalizar.setStyleSheet(estilo_finalizar)
         self.boton_finalizar.setFixedSize(150,50)
+        self.boton_finalizar.setToolTip("Finalizar la entrevista")
         self.boton_finalizar.hide()  # Ocultar el botón finalizar inicialmente
 
         # Añadir los botones al layout de botones

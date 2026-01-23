@@ -5,7 +5,7 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
 from gui.pantalla_bienvenida_interno import PantallaBienvenidaInterno
 from gui.pantalla_preguntas import PantallaPreguntas
-from gui.pantalla_resumen_profesional import PantallaResumen
+from gui.pantalla_resumen_profesional import PantallaResumen as PantallaResumenProfesional
 
 class VentanaInterno(QMainWindow):
     
@@ -229,14 +229,14 @@ class VentanaInterno(QMainWindow):
 
         self.pantalla_bienvenida = PantallaBienvenidaInterno()
         self.pantalla_preguntas = PantallaPreguntas()
-        self.pantalla_resumen = PantallaResumen()
+        self.pantalla_resumen_profesional = PantallaResumenProfesional()
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                          
         self.stacked_widget.addWidget(self.pantalla_preguntas)
-        self.stacked_widget.addWidget(self.pantalla_resumen)
-        # Aquí se pueden añadir más pantallas al stacked_widget según sea necesario
+        self.stacked_widget.addWidget(self.pantalla_resumen_profesional)
+        # añadir más pantallas 
 
-        # Establecer la pantalla inicial
+        # pantalla inicial
         self.stacked_widget.setCurrentWidget(self.pantalla_bienvenida)
 
         # Contenedor central
@@ -416,4 +416,4 @@ class VentanaInterno(QMainWindow):
         self.pantalla_preguntas.cargar_pregunta(numero)       
 
     def mostrar_pantalla_resumen(self):
-        self.stacked_widget.setCurrentWidget(self.pantalla_resumen)
+        self.stacked_widget.setCurrentWidget(self.pantalla_resumen_profesional)

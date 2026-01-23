@@ -1,4 +1,5 @@
 
+import os
 
 class Pregunta():
     def __init__(self, id_pregunta, respuesta):
@@ -7,6 +8,7 @@ class Pregunta():
         self.nivel = -1
         self.valoracion_ia = ""
         self.comentarios = []
+        self.archivo_audio = None  # Ruta al archivo de audio asociado
 
     def get_id_pregunta(self):
         return self.id_pregunta    
@@ -35,6 +37,16 @@ class Pregunta():
 
     def get_comentarios(self):
         return self.comentarios
+    
+    def set_archivo_audio(self, nuevo_audio):
+        if os.path.exists(nuevo_audio):
+            self.ruta_audio = nuevo_audio
+            return True
+        else:
+            return False
+    
+    def get_archivo_audio(self):
+        return self.archivo_audio
     
     def to_json(self):
         "Devuelve un diccionario con el formato JSON de la pregunta, para mandar a LLM"
