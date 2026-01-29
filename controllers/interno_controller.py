@@ -1,6 +1,7 @@
 from PyQt5.QtCore import pyqtSignal, QObject
 
 from gui.interno_inicio import VentanaInterno
+from gui.ventana_detalle_pregunta import VentanaDetallePregunta
 
 from db.interno_db import *
 from models.interno import Interno
@@ -12,9 +13,7 @@ class InternoController(QObject):
         self.usuario = usuario
         self.ventana_interno = VentanaInterno()
         self.conectar_senales()
-        self.interno = self.cargar_interno()
-
-        
+        self.interno = self.cargar_interno()        
 
     # Buscar interno por id de usuario y cargar datos
     def cargar_interno(self):
@@ -75,9 +74,11 @@ class InternoController(QObject):
         self.ventana_interno.pantalla_resumen_profesional.boton_atras.clicked.connect(
             self.pantalla_resumen_atras
         )
-        
-                
 
+        #VENTANAS DE LAS PREGUNTAS
+        self.ventana_interno.pantalla_resumen_profesional.grupo_botones_entrar.idClicked.connect(
+            self.mostrar_detalle_pregunta
+        )
 
 
     def iniciar_entrevista(self):
@@ -88,6 +89,17 @@ class InternoController(QObject):
 
     def siguiente_pregunta(self):
         self.ventana_interno.pantalla_preguntas.ir_pregunta_siguiente()
+
+    def mostrar_detalle_pregunta(self, id_pregunta):
+        
+        """
+
+        """
+
+        ventana_detalle = VentanaDetallePregunta()
+
+
+
 
     def finalizar_entrevista(self):
         self.ventana_interno.mostrar_pantalla_resumen() 

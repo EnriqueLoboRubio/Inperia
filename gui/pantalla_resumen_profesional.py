@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
-    QScrollArea, QFrame, QSizePolicy, QLayout
+    QScrollArea, QFrame, QSizePolicy, QButtonGroup
 )
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
@@ -43,7 +43,9 @@ class PantallaResumen(QWidget):
         super().__init__(parent)
 
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
-        self.botones_entrar = {}
+        
+        #Contenedor lógico para manejar botones de entrar
+        self.grupo_botones_entrar = QButtonGroup(self)
 
         # --- Configuración del layout principal ---
         principal_layout = QVBoxLayout(self)       
@@ -197,7 +199,9 @@ class PantallaResumen(QWidget):
             }
         """)
         boton_entrar.setToolTip(f"Ver detalles de la respuesta {numero}")
-        self.botones_entrar[numero] = boton_entrar
+        
+        #Añadir el botón al grupo
+        self.grupo_botones_entrar.addButton(boton_entrar, numero)
 
         boton_layout.addWidget(boton_entrar)
         

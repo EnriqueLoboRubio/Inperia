@@ -31,9 +31,8 @@ class Pregunta():
     def get_valoracion_ia(self):
         return self.valoracion_ia
 
-    def add_comentario(self, nuevo_comentario):
-        if isinstance(nuevo_comentario, str):
-            self.comentarios.append(nuevo_comentario)
+    def add_comentario(self, nuevo_comentario):        
+        self.comentarios.append(nuevo_comentario)   
 
     def get_comentarios(self):
         return self.comentarios

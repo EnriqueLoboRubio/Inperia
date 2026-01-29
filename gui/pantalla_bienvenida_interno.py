@@ -5,14 +5,12 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 
 class PantallaBienvenidaInterno(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, interno, parent=None):
         super().__init__(parent)
             
         principal_layout = QVBoxLayout(self)             
 
-        principal_layout.addStretch(1)
-        
-        #titulo_texto = f"Bienvenido,  {nombre}"
+        principal_layout.addStretch(1)           
 
         titulo = QLabel("Bienvenido Nombre")
         titulo.setFont(QFont("Arial", 18))
@@ -23,7 +21,6 @@ class PantallaBienvenidaInterno(QWidget):
 
 
         # Si tiene una entrevista pendiente
-
         contenido = QLabel("Tiene una entrevista pendiente")
         contenido.setFont(QFont("Arial", 22))
         contenido.setAlignment(Qt.AlignCenter)
