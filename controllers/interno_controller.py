@@ -14,6 +14,8 @@ class InternoController(QObject):
         self.conectar_senales()
         self.interno = self.cargar_interno()
 
+        
+
     # Buscar interno por id de usuario y cargar datos
     def cargar_interno(self):
         datos_interno = encontrar_interno_por_id(self.usuario.get_id_usuario())
@@ -41,8 +43,9 @@ class InternoController(QObject):
 
     #Buscar entrevistas del interno
     def cargar_entrevistas(self):
-        pass
+        pass    
 
+    # Sin uso
     def inicio(self):
         self.ventana_interno.show()
 
@@ -72,6 +75,8 @@ class InternoController(QObject):
         self.ventana_interno.pantalla_resumen_profesional.boton_atras.clicked.connect(
             self.pantalla_resumen_atras
         )
+        
+                
 
 
 

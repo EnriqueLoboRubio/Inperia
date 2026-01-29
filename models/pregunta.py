@@ -40,7 +40,7 @@ class Pregunta():
     
     def set_archivo_audio(self, nuevo_audio):
         if os.path.exists(nuevo_audio):
-            self.ruta_audio = nuevo_audio
+            self.archivo_audio = nuevo_audio
             return True
         else:
             return False

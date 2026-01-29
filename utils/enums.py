@@ -10,7 +10,8 @@ class Tipo_estado_solicitud(Enum):
     ACEPTADA = "Aceptada"
     RECHAZADA = "Rechazada"
     CANCELADA = "Cancelada"
-    FINALIZADA = "Finalizada"
+    INICIADA = "Iniciada"
+
 
 class Tipo_profesional(Enum):
     PSICOLOGO = "Psicólogo"

@@ -10,7 +10,7 @@ import json, os
 
 def cargar_datos_preguntas():
     #Carga las preguntas desde el archivo JSON        
-    ruta_base = os.path.dirname(os.path.dirname(__file__)) # Sube un nivel de carpetaa
+    ruta_base = os.path.dirname(os.path.dirname(__file__)) # Sube un nivel de carpeta
     ruta_json = os.path.join(ruta_base, 'data', 'preguntas.json')
 
     try:
@@ -43,6 +43,7 @@ class PantallaResumen(QWidget):
         super().__init__(parent)
 
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
+        self.botones_entrar = {}
 
         # --- Configuración del layout principal ---
         principal_layout = QVBoxLayout(self)       
@@ -180,12 +181,12 @@ class PantallaResumen(QWidget):
                
         icono_entrar = QIcon("assets/entrar.png")
 
-        self.boton_entrar = QPushButton()
-        self.boton_entrar.setFixedSize(45, 45)
-        self.boton_entrar.setIcon(icono_entrar)
-        self.boton_entrar.setIconSize(QSize(25, 25))
-        self.boton_entrar.setCursor(Qt.PointingHandCursor)
-        self.boton_entrar.setStyleSheet("""
+        boton_entrar = QPushButton()
+        boton_entrar.setFixedSize(45, 45)
+        boton_entrar.setIcon(icono_entrar)
+        boton_entrar.setIconSize(QSize(25, 25))
+        boton_entrar.setCursor(Qt.PointingHandCursor)
+        boton_entrar.setStyleSheet("""
             QPushButton {
                 background-color: #B0B0B0; 
                 border: none;
@@ -195,9 +196,10 @@ class PantallaResumen(QWidget):
                 background-color: #909090;
             }
         """)
-        self.boton_entrar.setToolTip("Ver detalles de la respuesta")
+        boton_entrar.setToolTip(f"Ver detalles de la respuesta {numero}")
+        self.botones_entrar[numero] = boton_entrar
 
-        boton_layout.addWidget(self.boton_entrar)
+        boton_layout.addWidget(boton_entrar)
         
         tarjeta_layout.addLayout(boton_layout)
 

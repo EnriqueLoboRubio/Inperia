@@ -12,14 +12,19 @@ class PantallaBienvenidaInterno(QWidget):
 
         principal_layout.addStretch(1)
         
-        titulo = QLabel("Bienvenido,  nombre apellido")
+        #titulo_texto = f"Bienvenido,  {nombre}"
+
+        titulo = QLabel("Bienvenido Nombre")
         titulo.setFont(QFont("Arial", 18))
         titulo.setAlignment(Qt.AlignCenter)
         principal_layout.addWidget(titulo)
 
         principal_layout.addSpacing(50)
 
-        contenido = QLabel("Ha completado X preguntas")
+
+        # Si tiene una entrevista pendiente
+
+        contenido = QLabel("Tiene una entrevista pendiente")
         contenido.setFont(QFont("Arial", 22))
         contenido.setAlignment(Qt.AlignCenter)
         principal_layout.addWidget(contenido)
