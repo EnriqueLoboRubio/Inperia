@@ -1,0 +1,42 @@
+{
+    "1": {
+        "titulo": "Extranjería",
+        "texto": "¿Usted reside en España? ¿Es usted tiene residencia legal o no?\n¿Tiene determinada la expulsión judicial de España?\n¿Tiene usted algún vínculo personal, familiar o profesional con personas españolas o residentes en España?\n¿Puede detallarlo?"
+    },
+    "2": {
+        "titulo": "Drogodependencias",
+        "texto": "¿Usted ha consumido drogas a lo largo de su vida? ¿Qué ha consumido?\n¿Cuándo se inició en dichos consumos?\n¿Ha participado usted en programas de deshabituación en los centros penitenciarios o en centros externos?\n¿Cuándo ha sido su último consumo? ¿Sigue consumiendo en la actualidad? ¿Ha tenido recaídas en consumos?"
+    },
+    "3": {
+        "titulo": "Profesionalidad",
+        "texto": "¿Por qué cometió los delitos que figuran en su expediente? ¿Fue algo puntual o ha reincidido en su vida?"
+    },
+    "4": {
+        "titulo": "Reincidencia",
+        "texto": "¿Este es tu primer ingreso en prisión o has tenido otras condenas anteriormente?\n¿El cumplimiento de la condena actual es por delitos cometidos recientemente o\npor delitos cometidos hace tiempo y que estaban recurridos judicialmente?"
+    },
+    "5": {
+        "titulo": "Quebrantamiento",
+        "texto": "¿En algún momento has intentado evitar el cumplimiento de una condena o fugarte? ¿Por qué?"
+    },
+    "6": {
+        "titulo": "Artículo 10 LOGP",
+        "texto": "¿Alguna vez has estado clasificado en primer grado o se te ha aplicado el artículo 10 de la LOGP?\n¿Qué recuerdas de esa etapa?"
+    },
+    "7": {
+        "titulo": "Ausencia de permisos",
+        "texto": "¿Has tenido acceso a permisos penitenciarios?\n¿Qué impacto han tenido o crees que tendrían en ti? ¿Has quebrantado algún permiso? ¿por qué?"
+    },
+    "8": {
+        "titulo": "Deficiencia convivencial",
+        "texto": "¿Cómo describirías la relación con tu familia u otras personas cercanas desde que estás en prisión?\n¿Qué rol tienes en tu familia? ¿Recibes visitas o apoyo externo?\n¿Tu familia o amigos te ingresan dinero en tu cuenta de peculio?"
+    },
+    "9": {
+        "titulo": "Lejanía",
+        "texto": "¿Dónde te gustaría disfrutar del permiso en caso de ser concedido? ¿Por qué has elegido ese lugar?\nEn caso de no tener familiares o amigos que los acojan:\n¿tiene acogida por alguna ONG? ¿Cuál y dónde? ¿Te has comprometido al cumplimiento de las normas de acogida de dicha ONG?"
+    },
+    "10": {
+        "titulo": "Presiones internas",
+        "texto": "¿Cómo es tu relación con otros internos y con el personal del centro? ¿Has vivido situaciones conflictivas? ¿Cuáles?\n¿Cómo es su cumplimiento de las normas de convivencia de su módulo?\n¿En qué actividades participas y qué destinos desempeñas en el módulo?"
+    }
+}

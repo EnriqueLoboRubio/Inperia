@@ -3,10 +3,46 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
+import json, os
+
+# Importar modelos
+from models.entrevista import Entrevista
+from models.pregunta import Pregunta
+
+
+def cargar_datos_preguntas():
+    #Carga las preguntas desde el archivo JSON        
+    ruta_base = os.path.dirname(os.path.dirname(__file__)) # Sube un nivel de carpetaa
+    ruta_json = os.path.join(ruta_base, 'data', 'preguntas.json')
+
+    try:
+        with open(ruta_json, 'r', encoding='utf-8') as f:
+            # Carga el JSON. Las claves serán strings: "1", "2", etc.
+            datos_preguntas = json.load(f)
+            return datos_preguntas
+    except FileNotFoundError:
+        print(f"Error: No se encontró el archivo en {ruta_json}")
+        # Devuelve datos de error para que la app no falle
+        return {
+            "1": {
+                "titulo": "Error",
+                "texto": "No se pudo cargar el archivo 'preguntas.json'."
+            }
+        }
+    except json.JSONDecodeError:
+        print(f"Error: El archivo {ruta_json} tiene un formato JSON inválido.")
+        return {
+            "1": {
+                "titulo": "Error",
+                "texto": "Error al leer el archivo 'preguntas.json'."
+            }
+        }
 
 class PantallaPreguntas(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.PREGUNTAS_DATA = cargar_datos_preguntas()
             
         principal_layout = QVBoxLayout(self)                     
         
@@ -27,10 +63,10 @@ class PantallaPreguntas(QWidget):
         """)
 
         # Variable para el número de pregunta
-        numero_pregunta = 1
+        self.numero_pregunta = 1
         
         # Título de la pregunta
-        self.titulo_pregunta = QLabel("Pregunta "+ str(numero_pregunta) + " :")
+        self.titulo_pregunta = QLabel("Pregunta "+ str(self.numero_pregunta) + " :")
         self.titulo_pregunta.setFont(QFont("Arial", 18, QFont.Bold))
         self.titulo_pregunta.setAlignment(Qt.AlignLeft)
         self.pregunta_layout.addWidget(self.titulo_pregunta)
@@ -40,8 +76,10 @@ class PantallaPreguntas(QWidget):
         self.pregunta_layout.setSpacing(10)
         self.pregunta_layout.addWidget(self.titulo_pregunta)
 
-        # ------------------- 2. Texto con la pregunta ------------------- 
-        self.texto_pregunta = QLabel("""¿Usted reside en España? ¿Es usted tiene residencia legal o no?\n¿Tiene determinada la expulsión judicial de España?\n¿Tiene usted algún vínculo personal, familiar o profesional con personas españolas o residentes en España?\n¿Puede detallarlo?""")
+        # ------------------- 2. Texto con la pregunta -------------------        
+        self.lista_respuestas = [""] * 10  # Lista para almacenar las respuestas de las 10 preguntas
+
+        self.texto_pregunta = QLabel()
         self.texto_pregunta.setFont(QFont("Arial", 14))
         self.texto_pregunta.setAlignment(Qt.AlignCenter)
 
@@ -104,7 +142,7 @@ class PantallaPreguntas(QWidget):
         
         self.botones_layout.addStretch(1)
 
-        #estilo boton
+        #estilos botones
         estilo_boton = """                                   
             QPushButton { 
                 color: white; 
@@ -119,31 +157,42 @@ class PantallaPreguntas(QWidget):
             }
         """
 
+        estilo_finalizar = estilo_boton.replace("black", "#1E5631").replace("rgba(71, 70, 70, 0.7)", "#3A9D5A")    
+
         #Boton atrás
         self.boton_atras = QPushButton("Atrás")
         self.boton_atras.setFont(QFont("Arial", 12))
         self.boton_atras.setStyleSheet(estilo_boton)
         self.boton_atras.setFixedSize(150,50)
+        self.boton_atras.setToolTip("Ir a la pregunta anterior")
+        self.boton_atras.hide()  # Ocultar el botón atrás inicialmente
 
         #Boton siguiente
         self.boton_siguiente = QPushButton("Siguiente")
         self.boton_siguiente.setFont(QFont("Arial", 12))
         self.boton_siguiente.setStyleSheet(estilo_boton)    
         self.boton_siguiente.setFixedSize(150,50)   
+        self.boton_siguiente.setToolTip("Ir a la siguiente pregunta")
+
+        #boton finalizar
+        self.boton_finalizar = QPushButton("Finalizar")
+        self.boton_finalizar.setFont(QFont("Arial", 12))
+        self.boton_finalizar.setStyleSheet(estilo_finalizar)
+        self.boton_finalizar.setFixedSize(150,50)
+        self.boton_finalizar.setToolTip("Finalizar la entrevista")
+        self.boton_finalizar.hide()  # Ocultar el botón finalizar inicialmente
 
         # Añadir los botones al layout de botones
         self.botones_layout.addWidget(self.boton_atras)
         self.botones_layout.addStretch(1)
-        self.botones_layout.addWidget(self.boton_siguiente) 
-        self.botones_layout.addStretch(1)        
-
-        principal_layout.addStretch(1)
+        self.botones_layout.addWidget(self.boton_siguiente)
+        self.botones_layout.addWidget(self.boton_finalizar)
+        self.botones_layout.addStretch(1)                
         
-
         # ------------------- 6. Conexiones de botones ------------------- 
         self.boton_voz.clicked.connect(self.cambiar_color_voz)
 
-        # Añadir el widgets al layout principal
+        # ------------------- 7. Añadir el widgets al layout principal -------------------
         principal_layout.addWidget(self.pregunta_widget)
         principal_layout.addSpacing(20)
         principal_layout.addWidget(self.texto_pregunta)
@@ -151,12 +200,16 @@ class PantallaPreguntas(QWidget):
         principal_layout.addWidget(self.respuesta_widget, alignment=Qt.AlignCenter)
         principal_layout.addSpacing(10)
         principal_layout.addWidget(self.boton_voz, alignment=Qt.AlignCenter)
-        principal_layout.addSpacing(100)
+    
+        principal_layout.addStretch(1)
         principal_layout.addWidget(self.botones_widget)
+        principal_layout.addSpacing(20)    
 
-        
-        principal_layout.addStretch(2)
+        self.cargar_pregunta(1)
 
+    # ------------------- 8. Funciones -------------------
+
+    #Cambiar color del botón de voz al grabar
     def cambiar_color_voz(self):           
         grabando_ahora = self.boton_voz.property("estado_grabando")
             
@@ -168,3 +221,79 @@ class PantallaPreguntas(QWidget):
             
         # Forzar la actualización del estilo
         self.boton_voz.style().polish(self.boton_voz)
+
+    def cargar_pregunta(self, numero):
+        datos = self.PREGUNTAS_DATA.get(str(numero), {
+            "titulo": "Error",
+            "texto": f"Pregunta {numero} no encontrada en el JSON."
+        })
+
+        # Actualizar las etiquetas
+        self.titulo_pregunta.setText(f"Pregunta {numero}")
+        self.texto_pregunta.setText(datos['texto'])
+
+        # Controlar visibilidad de botones
+        if self.numero_pregunta > 1:
+            self.boton_atras.show()
+
+        if self.numero_pregunta == 10:
+            self.boton_siguiente.hide()
+            self.boton_finalizar.show()
+        else:
+            self.boton_siguiente.show()
+            self.boton_finalizar.hide()
+
+    # Ir a la pregunta anterior
+    def ir_pregunta_atras(self):
+        # Guardar la respuesta actual
+        self.lista_respuestas[self.numero_pregunta-1] = self.respuesta_widget.toPlainText()
+
+        self.numero_pregunta = self.numero_pregunta - 1
+
+        # Comprobar visibilidad de botones
+        if self.numero_pregunta == 1:
+            self.boton_atras.hide()
+        else:
+            self.boton_atras.show()        
+
+        # Cargar la respuesta guardada si existe
+        if(self.lista_respuestas[self.numero_pregunta - 1] != ""):
+            self.respuesta_widget.setText(self.lista_respuestas[self.numero_pregunta - 1]) 
+        else:
+            self.respuesta_widget.clear() 
+
+        self.cargar_pregunta(self.numero_pregunta)   
+
+    def ir_pregunta_siguiente(self):
+        # Guardar la respuesta actual
+        self.lista_respuestas[self.numero_pregunta-1] = self.respuesta_widget.toPlainText()
+
+        self.numero_pregunta = self.numero_pregunta + 1
+
+        # Controlar visibilidad de botones
+        if self.numero_pregunta > 1:
+            self.boton_atras.show()
+
+        if self.numero_pregunta == 10:
+            self.boton_siguiente.hide()
+            self.boton_finalizar.show()
+        else:
+            self.boton_siguiente.show()
+            self.boton_finalizar.hide()
+    
+        # Cargar la respuesta guardada si existe
+        if(self.lista_respuestas[self.numero_pregunta - 1] != ""):
+            self.respuesta_widget.setText(self.lista_respuestas[self.numero_pregunta - 1]) 
+        else:
+            self.respuesta_widget.clear() 
+
+        self.cargar_pregunta(self.numero_pregunta)    
+
+    def finalizar_entrevista(self):
+        # Guardar la respuesta actual
+        self.lista_respuestas[self.numero_pregunta-1] = self.respuesta_widget.toPlainText()
+
+        #Guardar info en base de datos / objeto entrevista
+
+        # Señal para pasar a la pantalla de resumen
+        #self.entrevista_finalizada.emit()
