@@ -14,16 +14,18 @@ class InternoController(QObject):
         self.ventana_interno = VentanaInterno()
         self.conectar_senales()
         self.interno = self.cargar_interno()        
+        if self.interno:
+            self.ventana_interno.cargar_datos_interno(self.interno)
 
     # Buscar interno por id de usuario y cargar datos
     def cargar_interno(self):
-        datos_interno = encontrar_interno_por_id(self.usuario.get_id_usuario())
+        datos_interno = encontrar_interno_por_id(self.usuario.id_usuario)
         if datos_interno:
             interno = Interno(
                 id_usuario=datos_interno[0],
-                nombre=self.usuario.get_nombre(),
-                contrasena=self.usuario.get_contrasena(),
-                rol=self.usuario.get_rol(),
+                nombre=self.usuario.nombre,
+                contrasena=self.usuario.contrasena,
+                rol=self.usuario.rol,
                 num_RC=datos_interno[1],
                 situacion_legal=datos_interno[2],
                 delito=datos_interno[3],
@@ -50,7 +52,7 @@ class InternoController(QObject):
 
     def conectar_senales(self):
 
-        #PANTALLA INICIO
+        # MENU LATERAL        
 
         # PANTALLA BIENVENIDA INTERNO
         self.ventana_interno.pantalla_bienvenida.boton_iniciar.clicked.connect(

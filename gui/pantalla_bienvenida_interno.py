@@ -5,26 +5,26 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 
 class PantallaBienvenidaInterno(QWidget):
-    def __init__(self, interno, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
             
         principal_layout = QVBoxLayout(self)             
 
         principal_layout.addStretch(1)           
 
-        titulo = QLabel("Bienvenido Nombre")
-        titulo.setFont(QFont("Arial", 18))
-        titulo.setAlignment(Qt.AlignCenter)
-        principal_layout.addWidget(titulo)
+        self.titulo = QLabel("Bienvenido ...")
+        self.titulo.setFont(QFont("Arial", 18))
+        self.titulo.setAlignment(Qt.AlignCenter)
+        principal_layout.addWidget(self.titulo)
 
         principal_layout.addSpacing(50)
 
 
         # Si tiene una entrevista pendiente
-        contenido = QLabel("Tiene una entrevista pendiente")
-        contenido.setFont(QFont("Arial", 22))
-        contenido.setAlignment(Qt.AlignCenter)
-        principal_layout.addWidget(contenido)
+        self.contenido = QLabel("Tiene una entrevista pendiente")
+        self.contenido.setFont(QFont("Arial", 22))
+        self.contenido.setAlignment(Qt.AlignCenter)
+        principal_layout.addWidget(self.contenido)
         
         principal_layout.addStretch(1)
 
@@ -47,3 +47,8 @@ class PantallaBienvenidaInterno(QWidget):
 
         principal_layout.addWidget(self.boton_iniciar, alignment=Qt.AlignCenter)
         principal_layout.addStretch(2)
+
+    # Método para obtener interno y actualizar vista
+    def set_interno(self, interno):
+        if interno:
+            self.titulo.setText(f"Bienvenido {interno.nombre}")

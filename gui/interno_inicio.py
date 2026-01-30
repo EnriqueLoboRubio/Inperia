@@ -417,3 +417,11 @@ class VentanaInterno(QMainWindow):
 
     def mostrar_pantalla_resumen(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_resumen_profesional)
+
+    # ------------------- 7. Método para pasar datos -------------------
+    def cargar_datos_interno(self, interno):
+        """
+        Recibe el objeto interno desde el controlador y se distriuye a las pantallas necesarias
+        """
+        
+        self.pantalla_bienvenida.set_interno(interno)

@@ -15,51 +15,9 @@ class Interno(Usuario):
         self.modulo = modulo
         self.solicitudes = []
         self.entrevistas = []        
-
-    def set_num_RC(self, num_RC):
-        self.num_RC = num_RC
-        
-    def get_num_RC(self):
-        return self.num_RC    
-    
-    def set_situacion_legal(self, situacion_legal):
-        self.situacion_legal = situacion_legal
-
-    def get_situacion_legal(self):
-        return self.situacion_legal
-
-    def set_delito(self, delito):
-        self.delito = delito
-
-    def get_delito(self):
-        return self.delito
-    
-    def set_edad(self, edad):
-        self.edad = edad
-            
-    def get_edad(self):
-        return self.edad
-
-    def set_condena(self, condena):
-        self.condena = condena
-
-    def get_condena(self):
-        return self.condena
-
-    def set_fecha_ingreso(self, fecha_ingreso):
-        self.fecha_ingreso = fecha_ingreso
-        
-    def get_fecha_ingreso(self):
-        return self.fecha_ingreso    
     
     def add_solicitud(self, solicitud):
-        self.solicitudes.append(solicitud)
-
-    def get_solicitudes(self):
-        return self.solicitudes
+        self.solicitudes.append(solicitud)   
     
     def add_entrevista(self, entrevista):
         self.entrevistas.append(entrevista)
-
-    def get_entrevistas(self):
-        return self.entrevistas
