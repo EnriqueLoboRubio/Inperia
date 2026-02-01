@@ -1,9 +1,43 @@
+from utils.enums import Tipo_estado_solicitud
+
 class Solicitud:
-    def __init__(self, id_solicitud, id_entrevista, id_interno, fecha_inicio, estado):
+    def __init__(self, id_solicitud, id_entrevista, tipo, motivo, descripcion, urgencia):
         self.id_solicitud = id_solicitud
-        self.id_entrevista = id_entrevista
-        self.id_interno = id_interno
-        self.fecha_inicio = fecha_inicio       
+        self.id_entrevista = id_entrevista  
+
+        self.tipo = tipo
+        self.motivo = motivo
+        self.descripcion = descripcion
+        self.urgencia = urgencia
+
+        self.fecha_inicio = None       
         self.fecha_fin = None
-        self.estado = estado
+        self.hora_salida = None
+        self.hora_llegada = None
+        self.destino = None
+        self.cuidad = None
+        self.direccion = None
+        self.cod_pos = None
+
+        self.nombre_cp = None
+        self.telf_cp = None
+        self.relacion_cp = None
+        self.direccion_cp = None
+        self.nombre_cs = None
+        self.telf_cs = None
+        self.relacion_cs = None        
+
+        self.docs = []
+        self.compromisos = []
+        self.observaciones = None
+
+        self.estado = Tipo_estado_solicitud.PENDIENTE
+        
         self.entrevista = None
+
+    def add_docs(self, doc):
+        self.docs.append(doc)         
+
+    def add_compromiso(self, compromiso):
+        self.compromisos.append(compromiso)       
+

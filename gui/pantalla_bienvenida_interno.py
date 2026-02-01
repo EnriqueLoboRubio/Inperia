@@ -52,3 +52,8 @@ class PantallaBienvenidaInterno(QWidget):
     def set_interno(self, interno):
         if interno:
             self.titulo.setText(f"Bienvenido {interno.nombre}")
+        else:
+            print("ERROR")
+
+    def set_contenido(self, texto):
+        self.contenido.setText(texto)

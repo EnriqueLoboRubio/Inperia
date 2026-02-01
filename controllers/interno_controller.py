@@ -4,7 +4,10 @@ from gui.interno_inicio import VentanaInterno
 from gui.ventana_detalle_pregunta import VentanaDetallePregunta
 
 from db.interno_db import *
+from db.solicitud_db import *
+
 from models.interno import Interno
+from models.solicitud import Solicitud
 
 class InternoController(QObject):
 
@@ -13,9 +16,13 @@ class InternoController(QObject):
         self.usuario = usuario
         self.ventana_interno = VentanaInterno()
         self.conectar_senales()
-        self.interno = self.cargar_interno()        
+        self.interno = self.cargar_interno()
+        self.solicitud_pendiente = self.cargar_solicitud_pendiente()    
+        self.interno.add_solicitud(solicitud_pendiente)    
         if self.interno:
             self.ventana_interno.cargar_datos_interno(self.interno)
+
+    # -------- CARGAR DATOS --------
 
     # Buscar interno por id de usuario y cargar datos
     def cargar_interno(self):
@@ -24,6 +31,7 @@ class InternoController(QObject):
             interno = Interno(
                 id_usuario=datos_interno[0],
                 nombre=self.usuario.nombre,
+                email=self.usuario.email,
                 contrasena=self.usuario.contrasena,
                 rol=self.usuario.rol,
                 num_RC=datos_interno[1],
@@ -39,8 +47,45 @@ class InternoController(QObject):
             return None
         
     #Buscar solicitudes del interno
-    def cargar_solicitudes(self):
-        pass
+    def cargar_solicitud_pendiente(self):
+        datos_solicitud = encontrar_solicitud_pendiente_por_interno(self.interno.num_RC)
+        if datos_solicitud:
+            solicitud = Solicitud(
+                id_solicitud=datos_solicitud[0],
+                id_entrevista=datos_solicitud[1],
+                tipo=datos_solicitud[2],
+                motivo=datos_solicitud[3],
+                descripcion=datos_solicitud[4],
+                urgencia=datos_solicitud[5]
+            ) 
+
+            solicitud.fecha_inicio = datos_solicitud[6]
+            solicitud.fecha_fin = datos_solicitud[7]
+            solicitud.hora_salida = datos_solicitud[8]
+            solicitud.hora_llegada = datos_solicitud[9]
+            solicitud.destino = datos_solicitud[10]
+            solicitud.cuidad = datos_solicitud[11]
+            solicitud.direccion = datos_solicitud[12]
+            solicitud.cod_pos = datos_solicitud[13]
+
+            # Contacto Principal (CP)
+            solicitud.nombre_cp = datos_solicitud[14]
+            solicitud.telf_cp = datos_solicitud[15]
+            solicitud.relacion_cp = datos_solicitud[16]
+            solicitud.direccion_cp = datos_solicitud[17]
+
+            # Contacto Secundario (CS)
+            solicitud.nombre_cs = datos_solicitud[18]
+            solicitud.telf_cs = datos_solicitud[19]
+            solicitud.relacion_cs = datos_solicitud[20]
+            
+            # Otros campos
+            solicitud.observaciones = datos_solicitud[21]                        
+
+            return solicitud
+        else:
+            return None
+
 
     #Buscar entrevistas del interno
     def cargar_entrevistas(self):
@@ -50,12 +95,18 @@ class InternoController(QObject):
     def inicio(self):
         self.ventana_interno.show()
 
+    # -------- CONECTAR BOTONES Y ACCIONES POR PANTALLAS --------     
+
     def conectar_senales(self):
 
         # MENU LATERAL        
 
         # PANTALLA BIENVENIDA INTERNO
         self.ventana_interno.pantalla_bienvenida.boton_iniciar.clicked.connect(
+            
+            if self.solicitud_pendiente is None:
+            
+            
             self.iniciar_entrevista
         )    
 
@@ -82,6 +133,8 @@ class InternoController(QObject):
             self.mostrar_detalle_pregunta
         )
 
+
+    # -------- FUNCIONES AUXILIARES --------
 
     def iniciar_entrevista(self):
         self.ventana_interno.mostrar_pantalla_preguntas()    
