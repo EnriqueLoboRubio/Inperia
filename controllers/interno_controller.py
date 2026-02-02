@@ -9,6 +9,7 @@ from db.entrevista_db import *
 
 from models.interno import Interno
 from models.solicitud import Solicitud
+from models.entrevista import Entrevista
 
 class InternoController(QObject):
 
@@ -88,16 +89,35 @@ class InternoController(QObject):
             solicitud.relacion_cs = datos_solicitud[20]
             
             # Otros campos
-            solicitud.observaciones = datos_solicitud[21]                                
+            solicitud.observaciones = datos_solicitud[21]
+            solicitud.entrevista = encontrar_entrevista_por_solicitud(solicitud.id_solicitud)
+            print(f"SOL: {solicitud.id_solicitud}")
+            if solicitud.entrevista is not None:
+                print("entrevista cargada")   
+            else:
+                print("sin entrevista")                                          
 
             return solicitud
         else:
             return None
 
 
-    #Buscar entrevistas del interno
+    #Buscar entrevista del interno
     def cargar_entrevista_solicitud(self, id_solicitud):
         datos_entrevista = encontrar_entrevista_por_solicitud(id_solicitud)
+        if datos_entrevista:
+            entrevista = Entrevista(
+                id_entrevista=datos_entrevista[0],
+                id_interno=datos_entrevista[1],
+                id_profesional=datos_entrevista[2],
+                fecha=datos_entrevista[3]
+            )
+
+            entrevista.puntuacion = datos_entrevista[4]
+
+            return entrevista
+        else:
+            return None
 
     # Sin uso
     def inicio(self):
@@ -193,7 +213,7 @@ class InternoController(QObject):
         """
         if self.solicitud_pendiente is None:
             self.ventana_interno.mostrar_advertencia(
-                "Sin Solicitud", 
+                "Sin Solicitud pendiente", 
                 "No tienes una solicitud de evaluación aceptada o activa."
             )
             return
@@ -201,7 +221,7 @@ class InternoController(QObject):
         if self.solicitud_pendiente.entrevista is not None:
             self.ventana_interno.mostrar_advertencia(
                 "Entrevista ya realizada", 
-                "Ya has completado o tienes asignada una entrevista para esta solicitud."
+                "Ya has completado la entrevista para esta solicitud."
             )
             return
         

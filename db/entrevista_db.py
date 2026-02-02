@@ -45,7 +45,7 @@ def agregar_entrevista(id_profesional, id_interno, id_solicitud, fecha, puntuaci
 def eliminar_entrevista(id):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
-    cursor.execute("DELETE FROM entrevista WHERE id=?", (id,))
+    cursor.execute("DELETE FROM entrevistas WHERE id=?", (id,))
     conexion.commit()
     conexion.close()
 
@@ -53,7 +53,7 @@ def eliminar_entrevista(id):
 def encontrar_entrevista_por_solicitud(id_solicitud):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
-    cursor.execute("SELECT * FROM entrevista WHERE id_solicitud=?", (id_solicitud,))
+    cursor.execute("SELECT * FROM entrevistas WHERE id_solicitud=?", (id_solicitud,))
     conexion.commit()
     conexion.close()    
 
