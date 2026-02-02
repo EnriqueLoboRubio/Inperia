@@ -5,6 +5,7 @@ from gui.ventana_detalle_pregunta import VentanaDetallePregunta
 
 from db.interno_db import *
 from db.solicitud_db import *
+from db.entrevista_db import *
 
 from models.interno import Interno
 from models.solicitud import Solicitud
@@ -14,13 +15,21 @@ class InternoController(QObject):
     def __init__(self, usuario):
         super().__init__()
         self.usuario = usuario
-        self.ventana_interno = VentanaInterno()
-        self.conectar_senales()
+        self.ventana_interno = VentanaInterno()        
+
         self.interno = self.cargar_interno()
-        self.solicitud_pendiente = self.cargar_solicitud_pendiente()    
-        self.interno.add_solicitud(solicitud_pendiente)    
-        if self.interno:
+        self.solicitud_pendiente = self.cargar_solicitud_pendiente() 
+              
+        if self.interno:                       
             self.ventana_interno.cargar_datos_interno(self.interno)
+            if self.solicitud_pendiente is not None:
+                self.interno.add_solicitud(self.solicitud_pendiente)
+
+        # ACTUALIZAR PANTALLA INICIO
+        tiene_pendiente = self.solicitud_pendiente is not None
+        self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(tiene_pendiente)
+
+        self.conectar_senales()
 
     # -------- CARGAR DATOS --------
 
@@ -46,13 +55,12 @@ class InternoController(QObject):
         else:
             return None
         
-    #Buscar solicitudes del interno
+    #Buscar solicitud pendiente del interno
     def cargar_solicitud_pendiente(self):
         datos_solicitud = encontrar_solicitud_pendiente_por_interno(self.interno.num_RC)
         if datos_solicitud:
             solicitud = Solicitud(
-                id_solicitud=datos_solicitud[0],
-                id_entrevista=datos_solicitud[1],
+                id_solicitud=datos_solicitud[0],                
                 tipo=datos_solicitud[2],
                 motivo=datos_solicitud[3],
                 descripcion=datos_solicitud[4],
@@ -80,7 +88,7 @@ class InternoController(QObject):
             solicitud.relacion_cs = datos_solicitud[20]
             
             # Otros campos
-            solicitud.observaciones = datos_solicitud[21]                        
+            solicitud.observaciones = datos_solicitud[21]                                
 
             return solicitud
         else:
@@ -88,8 +96,8 @@ class InternoController(QObject):
 
 
     #Buscar entrevistas del interno
-    def cargar_entrevistas(self):
-        pass    
+    def cargar_entrevista_solicitud(self, id_solicitud):
+        datos_entrevista = encontrar_entrevista_por_solicitud(id_solicitud)
 
     # Sin uso
     def inicio(self):
@@ -99,16 +107,22 @@ class InternoController(QObject):
 
     def conectar_senales(self):
 
-        # MENU LATERAL        
+        # MENU LATERAL
+        # Boton preguntas
+        self.ventana_interno.boton_preguntas.clicked.connect(
+            self.verificar_acceso_preguntas
+        )        
 
         # PANTALLA BIENVENIDA INTERNO
-        self.ventana_interno.pantalla_bienvenida.boton_iniciar.clicked.connect(
-            
-            if self.solicitud_pendiente is None:
-            
-            
-            self.iniciar_entrevista
-        )    
+        boton_inicio = self.ventana_interno.pantalla_bienvenida.boton_iniciar
+               
+        try: boton_inicio.clicked.disconnect()
+        except: pass
+
+        if self.solicitud_pendiente:           
+            boton_inicio.clicked.connect(self.iniciar_entrevista)
+        else:          
+            boton_inicio.clicked.connect(self.iniciar_nueva_solicitud)
 
         # PANTALLA PREGUNTAS
         self.ventana_interno.pantalla_preguntas.boton_atras.clicked.connect(
@@ -134,10 +148,16 @@ class InternoController(QObject):
         )
 
 
-    # -------- FUNCIONES AUXILIARES --------
+    # -------- FUNCIONES DE NAVEGACIÓN --------
 
     def iniciar_entrevista(self):
-        self.ventana_interno.mostrar_pantalla_preguntas()    
+        self.ventana_interno.mostrar_pantalla_preguntas()  
+
+    def iniciar_nueva_solicitud(self):
+            print("Redirigiendo a nueva solicitud...")
+            # Aquí debes llamar al método de tu QStackedWidget o ventana que cambie la página
+            # Ejemplo: self.ventana_interno.mostrar_pantalla_solicitud() 
+            pass          
 
     def pregunta_atras(self):
         self.ventana_interno.pantalla_preguntas.ir_pregunta_atras()
@@ -153,9 +173,6 @@ class InternoController(QObject):
 
         ventana_detalle = VentanaDetallePregunta()
 
-
-
-
     def finalizar_entrevista(self):
         self.ventana_interno.mostrar_pantalla_resumen() 
 
@@ -169,3 +186,23 @@ class InternoController(QObject):
 
     def pantalla_resumen_atras(self):
         self.ventana_interno.abrir_pregunta(10)  # Ir a la última pregunta
+
+    def verificar_acceso_preguntas(self):
+        """
+        Lógica para controlar si se despliega el menú de preguntas.
+        """
+        if self.solicitud_pendiente is None:
+            self.ventana_interno.mostrar_advertencia(
+                "Sin Solicitud", 
+                "No tienes una solicitud de evaluación aceptada o activa."
+            )
+            return
+        
+        if self.solicitud_pendiente.entrevista is not None:
+            self.ventana_interno.mostrar_advertencia(
+                "Entrevista ya realizada", 
+                "Ya has completado o tienes asignada una entrevista para esta solicitud."
+            )
+            return
+        
+        self.ventana_interno.movimiento_submenu_preguntas()

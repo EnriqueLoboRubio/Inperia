@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QStackedWidget
+    QMainWindow, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QStackedWidget, QMessageBox
 )
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
@@ -113,7 +113,7 @@ class VentanaInterno(QMainWindow):
         self.boton_preguntas.setStyleSheet(self.boton_estilo)
         self.boton_preguntas.setFont(QFont("Arial", 10))
         self.boton_preguntas.hide()
-        self.boton_preguntas.clicked.connect(self.movimiento_submenu_preguntas)
+        ##self.boton_preguntas.clicked.connect(self.movimiento_submenu_preguntas)
 
         # Contenedor para el submenú de preguntas
         self.submenu_preguntas_widget = QWidget()
@@ -418,10 +418,17 @@ class VentanaInterno(QMainWindow):
     def mostrar_pantalla_resumen(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_resumen_profesional)
 
-    # ------------------- 7. Método para pasar datos -------------------
+    def mostrar_advertencia(self, titulo, mensaje):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setWindowTitle(titulo)
+        msg.setText(mensaje)
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()  
+
+     # ------------------- 7. Método para pasar datos -------------------
     def cargar_datos_interno(self, interno):
         """
         Recibe el objeto interno desde el controlador y se distriuye a las pantallas necesarias
         """
-        
         self.pantalla_bienvenida.set_interno(interno)

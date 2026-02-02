@@ -1,10 +1,8 @@
 from utils.enums import Tipo_estado_solicitud
 
 class Solicitud:
-    def __init__(self, id_solicitud, id_entrevista, tipo, motivo, descripcion, urgencia):
-        self.id_solicitud = id_solicitud
-        self.id_entrevista = id_entrevista  
-
+    def __init__(self, id_solicitud, tipo, motivo, descripcion, urgencia):
+        self.id_solicitud = id_solicitud        
         self.tipo = tipo
         self.motivo = motivo
         self.descripcion = descripcion

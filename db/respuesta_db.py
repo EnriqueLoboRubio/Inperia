@@ -1,3 +1,4 @@
+import sqlite3
 from db.conexion import obtener_conexion
 
 # -------------------------------- RESPUESTA ------------------------------- #
@@ -19,3 +20,22 @@ def crear_respuesta():
 
     conexion.commit()
     conexion.close()
+
+#Función para agregar nueva respuesta
+def agregar_respuesta(id_entrevista, id_pregunta, texto_respuesta, puntacion_ia):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute('''
+            INSERT INTO respuestas (id_entrevista, id_pregunta, texto_respuesta, puntacion_ia)
+            VALUES (?,?,?,?)
+        ''', (id_entrevista, id_pregunta, texto_respuesta, puntacion_ia))
+    except sqlite3.IntegrityError:
+        print("ERror: No se ha podido crear la respuesta")
+        return False
+
+    conexion.commit()
+    conexion.close()
+    return True
+    
+    

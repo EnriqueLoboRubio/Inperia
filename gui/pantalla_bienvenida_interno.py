@@ -55,5 +55,13 @@ class PantallaBienvenidaInterno(QWidget):
         else:
             print("ERROR")
 
-    def set_contenido(self, texto):
-        self.contenido.setText(texto)
+    def actualizar_interfaz(self, tiene_pendiente):
+        """
+        Cambia los texto dependiendo de si hay entrevista pendiente o no
+        """
+        if tiene_pendiente:
+            self.contenido.setText("Tiene una entrevista pendiente")
+            self.boton_iniciar.setText("Iniciar entrevista")
+        else:
+            self.contenido.setText("No tiene solicitudes pendientes")
+            self.boton_iniciar.setText("Nueva solicitud")

@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
-class PantallaSolicitudInterno(QWidget):
+class PantallaProgresoInterno(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
             
@@ -12,7 +12,7 @@ class PantallaSolicitudInterno(QWidget):
 
         principal_layout.addStretch(1)           
 
-        self.titulo = QLabel("PANTALLA SOLICITUD")
+        self.titulo = QLabel("PANTALLA PROGRESO")
         self.titulo.setFont(QFont("Arial", 18))
         self.titulo.setAlignment(Qt.AlignCenter)
         principal_layout.addWidget(self.titulo)
