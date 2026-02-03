@@ -17,13 +17,13 @@ class MainController:
         self.app = QApplication(sys.argv)
         
         self.ventana_actual = None
-        
-        # Controladores secundarios
-        self.login_controller = LoginController()
+        self.controlador_interno = None
+        self.login_controller = None                 
 
         self.mostrar_login()
 
     def mostrar_login(self):
+        self.login_controller = LoginController()
         self.ventana_login = VentanaLogin()
 
         # -------- CONEXIONES MVC --------        
@@ -52,6 +52,7 @@ class MainController:
         """
         # Cerramos el login
         self.ventana_login.close()
+        self.login_controller = None
 
         if rol == "interno":
             self.iniciar_sesion_interno(usuario)
@@ -63,13 +64,9 @@ class MainController:
         else:
             print(f"Rol desconocido: {rol}")            
 
-    def iniciar_sesion_interno(self, usuario):
-        # vista del interno
-        #self.ventana_actual = VentanaInterno()
-        #self.ventana_actual.show()
-        
+    def iniciar_sesion_interno(self, usuario):       
         self.controlador_interno = InternoController(usuario)
-        self.controlador_interno.inicio()
+        self.controlador_interno.logout_signal.connect(self.regresar_login)    
 
     def iniciar_sesion_profesional(self, usuario):
         self.ventana_actual = VentanaProfesional()
@@ -77,3 +74,15 @@ class MainController:
 
     def ejecutar(self):
         sys.exit(self.app.exec_())
+
+    def regresar_login(self):
+        if self.controlador_interno:
+            try:                       
+                self.controlador_interno.logout_signal.disconnect()                      
+                self.controlador_interno.ventana_interno.close()
+            except:
+                pass
+                self.controlador_interno = None
+
+        # crear el entorno de login
+        self.mostrar_login()

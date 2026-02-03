@@ -54,8 +54,10 @@ def encontrar_entrevista_por_solicitud(id_solicitud):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     cursor.execute("SELECT * FROM entrevistas WHERE id_solicitud=?", (id_solicitud,))
+    entrevista = cursor.fetchone()
     conexion.commit()
     conexion.close()    
+    return entrevista
 
 # Función para borrar la tabla de entrevistas (para pruebas)
 def borrar_entrevista():

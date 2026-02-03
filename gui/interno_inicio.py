@@ -432,3 +432,18 @@ class VentanaInterno(QMainWindow):
         Recibe el objeto interno desde el controlador y se distriuye a las pantallas necesarias
         """
         self.pantalla_bienvenida.set_interno(interno)
+
+    def mostrar_confirmacion_logout(self):
+            """
+            Muestra un cuadro de diálogo preguntando sí o no.
+            Devuelve True si el interno dice "Sí", False si dice "No".
+            """
+            respuesta = QMessageBox.question(
+                self,
+                "Cerrar Sesión",
+                "¿Estás seguro de que quieres cerrar sesión?\nPerderá los datos no guardados",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            
+            return respuesta == QMessageBox.Yes        

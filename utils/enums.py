@@ -6,7 +6,8 @@ class Tipo_rol(Enum):
     PROFESIONAL = "Profesional"
 
 class Tipo_estado_solicitud(Enum):
-    PENDIENTE = "pendiente"
+    INICIADA = "iniciada" # interno la ha iniciado, sin entrevista
+    PENDIENTE = "pendiente" # profesional la quiere evaluar, con entrevista
     ACEPTADA = "aceptada"
     RECHAZADA = "rechazada"
     CANCELADA = "cancelada" 

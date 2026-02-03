@@ -32,7 +32,7 @@ def crear_solicitud():
             docs INTEGER NOT NULL,
             compromiso INTEGER NOT NULL,
             observaciones TEXT NOT NULL,
-            estado TEXT NOT NULL CHECK(estado IN ('pendiente', 'aceptada', 'rechazada', 'cancelada')),
+            estado TEXT NOT NULL CHECK(estado IN ('iniciada', 'pendiente', 'aceptada', 'rechazada', 'cancelada')),
             FOREIGN KEY (id_interno) REFERENCES internos(num_RC)                          
         )
     ''')
@@ -88,11 +88,11 @@ def encontrar_solicitud_por_id(id):
     
     return solicitud
 
-# Función para encontrar una solicitud pendiente por id interno
+# Función para encontrar una solicitud pendiente o iniciada por id interno
 def encontrar_solicitud_pendiente_por_interno(id_interno):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
-    cursor.execute("SELECT * FROM solicitudes WHERE id_interno=? AND estado = 'pendiente'", (id_interno,))
+    cursor.execute("SELECT * FROM solicitudes WHERE id_interno=? AND estado IN ('pendiente', 'iniciada')", (id_interno,))
     solicitud = cursor.fetchone()
     conexion.close()
     

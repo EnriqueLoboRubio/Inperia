@@ -11,7 +11,12 @@ from models.interno import Interno
 from models.solicitud import Solicitud
 from models.entrevista import Entrevista
 
+from utils.enums import Tipo_estado_solicitud
+
 class InternoController(QObject):
+
+    #Señales
+    logout_signal = pyqtSignal()
 
     def __init__(self, usuario):
         super().__init__()
@@ -19,16 +24,20 @@ class InternoController(QObject):
         self.ventana_interno = VentanaInterno()        
 
         self.interno = self.cargar_interno()
-        self.solicitud_pendiente = self.cargar_solicitud_pendiente() 
+        self.solicitud_pedendiente_iniciada = self.cargar_solicitud_pendiente_iniciada() 
               
         if self.interno:                       
             self.ventana_interno.cargar_datos_interno(self.interno)
-            if self.solicitud_pendiente is not None:
-                self.interno.add_solicitud(self.solicitud_pendiente)
+            if self.solicitud_pedendiente_iniciada is not None:
+                self.interno.add_solicitud(self.solicitud_pedendiente_iniciada)
 
         # ACTUALIZAR PANTALLA INICIO
-        tiene_pendiente = self.solicitud_pendiente is not None
-        self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(tiene_pendiente)
+        self.tiene_pendiente_iniciada = self.solicitud_pedendiente_iniciada is not None
+        self.tiene_entrevista = False
+        if self.tiene_pendiente_iniciada is True:
+            print(f"Estado: {self.solicitud_pedendiente_iniciada.estado}")
+            self.tiene_entrevista = self.solicitud_pedendiente_iniciada.estado == "pendiente"    
+        self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(self.tiene_pendiente_iniciada, self.tiene_entrevista)
 
         self.conectar_senales()
 
@@ -56,8 +65,8 @@ class InternoController(QObject):
         else:
             return None
         
-    #Buscar solicitud pendiente del interno
-    def cargar_solicitud_pendiente(self):
+    #Buscar solicitud pendiente o iniciada del interno
+    def cargar_solicitud_pendiente_iniciada(self):
         datos_solicitud = encontrar_solicitud_pendiente_por_interno(self.interno.num_RC)
         if datos_solicitud:
             solicitud = Solicitud(
@@ -90,12 +99,7 @@ class InternoController(QObject):
             
             # Otros campos
             solicitud.observaciones = datos_solicitud[21]
-            solicitud.entrevista = encontrar_entrevista_por_solicitud(solicitud.id_solicitud)
-            print(f"SOL: {solicitud.id_solicitud}")
-            if solicitud.entrevista is not None:
-                print("entrevista cargada")   
-            else:
-                print("sin entrevista")                                          
+            solicitud.entrevista = encontrar_entrevista_por_solicitud(solicitud.id_solicitud)                                                   
 
             return solicitud
         else:
@@ -118,11 +122,7 @@ class InternoController(QObject):
             return entrevista
         else:
             return None
-
-    # Sin uso
-    def inicio(self):
-        self.ventana_interno.show()
-
+        
     # -------- CONECTAR BOTONES Y ACCIONES POR PANTALLAS --------     
 
     def conectar_senales(self):
@@ -131,6 +131,18 @@ class InternoController(QObject):
         # Boton preguntas
         self.ventana_interno.boton_preguntas.clicked.connect(
             self.verificar_acceso_preguntas
+        )
+
+        #Boton Progreso
+
+        #Boton Evaluacion
+        self.ventana_interno.boton_solicitud.clicked.connect(
+            self.verificar_creacion_solicitud
+        )
+
+        #Boton Cerrar Sesion
+        self.ventana_interno.boton_cerrar_sesion.clicked.connect(
+            self.cerrar_sesion
         )        
 
         # PANTALLA BIENVENIDA INTERNO
@@ -139,10 +151,12 @@ class InternoController(QObject):
         try: boton_inicio.clicked.disconnect()
         except: pass
 
-        if self.solicitud_pendiente:           
+        if self.tiene_pendiente_iniciada is False:
+            boton_inicio.clicked.connect(self.iniciar_nueva_solicitud)                       
+        elif self.tiene_entrevista is False:          
             boton_inicio.clicked.connect(self.iniciar_entrevista)
-        else:          
-            boton_inicio.clicked.connect(self.iniciar_nueva_solicitud)
+        else:
+            boton_inicio.clicked.connect(self.iniciar_progreso)    
 
         # PANTALLA PREGUNTAS
         self.ventana_interno.pantalla_preguntas.boton_atras.clicked.connect(
@@ -175,9 +189,13 @@ class InternoController(QObject):
 
     def iniciar_nueva_solicitud(self):
             print("Redirigiendo a nueva solicitud...")
-            # Aquí debes llamar al método de tu QStackedWidget o ventana que cambie la página
-            # Ejemplo: self.ventana_interno.mostrar_pantalla_solicitud() 
-            pass          
+            # self.ventana_interno.mostrar_pantalla_solicitud() 
+            pass
+
+    def iniciar_progreso(self):
+        print("Redirigiendo a progreso...")
+        # Mostrar progreso
+        pass
 
     def pregunta_atras(self):
         self.ventana_interno.pantalla_preguntas.ir_pregunta_atras()
@@ -207,18 +225,20 @@ class InternoController(QObject):
     def pantalla_resumen_atras(self):
         self.ventana_interno.abrir_pregunta(10)  # Ir a la última pregunta
 
+    # FUNCIONES DEL MENU
+
     def verificar_acceso_preguntas(self):
         """
         Lógica para controlar si se despliega el menú de preguntas.
         """
-        if self.solicitud_pendiente is None:
+        if self.tiene_pendiente_iniciada is False:
             self.ventana_interno.mostrar_advertencia(
                 "Sin Solicitud pendiente", 
                 "No tienes una solicitud de evaluación aceptada o activa."
             )
             return
         
-        if self.solicitud_pendiente.entrevista is not None:
+        if self.tiene_pendiente_iniciada is True and self.tiene_entrevista is True:
             self.ventana_interno.mostrar_advertencia(
                 "Entrevista ya realizada", 
                 "Ya has completado la entrevista para esta solicitud."
@@ -226,3 +246,27 @@ class InternoController(QObject):
             return
         
         self.ventana_interno.movimiento_submenu_preguntas()
+
+    def verificar_creacion_solicitud(self):
+        """
+        Lógica se puede crear una nueva solicitud, solo si no tiene pendiente ni iniciada
+        """        
+
+        # tiene solicitud pendiente
+        if self.solicitud_pedendiente_iniciada is not None:
+            self.ventana_interno.mostrar_advertencia(
+                "Solicitud pendiente o iniciada",
+                "Tiene una solicitud pendiente o iniciada, no puede crear otra"
+            )
+            return    
+
+    def cerrar_sesion(self):
+        """
+        Gestiona el intento de cierre de sesión
+        """
+
+        confirmado = self.ventana_interno.mostrar_confirmacion_logout()
+
+        if confirmado:
+            self.ventana_interno.close()
+            self.logout_signal.emit()
