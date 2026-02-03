@@ -26,6 +26,7 @@ def crear_solicitud():
             nombre_cp TEXT NOT NULL,
             telf_cp TEXT NOT NULL,
             relacion_cp TEXT NOT NULL,
+            direccion_cp TEXTO NOT NULL,
             nombre_cs TEXT NOT NULL,
             telf_cs TEXT NOT NULL,
             relacion_cs TEXT NOT NULL,
@@ -43,7 +44,7 @@ def crear_solicitud():
 # Función para agregar una nueva solicitud a la base de datos
 def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                       destino, cuidad, direccion, cod_pos, 
-                      nombre_cp, telf_cp, relacion_cp, nombre_cs, telf_cs, relacion_cs, 
+                      nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
                       docs, compromiso, observaciones, estado):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
@@ -51,12 +52,12 @@ def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_ini
         cursor.execute('''
             INSERT INTO solicitudes (id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                                     destino, cuidad, direccion, cod_pos, 
-                                    nombre_cp, telf_cp, relacion_cp, nombre_cs, telf_cs, relacion_cs, 
+                                    nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
                                     docs, compromiso, observaciones, estado)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                       destino, cuidad, direccion, cod_pos, 
-                      nombre_cp, telf_cp, relacion_cp, nombre_cs, telf_cs, relacion_cs, 
+                      nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
                       docs, compromiso, observaciones, estado))
         conexion.commit()
 

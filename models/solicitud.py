@@ -29,7 +29,7 @@ class Solicitud:
         self.compromisos = []
         self.observaciones = None
 
-        self.estado = Tipo_estado_solicitud.PENDIENTE
+        self.estado = Tipo_estado_solicitud.INICIADA
         
         self.entrevista = None
 

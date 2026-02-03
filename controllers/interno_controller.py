@@ -34,8 +34,7 @@ class InternoController(QObject):
         # ACTUALIZAR PANTALLA INICIO
         self.tiene_pendiente_iniciada = self.solicitud_pedendiente_iniciada is not None
         self.tiene_entrevista = False
-        if self.tiene_pendiente_iniciada is True:
-            print(f"Estado: {self.solicitud_pedendiente_iniciada.estado}")
+        if self.tiene_pendiente_iniciada is True:         
             self.tiene_entrevista = self.solicitud_pedendiente_iniciada.estado == "pendiente"    
         self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(self.tiene_pendiente_iniciada, self.tiene_entrevista)
 
@@ -96,9 +95,13 @@ class InternoController(QObject):
             solicitud.nombre_cs = datos_solicitud[18]
             solicitud.telf_cs = datos_solicitud[19]
             solicitud.relacion_cs = datos_solicitud[20]
+
+            #solivitud.docs = datos_solicitud[21]
+            #solicitud.compromisos = datos_solicitud[22]
             
             # Otros campos
-            solicitud.observaciones = datos_solicitud[21]
+            solicitud.observaciones = datos_solicitud[23]
+            solicitud.estado = datos_solicitud[24]
             solicitud.entrevista = encontrar_entrevista_por_solicitud(solicitud.id_solicitud)                                                   
 
             return solicitud
@@ -252,13 +255,15 @@ class InternoController(QObject):
         Lógica se puede crear una nueva solicitud, solo si no tiene pendiente ni iniciada
         """        
 
-        # tiene solicitud pendiente
-        if self.solicitud_pedendiente_iniciada is not None:
+        # tiene solicitud pendiente o iniciada
+        if self.tiene_pendiente_iniciada is True:
             self.ventana_interno.mostrar_advertencia(
                 "Solicitud pendiente o iniciada",
                 "Tiene una solicitud pendiente o iniciada, no puede crear otra"
             )
-            return    
+            return  
+        else:
+            self.iniciar_nueva_solicitud
 
     def cerrar_sesion(self):
         """

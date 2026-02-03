@@ -18,12 +18,12 @@ def generar_internos():
 def generar_solicitud():
     agregar_solicitud("2", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "22-11-2020", "25-22-2020",
                       "16:00", "10:00", "Moguer", "Moguer", "calle 123", "21", 
-                      "pepa", "1233", "mujer",
+                      "pepa", "1233", "mujer", "calle 123",
                       "carmen", "2222", "madre",
                       "123", "123456", "nada", "iniciada") #1
     agregar_solicitud("5", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "22-11-2020", "25-22-2020",
                       "16:00", "10:00", "Moguer", "Moguer", "calle 123", "21", 
-                      "pepa", "1233", "mujer",
+                      "pepa", "1233", "mujer", "calle 123",
                       "carmen", "2222", "madre",
                       "123", "123456", "nada", "pendiente") #2  
 
