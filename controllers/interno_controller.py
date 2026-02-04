@@ -1,7 +1,7 @@
 from PyQt5.QtCore import pyqtSignal, QObject
 
 from gui.interno_inicio import VentanaInterno
-from gui.ventana_detalle_pregunta import VentanaDetallePregunta
+from gui.ventana_detalle_pregunta_profesional import VentanaDetallePregunta
 
 from db.interno_db import *
 from db.solicitud_db import *
@@ -35,7 +35,7 @@ class InternoController(QObject):
         self.tiene_pendiente_iniciada = self.solicitud_pedendiente_iniciada is not None
         self.tiene_entrevista = False
         if self.tiene_pendiente_iniciada is True:         
-            self.tiene_entrevista = self.solicitud_pedendiente_iniciada.estado == "pendiente"    
+            self.tiene_entrevista = self.solicitud_pedendiente_iniciada.estado == Tipo_estado_solicitud.PENDIENTE  
         self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(self.tiene_pendiente_iniciada, self.tiene_entrevista)
 
         self.conectar_senales()
@@ -137,12 +137,24 @@ class InternoController(QObject):
         )
 
         #Boton Progreso
+        self.ventana_interno.boton_progreso.clicked.connect(
+            self.verificar_ver_progreso
+        )
 
         #Boton Evaluacion
         self.ventana_interno.boton_solicitud.clicked.connect(
             self.verificar_creacion_solicitud
         )
 
+        #Botom Perfil
+        self.ventana_interno.boton_usuario.clicked.connect(
+            self.iniciar_perfil
+        )
+
+        #Boton Perfil (Menu)
+        self.ventana_interno.boton_perfil_menu.clicked.connect(
+            self.iniciar_perfil
+        )
         #Boton Cerrar Sesion
         self.ventana_interno.boton_cerrar_sesion.clicked.connect(
             self.cerrar_sesion
@@ -190,15 +202,14 @@ class InternoController(QObject):
     def iniciar_entrevista(self):
         self.ventana_interno.mostrar_pantalla_preguntas()  
 
-    def iniciar_nueva_solicitud(self):
-            print("Redirigiendo a nueva solicitud...")
-            # self.ventana_interno.mostrar_pantalla_solicitud() 
-            pass
+    def iniciar_nueva_solicitud(self):        
+        self.ventana_interno.mostrar_pantalla_solicitud() 
+        
+    def iniciar_progreso(self):        
+        self.ventana_interno.mostrar_pantalla_progreso()
 
-    def iniciar_progreso(self):
-        print("Redirigiendo a progreso...")
-        # Mostrar progreso
-        pass
+    def iniciar_perfil(self):
+        self.ventana_interno.mostrar_pantalla_perfil()    
 
     def pregunta_atras(self):
         self.ventana_interno.pantalla_preguntas.ir_pregunta_atras()
@@ -236,19 +247,32 @@ class InternoController(QObject):
         """
         if self.tiene_pendiente_iniciada is False:
             self.ventana_interno.mostrar_advertencia(
-                "Sin Solicitud pendiente", 
-                "No tienes una solicitud de evaluación aceptada o activa."
+                "Sin Solicitud", 
+                "No tiene una solicitud de evaluación iniciada o pendiente."
             )
             return
         
         if self.tiene_pendiente_iniciada is True and self.tiene_entrevista is True:
             self.ventana_interno.mostrar_advertencia(
                 "Entrevista ya realizada", 
-                "Ya has completado la entrevista para esta solicitud."
+                "Ya ha completado la entrevista para esta solicitud."
             )
             return
         
         self.ventana_interno.movimiento_submenu_preguntas()
+
+    def verificar_ver_progreso(self):
+        """
+        Logica: ver progreso solo si tene solicitud pendiente o iniciada
+        """
+        if self.tiene_pendiente_iniciada is False:
+            self.ventana_interno.mostrar_advertencia(
+                "Sin solicitud",
+                "No tiene una solicitud de evaluación iniciada o pendiente."
+            )
+            return  
+        else:
+            self.iniciar_progreso()
 
     def verificar_creacion_solicitud(self):
         """
@@ -258,12 +282,12 @@ class InternoController(QObject):
         # tiene solicitud pendiente o iniciada
         if self.tiene_pendiente_iniciada is True:
             self.ventana_interno.mostrar_advertencia(
-                "Solicitud pendiente o iniciada",
-                "Tiene una solicitud pendiente o iniciada, no puede crear otra"
+                "Solicitud iniciada o pendiente",
+                "Tiene una solicitud iniciada o pendiente, no puede crear otra"
             )
             return  
         else:
-            self.iniciar_nueva_solicitud
+            self.iniciar_nueva_solicitud()
 
     def cerrar_sesion(self):
         """

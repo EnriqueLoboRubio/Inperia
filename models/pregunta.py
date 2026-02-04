@@ -18,10 +18,7 @@ class Pregunta():
             self.archivo_audio = nuevo_audio
             return True
         else:
-            return False
-    
-    def get_archivo_audio(self):
-        return self.archivo_audio
+            return False       
     
     def to_json(self):
         "Devuelve un diccionario con el formato JSON de la pregunta, para mandar a LLM"

@@ -3,9 +3,13 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
+
 from gui.pantalla_bienvenida_interno import PantallaBienvenidaInterno
 from gui.pantalla_preguntas import PantallaPreguntas
 from gui.pantalla_resumen_profesional import PantallaResumen as PantallaResumenProfesional
+from gui.pantalla_progreso import PantallaProgresoInterno as PantallaProgreso
+from gui.pantalla_solicitud import PantallaSolicitudInterno as PantallaSolicitud
+from gui.pantalla_perfil import PantallaPerfil
 
 class VentanaInterno(QMainWindow):
     
@@ -230,10 +234,16 @@ class VentanaInterno(QMainWindow):
         self.pantalla_bienvenida = PantallaBienvenidaInterno()
         self.pantalla_preguntas = PantallaPreguntas()
         self.pantalla_resumen_profesional = PantallaResumenProfesional()
+        self.pantalla_progreso = PantallaProgreso()
+        self.pantalla_solicitud = PantallaSolicitud()
+        self.pantalla_perfil = PantallaPerfil()
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                          
         self.stacked_widget.addWidget(self.pantalla_preguntas)
         self.stacked_widget.addWidget(self.pantalla_resumen_profesional)
+        self.stacked_widget.addWidget(self.pantalla_progreso)
+        self.stacked_widget.addWidget(self.pantalla_solicitud)
+        self.stacked_widget.addWidget(self.pantalla_perfil)
         # añadir más pantallas 
 
         # pantalla inicial
@@ -262,10 +272,10 @@ class VentanaInterno(QMainWindow):
         self.ajustes_menu_layout.setAlignment(Qt.AlignTop)
 
         # Botones de Ajustes
-        self.boton_perfil = QPushButton("Perfil")
-        self.boton_perfil.setToolTip("Ver y editar perfil")
-        self.boton_perfil.setFont(QFont("Arial", 10))
-        self.boton_perfil.setStyleSheet(self.boton_estilo)  
+        self.boton_perfil_menu = QPushButton("Perfil")
+        self.boton_perfil_menu.setToolTip("Ver y editar perfil")
+        self.boton_perfil_menu.setFont(QFont("Arial", 10))
+        self.boton_perfil_menu.setStyleSheet(self.boton_estilo)  
 
         self.boton_cambiar_idioma = QPushButton("Cambiar Idioma")    
         self.boton_cambiar_idioma.setToolTip("Cambiar el idioma de la aplicación")
@@ -294,7 +304,7 @@ class VentanaInterno(QMainWindow):
             }""")
 
         # Añadir botones al layout de ajustes
-        self.ajustes_menu_layout.addWidget(self.boton_perfil)
+        self.ajustes_menu_layout.addWidget(self.boton_perfil_menu)
         self.ajustes_menu_layout.addWidget(self.boton_cambiar_idioma)
         self.ajustes_menu_layout.addWidget(self.boton_cambiar_tema)
         self.ajustes_menu_layout.addWidget(self.boton_cerrar_sesion)
@@ -417,6 +427,15 @@ class VentanaInterno(QMainWindow):
 
     def mostrar_pantalla_resumen(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_resumen_profesional)
+
+    def mostrar_pantalla_progreso(self):
+        self.stacked_widget.setCurrentWidget(self.pantalla_progreso)
+
+    def mostrar_pantalla_solicitud(self):
+        self.stacked_widget.setCurrentWidget(self.pantalla_solicitud)
+
+    def mostrar_pantalla_perfil(self):
+        self.stacked_widget.setCurrentWidget(self.pantalla_perfil)
 
     def mostrar_advertencia(self, titulo, mensaje):
         msg = QMessageBox()

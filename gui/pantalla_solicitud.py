@@ -18,6 +18,3 @@ class PantallaSolicitudInterno(QWidget):
         principal_layout.addWidget(self.titulo)
 
         principal_layout.addSpacing(50)        
-    
-        principal_layout.addWidget(self.boton_iniciar, alignment=Qt.AlignCenter)
-        principal_layout.addStretch(2)

@@ -1,14 +1,16 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
-    QScrollArea, QFrame, QSizePolicy
+    QScrollArea, QFrame, QSizePolicy, QButtonGroup
 )
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 import json, os
 
+
+
 def cargar_datos_preguntas():
     #Carga las preguntas desde el archivo JSON        
-    ruta_base = os.path.dirname(os.path.dirname(__file__)) # Sube un nivel de carpetaa
+    ruta_base = os.path.dirname(os.path.dirname(__file__)) # Sube un nivel de carpeta
     ruta_json = os.path.join(ruta_base, 'data', 'preguntas.json')
 
     try:
@@ -41,12 +43,15 @@ class PantallaResumen(QWidget):
         super().__init__(parent)
 
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
+        
+        #Contenedor lógico para manejar botones de entrar
+        self.grupo_botones_entrar = QButtonGroup(self)
 
         # --- Configuración del layout principal ---
         principal_layout = QVBoxLayout(self)       
 
         # ------------------- 1. Título Superior -------------------
-        titulo_pantalla = QLabel("Resumen de Entrevista")
+        titulo_pantalla = QLabel("Entrevista de interno X")
         titulo_pantalla.setFont(QFont("Arial", 20, QFont.Bold))
         titulo_pantalla.setAlignment(Qt.AlignLeft)
         principal_layout.addWidget(titulo_pantalla)
@@ -59,10 +64,10 @@ class PantallaResumen(QWidget):
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff) # Sin scroll horizontal
         
         scroll_content_widget = QWidget()
-        scroll_content_layout = QVBoxLayout(scroll_content_widget)        
+        scroll_content_layout = QVBoxLayout(scroll_content_widget)       
         scroll_content_layout.setAlignment(Qt.AlignTop)
         scroll_content_layout.setSpacing(20) # Espacio entre tarjetas
-        scroll_content_layout.setContentsMargins(50, 20, 50, 20)
+        scroll_content_layout.setContentsMargins(50, 20, 50, 0)
 
         # --- crear 10 tarjetas ---
         for i in range(1, 11):
@@ -72,11 +77,11 @@ class PantallaResumen(QWidget):
 
             # crear la tarjeta
             tarjeta = self.crear_tarjeta_pregunta(i, titulo_json)
-            scroll_content_layout.addWidget(tarjeta)
+            scroll_content_layout.addWidget(tarjeta) 
 
         scroll_area.setWidget(scroll_content_widget)                
         
-        principal_layout.addWidget(scroll_area, 1) # máximo espacio posible
+        principal_layout.addWidget(scroll_area, 1) # máximo espacio posible 
 
         # ------------------- 3. Botón Atrás Inferior -------------------
         boton_layout = QHBoxLayout()
@@ -108,7 +113,7 @@ class PantallaResumen(QWidget):
 
     # ------------------- Funciones Auxiliares -------------------
     
-    def crear_tarjeta_pregunta(self, numero, titulo):
+    def crear_tarjeta_pregunta(self, numero, titulo): #Cambiar a  objeto pregunta
         
         tarjeta_frame = QFrame()        
 
@@ -139,7 +144,7 @@ class PantallaResumen(QWidget):
         lbl_titulo.setStyleSheet("border: none; color: black;")
         lbl_titulo.setAlignment(Qt.AlignLeft)
 
-        top_tarjeta_layout.addStretch() # Nivel a la derecha
+        top_tarjeta_layout.addStretch() # Nivel a la derecha        
 
         tarjeta_layout.addLayout(top_tarjeta_layout)
                 
@@ -150,7 +155,7 @@ class PantallaResumen(QWidget):
         lbl_respuesta.setWordWrap(True) # texto salta de línea si es muy largo
         lbl_respuesta.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
         lbl_respuesta.setAlignment(Qt.AlignJustify)
-        tarjeta_layout.addWidget(lbl_respuesta)        
+        tarjeta_layout.addWidget(lbl_respuesta)  
 
         # Botón de entrar
         boton_layout = QHBoxLayout()
@@ -158,12 +163,12 @@ class PantallaResumen(QWidget):
                
         icono_entrar = QIcon("assets/entrar.png")
 
-        self.boton_entrar = QPushButton()
-        self.boton_entrar.setFixedSize(45, 45)
-        self.boton_entrar.setIcon(icono_entrar)
-        self.boton_entrar.setIconSize(QSize(25, 25))
-        self.boton_entrar.setCursor(Qt.PointingHandCursor)
-        self.boton_entrar.setStyleSheet("""
+        boton_entrar = QPushButton()
+        boton_entrar.setFixedSize(45, 45)
+        boton_entrar.setIcon(icono_entrar)
+        boton_entrar.setIconSize(QSize(25, 25))
+        boton_entrar.setCursor(Qt.PointingHandCursor)
+        boton_entrar.setStyleSheet("""
             QPushButton {
                 background-color: #B0B0B0; 
                 border: none;
@@ -173,9 +178,12 @@ class PantallaResumen(QWidget):
                 background-color: #909090;
             }
         """)
-        self.boton_entrar.setToolTip("Ver detalles de la respuesta")
+        boton_entrar.setToolTip(f"Ver detalles de la respuesta {numero}")
+        
+        #Añadir el botón al grupo
+        self.grupo_botones_entrar.addButton(boton_entrar, numero)
 
-        boton_layout.addWidget(self.boton_entrar)
+        boton_layout.addWidget(boton_entrar)
         
         tarjeta_layout.addLayout(boton_layout)
 

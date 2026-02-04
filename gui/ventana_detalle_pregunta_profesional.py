@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QTextEdit, QScrollArea, QFrame, QWidget, QSlider
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-from PyQt5.QtCore import QUrl, Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtCore import QUrl, Qt, QSize
+from PyQt5.QtGui import QFont, QIcon
 import json, os
 
 def cargar_datos_preguntas():
@@ -26,7 +26,7 @@ class VentanaDetallePregunta(QDialog):
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
 
         self.setWindowTitle(f"Detalle Pregunta {numero}")
-        self.setFixedSize(800, 900) 
+        self.setFixedSize(1000, 900) 
         self.setStyleSheet("background-color: white;")
 
         principal_layout = QVBoxLayout(self)
@@ -47,7 +47,7 @@ class VentanaDetallePregunta(QDialog):
 
         top_layout.addStretch()
         
-        lbl_nivel = QLabel(f"Nivel: {pregunta.get_nivel()}")
+        lbl_nivel = QLabel(f"Nivel: {pregunta.nivel}")
         lbl_nivel.setFont(QFont("Arial", 11, QFont.Bold))
         lbl_nivel.setStyleSheet(("""
             background-color: transparent; 
@@ -81,20 +81,20 @@ class VentanaDetallePregunta(QDialog):
         self.txt_respuesta = QTextEdit()
         self.txt_respuesta.setReadOnly(True)
         self.txt_respuesta.setStyleSheet(estilo_text_box)
-        self.txt_respuesta.setText(pregunta.get_respuesta())
+        self.txt_respuesta.setText(pregunta.respuesta)
         self.txt_respuesta.setMaximumHeight(150) # Altura limitada para dejar sitio al scroll
         self.txt_respuesta.setMinimumHeight(60)
 
         principal_layout.addWidget(self.txt_respuesta)
 
-       # --- Reproductor de Audio Moderno ---
+       # --- Reproductor de Audio ---
         self.player = QMediaPlayer()
 
         audio_layout = QVBoxLayout()
         audio_layout.setSpacing(10)
 
         # Estado
-        self.lbl_estado_audio = QLabel("Audio listo")
+        self.lbl_estado_audio = QLabel("")
         self.lbl_estado_audio.setAlignment(Qt.AlignCenter)
         self.lbl_estado_audio.setStyleSheet("color: #6B7280; font-size: 12px;")
 
@@ -131,33 +131,48 @@ class VentanaDetallePregunta(QDialog):
 
         time_layout.addWidget(self.lbl_tiempo_actual)
         time_layout.addStretch()
+        time_layout.addWidget(self.lbl_estado_audio)
+        time_layout.addStretch()
         time_layout.addWidget(self.lbl_tiempo_total)
 
         # Botón Play / Pause
-        self.btn_play = QPushButton("▶")
-        self.btn_play.setFixedSize(60, 60)
-        self.btn_play.setCursor(Qt.PointingHandCursor)
-        self.btn_play.setStyleSheet("""
-        QPushButton {
-            background-color: #1E5631;
-            color: white;
-            font-size: 20px;
-            border-radius: 30px;
-        }
-        QPushButton:hover {
-            background-color: #3A9D5A;
-        }
+        self.boton_play = QPushButton()
+        self.boton_play.setIcon(QIcon("assets/play.png"))
+        self.boton_play.setIconSize(QSize(20, 20))
+        self.boton_play.setFixedSize(30, 30)
+        self.boton_play.setCursor(Qt.PointingHandCursor)
+        self.boton_play.setStyleSheet("""
+            /* Estilo Base */
+            QPushButton { 
+                background: rgba(200, 200, 200, 0.6); 
+                border-radius: 15px;
+                padding: 10px; 
+            }
+            
+            /* Estilo al pasar el ratón */
+            QPushButton:hover { 
+                background-color: rgba(128, 128, 128, 0.6); 
+            }
+            
+            /* Estilo cuando el estado es activo */
+            QPushButton[estado_grabando="true"] { 
+                background-color: #FF0000;
+            }
+
+            /* Estilo hover cuando ya está GRABANDO */
+            QPushButton[estado_grabando="true"]:hover { 
+                background-color: #CC0000;
+            }
         """)
 
-        self.btn_play.clicked.connect(
-            lambda: self.toggle_audio(pregunta.get_archivo_audio())
+        self.boton_play.clicked.connect(
+            lambda: self.toggle_audio(pregunta.archivo_audio)
         )
 
-        audio_layout.addWidget(self.btn_play, alignment=Qt.AlignCenter)
+        audio_layout.addWidget(self.boton_play, alignment=Qt.AlignCenter)
         audio_layout.addWidget(self.slider_audio)
         audio_layout.addLayout(time_layout)
-        audio_layout.addWidget(self.lbl_estado_audio)
-
+                
         #Señales del reproductor
         self.player.positionChanged.connect(self.actualizar_posicion)
         self.player.durationChanged.connect(self.actualizar_duracion)
@@ -174,7 +189,7 @@ class VentanaDetallePregunta(QDialog):
         self.txt_analisis = QTextEdit()
         self.txt_analisis.setReadOnly(True)
         self.txt_analisis.setStyleSheet(estilo_text_box)
-        self.txt_analisis.setText(pregunta.get_valoracion_ia())
+        self.txt_analisis.setText(pregunta.valoracion_ia)
         self.txt_analisis.setMaximumHeight(150)
         self.txt_analisis.setMinimumHeight(60)
 
@@ -208,9 +223,7 @@ class VentanaDetallePregunta(QDialog):
         scroll_content_layout.setSpacing(10)
         scroll_content_layout.setContentsMargins(10, 10, 10, 10)
     
-        lista_comentarios = pregunta.get_comentarios()
-        
-        print(f"DEBUG: Cantidad de comentarios encontrados: {len(lista_comentarios)}")
+        lista_comentarios = pregunta.comentarios                
 
         if not lista_comentarios:
             # Si no hay comentarios, mostrar un aviso
@@ -240,7 +253,7 @@ class VentanaDetallePregunta(QDialog):
         boton_cerrar = QPushButton("Cerrar")
         boton_cerrar.clicked.connect(self.close)
         boton_cerrar.setFont(QFont("Arial", 11))   
-        boton_cerrar.setFixedSize(100,40)
+        boton_cerrar.setFixedSize(110,40)
         boton_cerrar.setStyleSheet("""                                   
             QPushButton { 
                 color: white; 
@@ -294,14 +307,14 @@ class VentanaDetallePregunta(QDialog):
         tarjeta_layout.setSpacing(10)        
 
         # profesional
-        lbl_profesional = QLabel(comentario.get_id_profesional() + " - Nombre Apellidos")
+        lbl_profesional = QLabel(comentario.id_profesional + " - Nombre Apellidos")
         lbl_profesional.setFont(QFont("Arial", 9))
         lbl_profesional.setStyleSheet("border: none; color: grey;")
         lbl_profesional.setAlignment(Qt.AlignLeft)
 
         tarjeta_layout.addWidget(lbl_profesional)
 
-        lbl_comentario = QLabel(comentario.get_contenido())
+        lbl_comentario = QLabel(comentario.contenido)
         lbl_comentario.setFont(QFont("Arial", 10))
         lbl_comentario.setStyleSheet("border: none; color: black;")     
         lbl_comentario.setWordWrap(True)   
@@ -327,11 +340,13 @@ class VentanaDetallePregunta(QDialog):
 
     def cambio_estado(self, estado):
         if estado == QMediaPlayer.PlayingState:
-            self.btn_play.setText("⏸")
+            self.boton_play.setIcon(QIcon("assets/pausa.png"))
+            self.boton_play.setIconSize(QSize(15, 15))
             self.lbl_estado_audio.setText("Reproduciendo…")
             self.lbl_estado_audio.setStyleSheet("color: green;")
         else:
-            self.btn_play.setText("▶")
+            self.boton_play.setIcon(QIcon("assets/play.png"))
+            self.boton_play.setIconSize(QSize(20, 20))
             self.lbl_estado_audio.setText("")
 
     def actualizar_posicion(self, posicion):
