@@ -19,7 +19,7 @@ def cargar_datos_preguntas():
 
 class PantallaPreguntas(QWidget):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent)    
 
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
         self.grabando = False # Estado inicial de la grabación
@@ -41,6 +41,27 @@ class PantallaPreguntas(QWidget):
             QPushButton { background: rgba(200, 200, 200, 0.6); border-radius: 15px;; padding: 10px; }
             QPushButton:hover { background-color: rgba(128, 128, 128, 0.6); border-radius: 15px; }
         """)
+
+        #Popup ayuda
+        self.popup_ayuda = QLabel(self)
+        self.popup_ayuda.setStyleSheet("""
+            QLabel {
+                background-color: #FFFFFF;       
+                color: #333333;                  
+                border: 2px solid #333333;       
+                border-radius: 15px;            
+                padding: 20px;               
+                font-family: 'Arial';
+                font-size: 20px;               
+                font-weight: normal;
+            }
+        """)
+        self.popup_ayuda.setWordWrap(True)
+        self.popup_ayuda.setFixedWidth(400)
+        self.popup_ayuda.hide() #oculto al principio
+
+        # filtro de eventos para detectar el ratón en el botón
+        self.boton_info.installEventFilter(self)
 
         # Variable para el número de pregunta
         self.numero_pregunta = 1
@@ -235,11 +256,16 @@ class PantallaPreguntas(QWidget):
         # Cargar datos JSON
         datos = self.PREGUNTAS_DATA.get(str(numero), {
             "titulo": "Error",
-            "texto": f"Pregunta {numero} no encontrada en el JSON."
+            "texto": f"Pregunta {numero} no encontrada en el JSON.",
+            "ayuda": "No hay información disponible"
         })
 
         self.titulo_pregunta.setText(f"Pregunta {numero}")
         self.texto_pregunta.setText(datos['texto'])
+
+        texto_ayuda = datos.get("ayuda", "Sin información adicional.")       
+        self.popup_ayuda.setText(texto_ayuda)
+        self.popup_ayuda.adjustSize() # Ajustar alto al contenido
 
         # Lógica de botones (Siguiente/Atrás)
         if self.numero_pregunta > 1:
@@ -278,3 +304,20 @@ class PantallaPreguntas(QWidget):
         self.lista_respuestas[self.numero_pregunta-1] = self.respuesta_widget.toPlainText()
         print("Entrevista finalizada. Respuestas:", self.lista_respuestas)
         # Aquí emitirías la señal
+
+    def eventFilter(self, obj, event):
+        if obj == self.boton_info:
+            if event.type() == 10: # Evento Enter (Ratón entra)
+                # Actualizar texto (si cambia dinámicamente)
+                # self.popup_ayuda.setText(texto_actual...) 
+
+                # Calcular posición: justo debajo o al lado del botón
+                pos = self.boton_info.mapTo(self, self.boton_info.rect().bottomRight())
+                self.popup_ayuda.move(pos.x(), pos.y())
+                self.popup_ayuda.raise_() # Ponerlo encima de todo
+                self.popup_ayuda.show()
+                return True
+            elif event.type() == 11: # Evento Leave (Ratón sale)
+                self.popup_ayuda.hide()
+                return True
+        return super().eventFilter(obj, event)

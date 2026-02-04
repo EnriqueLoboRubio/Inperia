@@ -12,6 +12,7 @@ from gui.ventana_detalle_pregunta_profesional import VentanaDetallePregunta as V
 from gui.ventana_detalle_pregunta_interno import VentanaDetallePregunta as VentanaDetallePreguntaInterno
 from gui.ventana_detalle_edit_pregunta_interno import VentanaDetallePregunta as VentanaDetalleEditPreguntaInterno
 from gui.pantalla_preguntas import PantallaPreguntas as PantallaPreguntas
+from gui.pantalla_solicitud import PantallaSolicitudInterno
 
 from models.pregunta import Pregunta
 from models.comentario import Comentario
@@ -24,6 +25,7 @@ def main():
     ventanaResumenInterno = PantallaResumenInterno()
     ventanaResumenEditInterno = PantallaResumenEditInterno()
     ventanaPreguntas = PantallaPreguntas()
+    ventanaSolicitud = PantallaSolicitudInterno()
 
     #Datos para ventana detalle 
     pregunta = Pregunta(1, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
@@ -62,7 +64,9 @@ def main():
     #VentanaDetalleInterno.show()
     #VentanaDetalleEditInterno.show()
 
-    ventanaPreguntas.show()
+    #ventanaPreguntas.show()
+
+
  
 
     sys.exit(app.exec_())
