@@ -2,7 +2,8 @@ import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
     QLineEdit, QTextEdit, QCheckBox, QDateEdit, QTimeEdit, 
-    QComboBox, QStackedWidget, QFrame, QScrollArea, QButtonGroup, QMessageBox
+    QComboBox, QStackedWidget, QFrame, QScrollArea, QButtonGroup, QMessageBox,
+    QSizePolicy
 )
 from PyQt5.QtCore import Qt, QDate, QTime, pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
@@ -12,7 +13,7 @@ class IndicadorPaso(QWidget):
     Widget para mostrar el indicador de pasos en parte superior
     """
     def __init__(self, parent=None):
-        # CORRECCIÓN: Se añadieron paréntesis a super()
+        
         super().__init__(parent)
 
         self.paso_actual = 1
@@ -20,44 +21,38 @@ class IndicadorPaso(QWidget):
 
     def iniciar_ui(self):    
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 10, 0, 20)
+        layout.setContentsMargins(40, 10, 40, 20)
+        layout.setSpacing(0)
 
         self.pasos = []
-        for i in range(4):
-            # CORRECCIÓN: Layout hijo sin self
-            contenedor_paso = QHBoxLayout()
+        for i in range(4):                    
 
             circulo = QLabel(str(i + 1))
-            circulo.setFixedSize(30,30)
+            circulo.setFixedSize(60,60)
             circulo.setAlignment(Qt.AlignCenter)
             circulo.setStyleSheet("""
                 QLabel {
                     background-color: #E0E0E0;
                     color: #666;
-                    border-radius: 15px;
+                    border-radius: 30px;
                     font-weight: bold;
+                    font-size: 20px;
                 }
             """)
 
-            contenedor_paso.addWidget(circulo)
+            layout.addWidget(circulo)
+            self.pasos.append(circulo)
 
             if i < 3:
                 linea = QFrame()
                 linea.setFrameShape(QFrame.HLine)
-                linea.setStyleSheet("background-color: #E0E0E0")
-                linea.setFixedHeight(2)
-                linea.setFixedWidth(40)
-                contenedor_paso.addWidget(linea)
+                linea.setStyleSheet("background-color: black")
+                linea.setFixedHeight(4)
+                #linea.setFixedWidth(45)
+                linea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+                
+                layout.addWidget(linea)
             
-            self.pasos.append(circulo)
-            
-            # Añadir los elementos del contenedor temporal al layout principal
-            for j in range(contenedor_paso.count()):
-                item = contenedor_paso.itemAt(j)
-                if item.widget():
-                    layout.addWidget(item.widget())
-
-        layout.addStretch()
 
     def actualizar_paso(self, paso):
         """
@@ -67,13 +62,13 @@ class IndicadorPaso(QWidget):
         for i, circulo in enumerate(self.pasos):
             if i+1 == paso:
                 # Paso actual (negro)
-                circulo.setStyleSheet("background-color: #000; color: #FFF; border-radius: 15px; font-weight: bold;")
+                circulo.setStyleSheet("background-color: #000; color: #FFF; border-radius: 30px; font-weight: bold; font-size: 20px;")
             elif i+1 < paso:
                 # Paso completado (verde)
-                circulo.setStyleSheet("background-color: #4CAF50; color: #FFF; border-radius: 15px; font-weight: bold;")
+                circulo.setStyleSheet("background-color: #4CAF50; color: #FFF; border-radius: 30px; font-weight: bold; font-size: 20px;")
             else:
                 # Paso inactivo (gris)
-                circulo.setStyleSheet("background-color: #E0E0E0; color: #666; border-radius: 15px; font-weight: bold;")
+                circulo.setStyleSheet("background-color: #E0E0E0; color: #666; border-radius: 30px; font-weight: bold; font-size: 20px;")
 
 class PermisoTarjeta(QWidget):
     """
@@ -696,24 +691,39 @@ class PantallaSolicitudInterno(QWidget):
         principal_layout.setSpacing(0)
 
         # --- ENCABEZADO --- 
-        encabezado_layout = QVBoxLayout()
-        encabezado_layout.setSpacing(5)
+        encabezado_frame = QFrame()
+        encabezado_frame.setStyleSheet("""
+            QFrame {
+                border: 2px solid #E0E0E0;   /* Borde gris */
+                border-radius: 15px;         /* Esquinas redondeadas */
+                background-color: white;     /* Fondo blanco */
+            }
+        """)
+
+        encabezado_layout = QVBoxLayout(encabezado_frame)
+        encabezado_layout.setContentsMargins(20, 20, 20, 20)
+        encabezado_layout.setSpacing(5)       
+
 
         # Titulo
         titulo = QLabel("Nueva Solicitud Permiso")
-        titulo.setStyleSheet("font-size: 24px; font-weight: bold;")
+        titulo.setStyleSheet("font-size: 24px; font-weight: bold; background-color: transparent;")
 
         self.descripcion_paso = QLabel("Paso 1 de 4 - Complete toda la información requerida")
-        self.descripcion_paso.setStyleSheet("color: #666; font-size: 14px;")
+        self.descripcion_paso.setStyleSheet("color: #666; font-size: 14px; background-color: transparent;")
 
-        encabezado_layout.addWidget(titulo)
-        encabezado_layout.addWidget(self.descripcion_paso)
-
-        principal_layout.addLayout(encabezado_layout)
+        self.subtitulo_paso = QLabel("Información básica del permiso")
+        self.subtitulo_paso.setStyleSheet("color: #666; font-size: 12px; background-color: transparent;")
 
         # Indicador pasos
         self.indicador_pasos = IndicadorPaso()
-        principal_layout.addWidget(self.indicador_pasos)
+
+        encabezado_layout.addWidget(titulo)
+        encabezado_layout.addWidget(self.descripcion_paso)
+        encabezado_layout.addWidget(self.indicador_pasos)
+        encabezado_layout.addWidget(self.subtitulo_paso)
+    
+        principal_layout.addWidget(encabezado_frame)       
 
         # Scroll para el contenido
         scroll = QScrollArea()
@@ -761,7 +771,7 @@ class PantallaSolicitudInterno(QWidget):
         principal_layout.addWidget(scroll)
 
         # --- BOTONES NAVEGACION ---
-        botones_layout = QHBoxLayout() # Sin self
+        botones_layout = QHBoxLayout()
         botones_layout.setContentsMargins(0, 20, 0, 0)
 
         self.boton_anterior = QPushButton("Anterior")
@@ -844,7 +854,16 @@ class PantallaSolicitudInterno(QWidget):
             "Paso 3 de 4 - Complete toda la información requerida",
             "Paso 4 de 4 - Revise y mande la solicitud"
         ]
+
+        subtitulos = [
+            "Información básica del permiso",
+            "Detalles del destino y fechas",
+            "Contactos e información adicional"
+            "Revisión y confirmación"
+        ]
+
         self.descripcion_paso.setText(descripciones[paso-1])
+        self.subtitulo_paso.setText(subtitulos[paso-1])
 
 
     def mostrar_validacion_error(self, mensaje):

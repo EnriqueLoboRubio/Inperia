@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QMessageBox
 from db.solicitud_db import agregar_solicitud
 from models.solicitud import Solicitud
 from gui.dialog_solicitud_enviada import DialogSolicitudEnviada
@@ -227,5 +227,17 @@ class SolicitudController(QObject):
             estado='iniciada'
         )
         
-        if not nuevo_id:
+        if nuevo_id:  # Si tiene un ID, se guardó correctamente
+            # 1. Mostrar mensaje de confirmación
+            QMessageBox.information(
+                self.vista, 
+                "Solicitud Creada", 
+                "La solicitud se ha guardado correctamente y está lista para ser procesada."
+            )
+
+            # 2. Emitir señal para cambiar de pantalla
             self.solicitud_finalizada.emit()
+            
+        else:
+            # Manejo de error si falla la base de datos
+            self.vista.mostrar_validacion_error("No se pudo guardar la solicitud en la base de datos.")

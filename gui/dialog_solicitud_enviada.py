@@ -64,15 +64,41 @@ class DialogSolicitudEnviada(QDialog):
         botones = QHBoxLayout()
         botones.addStretch()
 
-        btn_no = QPushButton("No")
-        btn_no.setFixedSize(90, 35)
-        btn_no.clicked.connect(self.reject)
+        boton_no = QPushButton("No")
+        boton_no.setFixedSize(90, 35)
+        boton_no.setStyleSheet("""
+            QPushButton {
+                background-color: #000;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #333;
+            }
+        """)
+        boton_no.clicked.connect(self.reject)
 
-        btn_si = QPushButton("Sí, enviar")
-        btn_si.setFixedSize(120, 35)
-        btn_si.clicked.connect(self.accept)
+        boton_si = QPushButton("Sí, enviar")
+        boton_si.setFixedSize(120, 35)
+        boton_si.setStyleSheet("""
+            QPushButton {
+                background-color: #000;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #333;
+            }
+        """)
+        boton_si.clicked.connect(self.accept)
 
-        botones.addWidget(btn_no)
-        botones.addWidget(btn_si)
+        botones.addWidget(boton_no)
+        botones.addWidget(boton_si)
         
         layout_principal.addLayout(botones)
