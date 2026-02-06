@@ -200,7 +200,9 @@ class InternoController(QObject):
         )
 
         #PANTALLA SOLICITUD
-
+        self.solicitud_controller.solicitud_finalizada.connect(
+            self.on_solicitud_finalizada
+        )
 
     # -------- FUNCIONES DE NAVEGACIÓN --------
 
@@ -305,3 +307,11 @@ class InternoController(QObject):
         if confirmado:
             self.ventana_interno.close()
             self.logout_signal.emit()
+
+    def on_solicitud_finalizada(self):
+        # Actualizar estado interno
+        self.tiene_pendiente_iniciada = True
+        self.tiene_entrevista = False
+
+        # Cambiar de pantalla
+        self.ventana_interno.mostrar_pantalla_progreso()

@@ -1,6 +1,8 @@
 from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtWidgets import QDialog
 from db.solicitud_db import agregar_solicitud
 from models.solicitud import Solicitud
+from gui.dialog_solicitud_enviada import DialogSolicitudEnviada
 
 class SolicitudController(QObject):
 
@@ -43,10 +45,19 @@ class SolicitudController(QObject):
             self.vista.actualizar_ui(self.paso_actual)
             return True
         elif self.paso_actual == self.total_pasos:
-            confirmar = self.vista.mostrar_confirmacion_envio()
-            if confirmar:
+            # 1️⃣ Construir resumen (NO guardar)
+            datos = self.solicitud.get_resumen()
+
+            # 2️⃣ Mostrar diálogo de confirmación
+            dialogo = DialogSolicitudEnviada(datos, parent=self.vista)
+            confirmado = dialogo.exec_()
+
+            # 3️⃣ Decisión del usuario
+            if confirmado == QDialog.Accepted:
                 self.guardar_solicitud()
-            return True
+            else:
+                # Usuario dijo NO → volver al paso 4
+                return False
         
         return False
 
@@ -216,5 +227,5 @@ class SolicitudController(QObject):
             estado='iniciada'
         )
         
-        if nuevo_id:
+        if not nuevo_id:
             self.solicitud_finalizada.emit()

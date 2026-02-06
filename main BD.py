@@ -59,12 +59,12 @@ def reiniciar_base_de_datos():
 
 if __name__ == "__main__":
     
-    reiniciar_base_de_datos()
+    #reiniciar_base_de_datos()
 
-    generar_usuario()
-    generar_internos()
-    generar_solicitud()    
-    generar_entrevista() 
+    #generar_usuario()
+    #generar_internos()
+    #generar_solicitud()    
+    #generar_entrevista() 
     
-    #buscar_y_mostrar_solicitud("3")                 
+    buscar_y_mostrar_solicitud("3")                 
     

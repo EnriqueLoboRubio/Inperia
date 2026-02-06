@@ -56,19 +56,23 @@ class DialogSolicitudEnviada(QDialog):
         fila("Destino", datos["destino"])
         fila("Contacto Emergencia", datos["contacto"])
         fila("Teléfono", datos["telefono"])
-        fila("Documentos", datos["documentos"])
-        fila("Compromisos Aceptados", datos["compromisos"])
 
         layout_principal.addLayout(cuerpo)
         layout_principal.addStretch()
 
-        # --- BOTÓN ---
+        # BOTONES
         botones = QHBoxLayout()
         botones.addStretch()
 
-        btn_ok = QPushButton("OK")
-        btn_ok.setFixedSize(90, 35)
-        btn_ok.clicked.connect(self.accept)
+        btn_no = QPushButton("No")
+        btn_no.setFixedSize(90, 35)
+        btn_no.clicked.connect(self.reject)
 
-        botones.addWidget(btn_ok)
+        btn_si = QPushButton("Sí, enviar")
+        btn_si.setFixedSize(120, 35)
+        btn_si.clicked.connect(self.accept)
+
+        botones.addWidget(btn_no)
+        botones.addWidget(btn_si)
+        
         layout_principal.addLayout(botones)

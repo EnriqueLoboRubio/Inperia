@@ -128,7 +128,5 @@ class Solicitud:
             "fecha_fin": self.fecha_fin,
             "destino": f"{self.destino}, {self.ciudad}",
             "contacto": self.nombre_cp,
-            "telefono": self.telf_cp,
-            "documentos": self.get_documentos_texto(),
-            "compromisos": str(self.compromisos)
+            "telefono": self.telf_cp,            
         }
