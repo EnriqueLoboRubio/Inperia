@@ -64,5 +64,7 @@ if __name__ == "__main__":
     generar_usuario()
     generar_internos()
     generar_solicitud()    
-    generar_entrevista()                  
+    generar_entrevista() 
+    
+    #buscar_y_mostrar_solicitud("3")                 
     

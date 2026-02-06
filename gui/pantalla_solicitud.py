@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QLineEdit, QTextEdit, QCheckBox, QDateEdit, QTimeEdit, 
     QComboBox, QStackedWidget, QFrame, QScrollArea, QButtonGroup, QMessageBox
 )
-from PyQt5.QtCore import Qt, QDate, QTime
+from PyQt5.QtCore import Qt, QDate, QTime, pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 
 class IndicadorPaso(QWidget):
@@ -79,6 +79,8 @@ class PermisoTarjeta(QWidget):
     """
     Tarjeta seleccionable para tipo de permiso
     """
+    clicked = pyqtSignal(object)
+
     def __init__(self, icono, titulo, subtitulo, parent=None):
         super().__init__(parent)
         self.titulo = titulo
@@ -91,27 +93,27 @@ class PermisoTarjeta(QWidget):
 
         # Icono
         icono_label = QLabel(self)
-        # Nota: Si la imagen no existe, no crashea, solo no se muestra.
         icono_label.setPixmap(QPixmap(icono))
         icono_label.setFixedSize(20,20)
         icono_label.setAlignment(Qt.AlignCenter)
+        icono_label.setAttribute(Qt.WA_TransparentForMouseEvents)
 
         # Título
         titulo_label = QLabel(titulo)
         titulo_label.setStyleSheet("font-weight: bold; font-size: 14px;")
+        titulo_label.setAttribute(Qt.WA_TransparentForMouseEvents)
 
-        # CORRECCIÓN: Layout hijo sin self
         layout_titulo = QHBoxLayout()
         layout_titulo.addWidget(icono_label)
         layout_titulo.addWidget(titulo_label)
-        layout_titulo.addStretch() # Para que el texto no se centre raro
+        layout_titulo.addStretch() 
 
         # Subtitulo
         subtitulo_label = QLabel(subtitulo)
         subtitulo_label.setStyleSheet("color: #666; font-size: 11px;")
         subtitulo_label.setWordWrap(True)
+        subtitulo_label.setAttribute(Qt.WA_TransparentForMouseEvents)
 
-        # CORRECCIÓN: Usar addLayout para añadir un layout dentro de otro
         layout.addLayout(layout_titulo)
         layout.addWidget(subtitulo_label)
 
@@ -126,29 +128,31 @@ class PermisoTarjeta(QWidget):
         self.setFixedHeight(120)
         self.setCursor(Qt.PointingHandCursor)
 
-    # CORRECCIÓN: Capturar el evento de click del ratón
     def mousePressEvent(self, event):
-        self.EventoClick(event)
+        # Cuando hacemos click, NO cambiamos el color aquí directamente.
+        # Emitimos la señal y dejamos que el padre decida qué hacer.
+        self.clicked.emit(self) 
         super().mousePressEvent(event)
 
-    def EventoClick(self, evento):
-        self.seleccionado = not self.seleccionado
+    def set_seleccionado(self, estado):
+        """ Método público para cambiar el estado desde fuera """
+        self.seleccionado = estado
+        self.actualizar_estilo()
+
+    def actualizar_estilo(self):
         if self.seleccionado:
             self.setStyleSheet("""
-                PermisoTarjeta {
-                    background-color: #E3F2FD;
-                    border: 2px solid #2196F3;
-                    border-radius: 8px;
-                }
+                background-color: #E3F2FD;
+                border: 2px solid #2196F3;
+                border-radius: 8px;
             """)
         else:
             self.setStyleSheet("""
-                PermisoTarjeta {
-                    background-color: white;
-                    border: 2px solid #E0E0E0;
-                    border-radius: 8px;
-                }
+                background-color: white;
+                border: 2px solid #E0E0E0;
+                border-radius: 8px;
             """)
+
 
 class Paso1Widget(QWidget):
     def __init__(self, parent=None):
@@ -158,8 +162,7 @@ class Paso1Widget(QWidget):
     def inicio_ui(self):
         principal_layout = QVBoxLayout(self)    
         principal_layout.setSpacing(20)  
-
-        # CORRECCIÓN: Todos los sub-layouts se inicializan sin self
+        
         principal_titulo_layout = QVBoxLayout()
         principal_contenido_layout = QHBoxLayout()
         principal_col1_layout = QVBoxLayout() 
@@ -182,10 +185,10 @@ class Paso1Widget(QWidget):
         tipo_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
         principal_col1_layout.addWidget(tipo_label)
 
-        tarjetas_layout = QHBoxLayout() # Sin self
+        tarjetas_layout = QHBoxLayout()
         tarjetas_layout.setSpacing(15)
 
-        col1 = QVBoxLayout() # Sin self
+        col1 = QVBoxLayout()
         col1.setSpacing(15)
         self.tarjeta_familiar = PermisoTarjeta("assets/familia.png", "Salida familiar", "Visitada a familiares directos por motivos justificados")
         self.tarjeta_educativo = PermisoTarjeta("assets/educacion.png", "Permiso educativo", "Asistencia a actividades educativas o exámenes")
@@ -194,7 +197,7 @@ class Paso1Widget(QWidget):
         col1.addWidget(self.tarjeta_educativo)
         col1.addWidget(self.tarjeta_defuncion)
 
-        col2 = QVBoxLayout() # Sin self
+        col2 = QVBoxLayout()
         col2.setSpacing(15)
         self.tarjeta_medico = PermisoTarjeta("assets/corazon.png", "Permiso médico", "Atención médica especializada o acompañamiento")
         self.tarjeta_laboral = PermisoTarjeta("assets/negocio.png", "Permiso laboral", "Actividades laborales o entrevistas de trabajo")
@@ -208,6 +211,16 @@ class Paso1Widget(QWidget):
         tarjetas_layout.addStretch()
 
         principal_col1_layout.addLayout(tarjetas_layout)
+
+        # --- Lógica de selección única --- 
+        self.lista_tarjetas = [
+            self.tarjeta_familiar, self.tarjeta_educativo, self.tarjeta_defuncion,
+            self.tarjeta_medico, self.tarjeta_laboral, self.tarjeta_juridico
+        ]
+
+        # Conectar señal a cada tarjeta
+        for tarjeta in self.lista_tarjetas:
+            tarjeta.clicked.connect(self.gestionar_seleccion)
 
         motivo_label = QLabel("Motivo específico *")
         motivo_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
@@ -238,7 +251,7 @@ class Paso1Widget(QWidget):
 
         principal_col2_layout.addWidget(urgencia_label)
 
-        urgencia_layout = QHBoxLayout() # Sin self
+        urgencia_layout = QHBoxLayout()
         self.urgencia_botones = QButtonGroup(self)              
 
         self.boton_normal = QCheckBox("Normal")
@@ -248,6 +261,7 @@ class Paso1Widget(QWidget):
         self.urgencia_botones.addButton(self.boton_normal)
         self.urgencia_botones.addButton(self.boton_importante)
         self.urgencia_botones.addButton(self.boton_urgente)
+        self.urgencia_botones.setExclusive(True) #excluyentes
 
         for boton in [self.boton_normal, self.boton_importante, self.boton_urgente]:
             urgencia_layout.addWidget(boton)
@@ -261,6 +275,18 @@ class Paso1Widget(QWidget):
             QLineEdit { border: 2px solid #E0E0E0; border-radius: 8px; padding: 10px; min-height: 20px; }
             QLineEdit:focus { border-color: #2196F3; }
         """)
+
+    def gestionar_seleccion(self, tarjeta_seleccionada):
+        """
+        Recibe la tarjeta clickeada. La activa y desactiva todas las demás.
+        """
+        for tarjeta in self.lista_tarjetas:
+            if tarjeta is tarjeta_seleccionada:
+                # Si es la que hemos pulsado, la marcamos
+                tarjeta.set_seleccionado(True)
+            else:
+                # A todas las demás las desmarcamos
+                tarjeta.set_seleccionado(False)
 
 class Paso2Widget(QWidget):
     def __init__(self, parent=None):
@@ -285,10 +311,10 @@ class Paso2Widget(QWidget):
         principal_layout.addLayout(principal_titulo_layout)
 
         # --- FECHAS ---
-        fechas_layout = QHBoxLayout() # Sin self
+        fechas_layout = QHBoxLayout() 
         fechas_layout.setSpacing(20) 
 
-        inicio_layout = QVBoxLayout() # Sin self
+        inicio_layout = QVBoxLayout()
         inicio_label = QLabel("Fecha de Inicio *")
         inicio_label.setStyleSheet("font-weight: bold;")
         self.fecha_inicio = QDateEdit()
@@ -299,7 +325,7 @@ class Paso2Widget(QWidget):
         inicio_layout.addWidget(inicio_label)
         inicio_layout.addWidget(self.fecha_inicio)
 
-        fin_layout = QVBoxLayout() # Sin self
+        fin_layout = QVBoxLayout()
         fin_label = QLabel("Fecha de Fin *")
         fin_label.setStyleSheet("font-weight: bold;")
         self.fecha_fin = QDateEdit()
@@ -316,10 +342,10 @@ class Paso2Widget(QWidget):
         principal_layout.addLayout(fechas_layout)
 
         # --- HORARIOS ---
-        horarios_layout = QHBoxLayout() # Sin self
+        horarios_layout = QHBoxLayout()
         horarios_layout.setSpacing(20)
 
-        salida_layout = QVBoxLayout() # Sin self
+        salida_layout = QVBoxLayout()
         salida_label = QLabel("Hora de Salida *")
         salida_label.setStyleSheet("font-weight: bold;")
         self.hora_salida = QTimeEdit()
@@ -328,7 +354,7 @@ class Paso2Widget(QWidget):
         salida_layout.addWidget(salida_label)
         salida_layout.addWidget(self.hora_salida)
 
-        llegada_layout = QVBoxLayout() # Sin self
+        llegada_layout = QVBoxLayout() 
         llegada_label = QLabel("Hora de Llegada *")
         llegada_label.setStyleSheet("font-weight: bold;")
         self.hora_llegada = QTimeEdit()
@@ -339,7 +365,6 @@ class Paso2Widget(QWidget):
 
         horarios_layout.addLayout(salida_layout)
         horarios_layout.addLayout(llegada_layout)
-        # Se debe añadir el layout de horarios al principal
         principal_layout.addLayout(horarios_layout) 
 
         # --- DESTINO ---
@@ -385,11 +410,11 @@ class Paso2Widget(QWidget):
         codigo_layout = QVBoxLayout() # Sin self
         codigo_label = QLabel("Código postal")
         codigo_label.setStyleSheet("font-weight: bold;")
-        self.codigo_input = QLineEdit()
-        self.codigo_input.setPlaceholderText("C.P.")
-        self.estilo_input(self.codigo_input)
+        self.codigo_texto  = QLineEdit()
+        self.codigo_texto.setPlaceholderText("C.P.")
+        self.estilo_input(self.codigo_texto)
         codigo_layout.addWidget(codigo_label)
-        codigo_layout.addWidget(self.codigo_input)
+        codigo_layout.addWidget(self.codigo_texto)
         
         direccion_layout.addLayout(direccion_completa_layout, 2)
         direccion_layout.addLayout(codigo_layout, 1)

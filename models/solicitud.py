@@ -39,7 +39,7 @@ class Solicitud:
         """
         if not self.tipo:
             return False, "Debe seleccionar un tipo de permiso"
-        if not self.motivo.strip():
+        if not self.descripcion.strip():
             return False, "Debe ingresar una descripción del motivo"
         if not self.urgencia:
             return False, "Debe seleccionar un nivel de urgencia"
@@ -122,15 +122,13 @@ class Solicitud:
     def get_resumen(self):
         """Devuelve un resumen de la solicitud"""
         return {
-            "tipo": self.tipo_,
-            "descripcion": self.descripcion,
+            "tipo": self.tipo,
             "urgencia": self.urgencia,
             "fecha_inicio": self.fecha_inicio,
             "fecha_fin": self.fecha_fin,
-            "destino": self.destino_principal,
-            "ciudad": self.ciudad,
-            "contacto_emergencia": self.nombre_cp,
-            "telefono_emergencia": self.telf_cp,
-            "documentos": self.documentos,
-            "compromisos": self.compromisos
+            "destino": f"{self.destino}, {self.ciudad}",
+            "contacto": self.nombre_cp,
+            "telefono": self.telf_cp,
+            "documentos": self.get_documentos_texto(),
+            "compromisos": str(self.compromisos)
         }

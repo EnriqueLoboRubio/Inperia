@@ -20,7 +20,7 @@ def crear_solicitud():
             hora_salida TEXT NOT NULL, 
             hora_llegada TEXT NOT NULL,
             destino TEXT NOT NULL,
-            cuidad TEXT NOT NULL,
+            ciudad TEXT NOT NULL,
             direccion TEXT NOT NULL,
             cod_pos TEXT NOT NULL,
             nombre_cp TEXT NOT NULL,
@@ -43,7 +43,7 @@ def crear_solicitud():
 
 # Función para agregar una nueva solicitud a la base de datos
 def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
-                      destino, cuidad, direccion, cod_pos, 
+                      destino, ciudad, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
                       docs, compromiso, observaciones, estado):
     conexion = obtener_conexion()
@@ -51,12 +51,12 @@ def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_ini
     try:        
         cursor.execute('''
             INSERT INTO solicitudes (id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
-                                    destino, cuidad, direccion, cod_pos, 
+                                    destino, ciudad, direccion, cod_pos, 
                                     nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
                                     docs, compromiso, observaciones, estado)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
-                      destino, cuidad, direccion, cod_pos, 
+                      destino, ciudad, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
                       docs, compromiso, observaciones, estado))
         conexion.commit()
@@ -99,7 +99,6 @@ def encontrar_solicitud_pendiente_por_interno(id_interno):
     
     return solicitud
 
-
 # Función para borrar la tabla de solicitudes (para pruebas)
 def borrar_solicitudes():
     conexion = obtener_conexion()
@@ -107,3 +106,31 @@ def borrar_solicitudes():
     cursor.execute('DROP TABLE IF EXISTS solicitudes')
     conexion.commit()
     conexion.close()
+
+
+def buscar_y_mostrar_solicitud(id_interno):
+    """
+    Busca una solicitud pendiente o iniciada para un interno específico
+    y muestra los detalles por pantalla.
+    """
+    print(f"\n--- 🔍 BUSCANDO SOLICITUD PARA EL INTERNO: {id_interno} ---")
+    
+    # Llamamos a la función importada de db/solicitud_db.py
+    solicitud = encontrar_solicitud_pendiente_por_interno(id_interno)
+
+    if solicitud:
+        print("✅ Solicitud encontrada con éxito:")
+        print("-" * 40)
+        # Accedemos a los índices según el orden de creación en la tabla
+        print(f"🆔 ID Solicitud: {solicitud[0]}")
+        print(f"👤 ID Interno:   {solicitud[1]}")
+        print(f"📂 Tipo:         {solicitud[2]}")
+        print(f"📝 Motivo:       {solicitud[3]}")
+        print(f"📄 Descripción:  {solicitud[4]}")
+        print(f"🚨 Urgencia:     {solicitud[5]}")
+        print(f"📅 Fecha Inicio: {solicitud[6]}")
+        print(f"📍 Destino:      {solicitud[10]}")
+        print(f"📊 Estado:       {solicitud[24]}") # El estado está en la última columna
+        print("-" * 40)
+    else:
+        print(f"❌ No se encontró ninguna solicitud pendiente o iniciada para el ID {id_interno}.")    

@@ -43,7 +43,9 @@ class SolicitudController(QObject):
             self.vista.actualizar_ui(self.paso_actual)
             return True
         elif self.paso_actual == self.total_pasos:
-            self.guardar_solicitud()
+            confirmar = self.vista.mostrar_confirmacion_envio()
+            if confirmar:
+                self.guardar_solicitud()
             return True
         
         return False
@@ -94,18 +96,20 @@ class SolicitudController(QObject):
         
         #Tipo de permiso
         tarjetas = [
-            ("Salida Familiar", paso_widget.tarjeta_familiar),
-            ("Permiso educativo", paso_widget.tarjeta_educativo),
-            ("Permiso por defunción", paso_widget.tarjeta_defuncion),
-            ("Permiso médico", paso_widget.tarjeta_medico),
-            ("Permiso laboral", paso_widget.tarjeta_laboral),
-            ("Permiso jurídico", paso_widget.tarjeta_juridico),
+            ("familiar", paso_widget.tarjeta_familiar),
+            ("educativo", paso_widget.tarjeta_educativo),
+            ("defuncion", paso_widget.tarjeta_defuncion),
+            ("medico", paso_widget.tarjeta_medico),
+            ("laboral", paso_widget.tarjeta_laboral),
+            ("juridico", paso_widget.tarjeta_juridico),
         ]
+
+        self.solicitud.tipo = None
 
         for tipo, tarjeta in tarjetas:
             if tarjeta.seleccionado:
                 self.solicitud.tipo = tipo
-            break
+                break
 
         # Descripcion y motivo
         self.solicitud.descripcion = paso_widget.desc_texto.toPlainText()
@@ -113,21 +117,21 @@ class SolicitudController(QObject):
 
         # Nivel de urgencia
         if paso_widget.boton_normal.isChecked():
-            self.solicitud.urgencia = "Normal"
+            self.solicitud.urgencia = "normal"
         elif paso_widget.boton_importante.isChecked():
-            self.solicitud.urgencia = "Importante"
+            self.solicitud.urgencia = "importante"
         elif paso_widget.boton_urgente.isChecked():
-            self.solicitud.urgencia = "Urgente"
+            self.solicitud.urgencia = "urgente"
 
     def capturar_datos_paso2(self, paso_widget):    
         self.solicitud.fecha_inicio = paso_widget.fecha_inicio.date().toString("dd/MM/yyyy")
         self.solicitud.fecha_fin = paso_widget.fecha_fin.date().toString("dd/MM/yyyy")
         self.solicitud.hora_salida = paso_widget.hora_salida.time().toString("HH:mm")
         self.solicitud.hora_llegada = paso_widget.hora_llegada.time().toString("HH:mm")
-        self.solicitud.destino_principal = paso_widget.destino_texto.text()
+        self.solicitud.destino = paso_widget.destino_texto.text().strip()
         self.solicitud.ciudad = paso_widget.ciudad_texto.text()
-        self.solicitud.direccion_completa = paso_widget.direccion_texto.text()
-        self.solicitud.codigo_postal = paso_widget.codigo_texto.text()
+        self.solicitud.direccion = paso_widget.direccion_texto.text()
+        self.solicitud.cod_pos = paso_widget.codigo_texto.text()
 
     def capturar_datos_paso3(self, paso_widget):
         self.solicitud.nombre_cp = paso_widget.nombre_prin_texto.text()
@@ -196,17 +200,20 @@ class SolicitudController(QObject):
             hora_salida=self.solicitud.hora_salida,
             hora_llegada=self.solicitud.hora_llegada,
             destino=self.solicitud.destino,
+            ciudad=self.solicitud.ciudad,
+            direccion=self.solicitud.direccion,
             cod_pos=self.solicitud.cod_pos,
             nombre_cp=self.solicitud.nombre_cp,
             telf_cp=self.solicitud.telf_cp,
-            direccion_cp=self.solicitud.direccon_cp,
+            relacion_cp=self.solicitud.relacion_cp,
+            direccion_cp=self.solicitud.direccion_cp,
             nombre_cs=self.solicitud.nombre_cs,
             telf_cs=self.solicitud.telf_cs,
             relacion_cs=self.solicitud.relacion_cs,
             docs=self.solicitud.docs,
-            compromiso=self.solicitud.comprmisos,                
+            compromiso=self.solicitud.compromisos,                
             observaciones=self.solicitud.observaciones,
-            estado='pendiente'
+            estado='iniciada'
         )
         
         if nuevo_id:
