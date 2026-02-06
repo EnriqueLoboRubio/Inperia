@@ -11,24 +11,24 @@ def generar_usuario():
     agregar_usuario("interno 5", "5@g.com", "5", "interno") #5
 
 def generar_internos():
-    agregar_interno("2", "2", "condenado", "Robo", "5", "01-01-2020", "01-01-2025", "Módulo A")
-    agregar_interno("3", "3", "condenado", "Robo", "5", "01-01-2020", "01-01-2025", "Módulo A")
-    agregar_interno("5", "5", "condenado", "Robo", "5", "01-01-2020", "01-01-2025", "Módulo B")
+    agregar_interno("2", "2", "condenado", "Robo", "5", "01/01/2020", "01/01/2025", "Módulo A")
+    agregar_interno("3", "3", "condenado", "Robo", "5", "01/01/2020", "01/01/2025", "Módulo A")
+    agregar_interno("5", "5", "condenado", "Robo", "5", "01/01/2020", "01/01/2025", "Módulo B")
 
 def generar_solicitud():
-    agregar_solicitud("2", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "22-11-2020", "25-22-2020",
+    agregar_solicitud("2", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "22/11/2020", "25/22/2020",
                       "16:00", "10:00", "Moguer", "Moguer", "calle 123", "21", 
                       "pepa", "1233", "mujer", "calle 123",
                       "carmen", "2222", "madre",
                       "123", "123456", "nada", "iniciada") #1
-    agregar_solicitud("5", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "22-11-2020", "25-22-2020",
+    agregar_solicitud("5", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "22/11/2020", "25/22/2020",
                       "16:00", "10:00", "Moguer", "Moguer", "calle 123", "21", 
                       "pepa", "1233", "mujer", "calle 123",
                       "carmen", "2222", "madre",
                       "123", "123456", "nada", "pendiente") #2  
 
 def generar_entrevista():
-    agregar_entrevista("4", "5", "2", "22-11-2020", "34")
+    agregar_entrevista("4", "5", "2", "22/11/2020", "34")
 
 def reiniciar_base_de_datos():
     

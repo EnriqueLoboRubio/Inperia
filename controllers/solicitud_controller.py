@@ -1,49 +1,211 @@
 from PyQt5.QtCore import QObject, pyqtSignal
 from db.solicitud_db import agregar_solicitud
+from models.solicitud import Solicitud
 
 class SolicitudController(QObject):
+
+    #Señales
     solicitud_finalizada = pyqtSignal() # Señal para avisar al InternoController
+    paso_cambiado = pyqtSignal(int)   
 
     def __init__(self, vista_solicitud, num_RC):
         super().__init__()
         self.vista = vista_solicitud
         self.num_RC = num_RC
-        self.current_step = 1
-        self.total_steps = 4
+        self.solicitud = Solicitud()
+        self.paso_actual = 1
+        self.total_pasos = 4
         self.conectar_senales()
 
     def conectar_senales(self):
-        self.vista.btn_siguiente.clicked.connect(self.siguiente_paso)
-        self.vista.btn_anterior.clicked.connect(self.paso_anterior)
+        self.vista.boton_siguiente.clicked.connect(self.siguiente_paso)
+        self.vista.boton_anterior.clicked.connect(self.paso_anterior)
 
     def siguiente_paso(self):
-        if self.current_step < self.total_steps:
-            # Aquí añadirías las validaciones del modelo que tenías en permiso_app.py
-            self.current_step += 1
-            self.vista.actualizar_ui(self.current_step)
-        else:
+
+        """
+        Avanza al siguiente paso si la validación es exitosa
+        """
+
+        #Capturar datos de vista antes de validar
+        self.capturar_datos_paso(self.paso_actual)
+
+        #Validar paso actual
+        es_valido, error_mensaje = self.validar_paso_actual()
+
+        if not es_valido:
+            self.vista.mostrar_validacion_error(error_mensaje)
+            return False
+        
+        #Avanzar al siguiente paso
+        if self.paso_actual < self.total_pasos:
+            self.paso_actual += 1
+            self.vista.actualizar_ui(self.paso_actual)
+            return True
+        elif self.paso_actual == self.total_pasos:
             self.guardar_solicitud()
+            return True
+        
+        return False
 
     def paso_anterior(self):
-        if self.current_step > 1:
-            self.current_step -= 1
-            self.vista.actualizar_ui(self.current_step)
-
-    def guardar_solicitud(self):
-        # 1. Extraer datos de los widgets de la vista
-        # (Similar a _capture_step_data en permiso_app.py)
-        datos = self.vista.obtener_datos_formulario()
+        """
+        Retroceder al paso anterior
+        """
+        if self.paso_actual > 1:
+            self.paso_actual -= 1
+            self.vista.actualizar_ui(self.paso_actual)
+            return True
         
-        # 2. Llamar a la base de datos (solicitud_db.py)
+        return False
+    
+    def validar_paso_actual(self):
+        """
+        Valida el paso actual
+        """
+        validaciones = {
+            1: self.solicitud.valida_paso1,
+            2: self.solicitud.valida_paso2,
+            3: self.solicitud.valida_paso3,
+            4: self.solicitud.valida_paso4
+        }   
+
+        validacion = validaciones.get(self.paso_actual)
+        if validacion:
+            return validacion()
+        
+        return True, ""
+
+    def capturar_datos_paso(self, paso):
+        """
+        Captura los datos de la vista y los almacena en el modelo
+        """
+
+        if paso == 1:
+            self.capturar_datos_paso1(self.vista.paso1)
+        elif paso == 2: 
+            self.capturar_datos_paso2(self.vista.paso2)
+        elif paso == 3: 
+            self.capturar_datos_paso3(self.vista.paso3)
+        elif paso == 4: 
+            self.capturar_datos_paso4(self.vista.paso4)
+
+    def capturar_datos_paso1(self, paso_widget):
+        
+        #Tipo de permiso
+        tarjetas = [
+            ("Salida Familiar", paso_widget.tarjeta_familiar),
+            ("Permiso educativo", paso_widget.tarjeta_educativo),
+            ("Permiso por defunción", paso_widget.tarjeta_defuncion),
+            ("Permiso médico", paso_widget.tarjeta_medico),
+            ("Permiso laboral", paso_widget.tarjeta_laboral),
+            ("Permiso jurídico", paso_widget.tarjeta_juridico),
+        ]
+
+        for tipo, tarjeta in tarjetas:
+            if tarjeta.seleccionado:
+                self.solicitud.tipo = tipo
+            break
+
+        # Descripcion y motivo
+        self.solicitud.descripcion = paso_widget.desc_texto.toPlainText()
+        self.solicitud.motivo = paso_widget.motivo_texto.text()
+
+        # Nivel de urgencia
+        if paso_widget.boton_normal.isChecked():
+            self.solicitud.urgencia = "Normal"
+        elif paso_widget.boton_importante.isChecked():
+            self.solicitud.urgencia = "Importante"
+        elif paso_widget.boton_urgente.isChecked():
+            self.solicitud.urgencia = "Urgente"
+
+    def capturar_datos_paso2(self, paso_widget):    
+        self.solicitud.fecha_inicio = paso_widget.fecha_inicio.date().toString("dd/MM/yyyy")
+        self.solicitud.fecha_fin = paso_widget.fecha_fin.date().toString("dd/MM/yyyy")
+        self.solicitud.hora_salida = paso_widget.hora_salida.time().toString("HH:mm")
+        self.solicitud.hora_llegada = paso_widget.hora_llegada.time().toString("HH:mm")
+        self.solicitud.destino_principal = paso_widget.destino_texto.text()
+        self.solicitud.ciudad = paso_widget.ciudad_texto.text()
+        self.solicitud.direccion_completa = paso_widget.direccion_texto.text()
+        self.solicitud.codigo_postal = paso_widget.codigo_texto.text()
+
+    def capturar_datos_paso3(self, paso_widget):
+        self.solicitud.nombre_cp = paso_widget.nombre_prin_texto.text()
+        self.solicitud.telf_cp = paso_widget.telefono_prin_texto.text()
+        self.solicitud.relacion_cp = paso_widget.relacion_prin_combo.currentText()
+        self.solicitud.direccion_cp = paso_widget.direccion_prin_texto.text()
+        self.solicitud.nombre_cs = paso_widget.nombre_secun_texto.text()
+        self.solicitud.telf_cs = paso_widget.telefono_secun_texto.text()
+        self.solicitud.relacion_cs = paso_widget.relacion_secun_combo.currentText()
+
+    def capturar_datos_paso4(self, paso_widget):
+        # Documentos
+        documentos =[
+            paso_widget.doc_identidad,
+            paso_widget.doc_relacion,
+            paso_widget.doc_invitacion
+        ]
+
+        valor_guardar_docs = 0
+
+        for i, documento in enumerate(documentos):
+            if documento.isChecked():
+                valor_guardar_docs += (1<< i)
+
+        self.solicitud.docs = valor_guardar_docs
+
+         # Compromisos    
+        self.compromisos = [
+            paso_widget.comp1,
+            paso_widget.comp2, 
+            paso_widget.comp3, 
+            paso_widget.comp4, 
+            paso_widget.comp5, 
+            paso_widget.comp6
+        ]
+
+        valor_guardar_com = 0
+        
+        for i, checkbox in enumerate(self.compromisos):
+            if checkbox.isChecked():
+                valor_guardar_com += (1 << i)
+
+        self.solicitud.compromisos = valor_guardar_com
+        
+        # Observaciones
+        self.solicitud.observaciones = paso_widget.observaciones_texto.toPlainText()
+        
+    def ver_resumen(self):
+        """
+        Envía el formulario
+        """
+        resumen = self.solicitud.get_resumen()
+        self.vista.ver_resumen(resumen)
+
+    def guardar_solicitud(self):            
+        
+        # Llamar a la base de datos
         nuevo_id = agregar_solicitud(
             id_interno=self.num_RC,
-            tipo=datos['tipo'],
-            motivo=datos['motivo'],
-            descripcion=datos['descripcion'],
-            urgencia=datos['urgencia'],
-            fecha_inicio=datos['fecha_inicio'],
-            fecha_fin=datos['fecha_fin'],
-            # ... resto de campos según solicitud_db.py
+            tipo=self.solicitud.tipo,
+            motivo=self.solicitud.motivo,
+            descripcion=self.solicitud.descripcion,
+            urgencia=self.solicitud.urgencia,
+            fecha_inicio=self.solicitud.fecha_inicio,
+            fecha_fin=self.solicitud.fecha_fin,
+            hora_salida=self.solicitud.hora_salida,
+            hora_llegada=self.solicitud.hora_llegada,
+            destino=self.solicitud.destino,
+            cod_pos=self.solicitud.cod_pos,
+            nombre_cp=self.solicitud.nombre_cp,
+            telf_cp=self.solicitud.telf_cp,
+            direccion_cp=self.solicitud.direccon_cp,
+            nombre_cs=self.solicitud.nombre_cs,
+            telf_cs=self.solicitud.telf_cs,
+            relacion_cs=self.solicitud.relacion_cs,
+            docs=self.solicitud.docs,
+            compromiso=self.solicitud.comprmisos,                
+            observaciones=self.solicitud.observaciones,
             estado='pendiente'
         )
         

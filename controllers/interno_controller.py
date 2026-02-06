@@ -1,5 +1,7 @@
 from PyQt5.QtCore import pyqtSignal, QObject
 
+from controllers.solicitud_controller import SolicitudController
+
 from gui.interno_inicio import VentanaInterno
 from gui.ventana_detalle_pregunta_profesional import VentanaDetallePregunta
 
@@ -21,7 +23,7 @@ class InternoController(QObject):
     def __init__(self, usuario):
         super().__init__()
         self.usuario = usuario
-        self.ventana_interno = VentanaInterno()        
+        self.ventana_interno = VentanaInterno()            
 
         self.interno = self.cargar_interno()
         self.solicitud_pedendiente_iniciada = self.cargar_solicitud_pendiente_iniciada() 
@@ -30,6 +32,8 @@ class InternoController(QObject):
             self.ventana_interno.cargar_datos_interno(self.interno)
             if self.solicitud_pedendiente_iniciada is not None:
                 self.interno.add_solicitud(self.solicitud_pedendiente_iniciada)
+
+        self.solicitud_controller = SolicitudController(self.ventana_interno.pantalla_solicitud, self.interno.num_RC)
 
         # ACTUALIZAR PANTALLA INICIO
         self.tiene_pendiente_iniciada = self.solicitud_pedendiente_iniciada is not None
@@ -68,13 +72,12 @@ class InternoController(QObject):
     def cargar_solicitud_pendiente_iniciada(self):
         datos_solicitud = encontrar_solicitud_pendiente_por_interno(self.interno.num_RC)
         if datos_solicitud:
-            solicitud = Solicitud(
-                id_solicitud=datos_solicitud[0],                
-                tipo=datos_solicitud[2],
-                motivo=datos_solicitud[3],
-                descripcion=datos_solicitud[4],
-                urgencia=datos_solicitud[5]
-            ) 
+            solicitud = Solicitud()
+            id_solicitud=datos_solicitud[0],                
+            tipo=datos_solicitud[2],
+            motivo=datos_solicitud[3],
+            descripcion=datos_solicitud[4],
+            urgencia=datos_solicitud[5]
 
             solicitud.fecha_inicio = datos_solicitud[6]
             solicitud.fecha_fin = datos_solicitud[7]
@@ -96,7 +99,7 @@ class InternoController(QObject):
             solicitud.telf_cs = datos_solicitud[19]
             solicitud.relacion_cs = datos_solicitud[20]
 
-            #solivitud.docs = datos_solicitud[21]
+            #solicitud.docs = datos_solicitud[21]
             #solicitud.compromisos = datos_solicitud[22]
             
             # Otros campos
@@ -196,13 +199,16 @@ class InternoController(QObject):
             self.mostrar_detalle_pregunta
         )
 
+        #PANTALLA SOLICITUD
+
 
     # -------- FUNCIONES DE NAVEGACIÓN --------
 
     def iniciar_entrevista(self):
         self.ventana_interno.mostrar_pantalla_preguntas()  
 
-    def iniciar_nueva_solicitud(self):        
+    def iniciar_nueva_solicitud(self):
+
         self.ventana_interno.mostrar_pantalla_solicitud() 
         
     def iniciar_progreso(self):        
