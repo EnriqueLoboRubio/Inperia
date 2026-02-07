@@ -4,6 +4,8 @@ from PyQt5.QtCore import QUrl, Qt, QSize, QTimer
 from PyQt5.QtGui import QFont, QIcon
 import json, os
 
+from gui.estilos import *
+
 def cargar_datos_preguntas():
     ruta_base = os.path.dirname(os.path.dirname(__file__))
     ruta_json = os.path.join(ruta_base, 'data', 'preguntas.json')
@@ -28,8 +30,7 @@ class VentanaDetallePregunta(QDialog):
         self.grabando = False # Estado inicial de grabación
 
         self.setWindowTitle(f"Detalle Pregunta {numero}")
-        self.setFixedSize(1000, 650)
-        self.setStyleSheet("background-color: white;")
+        self.setFixedSize(1000, 650)        
 
         principal_layout = QVBoxLayout(self)
         principal_layout.setSpacing(20)
@@ -51,21 +52,7 @@ class VentanaDetallePregunta(QDialog):
         
         principal_layout.addLayout(top_layout)   
 
-        # --- Texto de la Respuesta (Transcripción) ---
-        estilo_text_box = """
-        QTextEdit {
-            background-color: #F9FAFB; 
-            border: 1px solid #E5E7EB;
-            border-radius: 10px;
-            padding: 10px;
-            color: #374151;
-            font-family: Arial;
-            font-size: 18px; 
-        }
-        QTextEdit:focus {
-            border: 2px solid #3A9D5A;
-        }
-        """    
+        # --- Texto de la Respuesta (Transcripción) ---           
 
         lbl_trancripcion = QLabel("<b>Transcripción (Editable):</b>")
         lbl_trancripcion.setFont(QFont("Arial",11))
@@ -73,7 +60,7 @@ class VentanaDetallePregunta(QDialog):
 
         self.txt_respuesta = QTextEdit()    
         self.txt_respuesta.setReadOnly(False) 
-        self.txt_respuesta.setStyleSheet(estilo_text_box)
+        self.txt_respuesta.setStyleSheet(ESTILO_INPUT)
         self.txt_respuesta.setText(pregunta.respuesta)
         self.txt_respuesta.setMinimumHeight(100)
 
@@ -94,23 +81,7 @@ class VentanaDetallePregunta(QDialog):
         self.slider_audio = QSlider(Qt.Horizontal)
         self.slider_audio.setRange(0, 0)
         self.slider_audio.setCursor(Qt.PointingHandCursor)
-        self.slider_audio.setStyleSheet("""
-        QSlider::groove:horizontal {
-            height: 6px;
-            background: #E5E7EB;
-            border-radius: 3px;
-        }
-        QSlider::handle:horizontal {
-            width: 14px;
-            background: #1E5631;
-            border-radius: 7px;
-            margin: -4px 0;
-        }
-        QSlider::sub-page:horizontal {
-            background: #3A9D5A;
-            border-radius: 3px;
-        }
-        """)
+        self.slider_audio.setStyleSheet(ESTILO_SLIDER)
 
         # Tiempo
         time_layout = QHBoxLayout()
@@ -139,15 +110,7 @@ class VentanaDetallePregunta(QDialog):
         self.boton_play.setFixedSize(50, 50)
         self.boton_play.setToolTip("Reproducir grabación")
         self.boton_play.setCursor(Qt.PointingHandCursor)
-        self.boton_play.setStyleSheet("""
-            QPushButton { 
-                background: rgba(200, 200, 200, 0.6); 
-                border-radius: 25px;
-                padding: 10px; 
-            }
-            QPushButton:hover { background-color: rgba(128, 128, 128, 0.6); }
-            QPushButton:disabled { background-color: #E0E0E0; opacity: 0.5; }
-        """)
+        self.boton_play.setStyleSheet(ESTILO_BOTON_PLAY)
         
         self.boton_play.clicked.connect(lambda: self.toggle_audio(pregunta.archivo_audio))
 
@@ -158,18 +121,7 @@ class VentanaDetallePregunta(QDialog):
         self.boton_grabar.setFixedSize(50, 50)
         self.boton_grabar.setToolTip("Responder por voz")
         self.boton_grabar.setCursor(Qt.PointingHandCursor)
-        self.boton_grabar.setStyleSheet("""
-            QPushButton { 
-                background: #FFFFFF; 
-                border: 2px solid #D32F2F;
-                border-radius: 25px;
-            }
-            QPushButton:hover { background-color: #FFEBEE; }
-            QPushButton[grabando="true"] { 
-                background-color: #D32F2F; 
-                border: none;
-            }
-        """)
+        self.boton_grabar.setStyleSheet(ESTILO_BOTON_GRABAR)
         self.boton_grabar.clicked.connect(self.toggle_grabacion)
 
         controles_layout.addWidget(self.boton_play)
@@ -192,27 +144,13 @@ class VentanaDetallePregunta(QDialog):
         boton_layout = QHBoxLayout()
         boton_layout.setContentsMargins(0, 0, 0, 0)
 
-        estilo_boton = """                          
-            QPushButton { 
-                color: white; 
-                border: 1px solid rgba(255, 255, 255, 0.4); 
-                padding: 10px 15px; 
-                text-align: center;
-                background-color: black; 
-                border-radius: 15px;
-            }
-            QPushButton:hover { 
-                background-color: rgba(71, 70, 70, 0.7); 
-            }
-        """
-
         # Botón Cerrar
         self.boton_cerrar = QPushButton("Cerrar")
         self.boton_cerrar.clicked.connect(self.cerrar_ventana) 
         self.boton_cerrar.setFont(QFont("Arial", 11))   
         self.boton_cerrar.setFixedSize(110,40)
         self.boton_cerrar.setToolTip("Cerrar ventana")
-        self.boton_cerrar.setStyleSheet(estilo_boton)
+        self.boton_cerrar.setStyleSheet(ESTILO_BOTON_SIG_ATR)
         self.boton_cerrar.setCursor(Qt.PointingHandCursor)
 
         # Botón Guardar
@@ -220,7 +158,7 @@ class VentanaDetallePregunta(QDialog):
         self.boton_guardar.setFont(QFont("Arial", 11))   
         self.boton_guardar.setFixedSize(110,40)
         self.boton_guardar.setToolTip("Guardar datos")
-        self.boton_guardar.setStyleSheet(estilo_boton.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930"))
+        self.boton_guardar.setStyleSheet(ESTILO_BOTON_SIG_ATR.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930"))
         self.boton_guardar.setCursor(Qt.PointingHandCursor)
 
         boton_layout.addWidget(self.boton_cerrar)

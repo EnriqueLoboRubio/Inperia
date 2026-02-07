@@ -5,6 +5,8 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize, QTimer 
 import json, os
 
+from gui.estilos import *
+
 def cargar_datos_preguntas():
     
     ruta_base = os.path.dirname(os.path.dirname(__file__))
@@ -118,51 +120,28 @@ class PantallaPreguntas(QWidget):
         self.boton_grabar.setProperty("grabando", False)
         self.boton_grabar.setCursor(Qt.PointingHandCursor)
         self.boton_grabar.setToolTip("Grabar respuesta")
-        self.boton_grabar.setStyleSheet("""
-            QPushButton { 
-                background: #FFFFFF; 
-                border: 2px solid #D32F2F;
-                border-radius: 30px;
-            }
-            QPushButton:hover { background-color: #FFEBEE; }
-            QPushButton[grabando="true"] { 
-                background-color: #D32F2F; 
-                border: none;
-            }
-        """)
+        self.boton_grabar.setStyleSheet(ESTILO_BOTON_GRABAR)
 
         # ------------------- 5. Botones navegación -------------------
         self.botones_widget = QWidget()
         self.botones_layout = QHBoxLayout(self.botones_widget)
         self.botones_layout.addStretch(1)
-
-        estilo_boton = """                                   
-            QPushButton { 
-                color: white; 
-                border: 1px solid rgba(255, 255, 255, 0.4); 
-                padding: 10px 15px; 
-                text-align: center;
-                background-color: black; 
-                border-radius: 15px;
-            }
-            QPushButton:hover { background-color: rgba(71, 70, 70, 0.7); }
-        """
-        estilo_finalizar = estilo_boton.replace("black", "#1E5631").replace("rgba(71, 70, 70, 0.7)", "#3A9D5A")    
+       
+        estilo_finalizar = ESTILO_BOTON_SIG_ATR.replace("black", "#1E5631").replace("rgba(71, 70, 70, 0.7)", "#3A9D5A")    
 
         self.boton_atras = QPushButton("Atrás")
+        self.boton_atras.setStyleSheet(ESTILO_BOTON_SIG_ATR)
         self.boton_atras.setFont(QFont("Arial", 12))
-        self.boton_atras.setStyleSheet(estilo_boton)
         self.boton_atras.setFixedSize(150,50)
         self.boton_atras.hide()
 
-        self.boton_siguiente = QPushButton("Siguiente")
-        self.boton_siguiente.setFont(QFont("Arial", 12))
-        self.boton_siguiente.setStyleSheet(estilo_boton)    
+        self.boton_siguiente = QPushButton("Siguiente")                 
+        self.boton_siguiente.setStyleSheet(ESTILO_BOTON_SIG_ATR)
         self.boton_siguiente.setFixedSize(150,50)   
 
-        self.boton_finalizar = QPushButton("Finalizar")
-        self.boton_finalizar.setFont(QFont("Arial", 12))
+        self.boton_finalizar = QPushButton("Finalizar")       
         self.boton_finalizar.setStyleSheet(estilo_finalizar)
+        self.boton_finalizar.setFont(QFont("Arial", 12))
         self.boton_finalizar.setFixedSize(150,50)
         self.boton_finalizar.hide()
 

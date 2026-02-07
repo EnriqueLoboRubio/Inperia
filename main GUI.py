@@ -60,7 +60,7 @@ def main():
     #ventanaResumenInterno.show()
     #ventanaResumenEditInterno.show()
 
-    #VentanaDetalleProfesional.show()
+    VentanaDetalleProfesional.show()
     #VentanaDetalleInterno.show()
     #VentanaDetalleEditInterno.show()
 

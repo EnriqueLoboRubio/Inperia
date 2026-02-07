@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtCore import Qt, QSize, QParallelAnimationGroup, QEasingCurve, QPropertyAnimation, QRect, QTimer, pyqtSignal
+from gui.estilos import *
 
 class VentanaLogin(QMainWindow):
 
@@ -43,19 +44,7 @@ class VentanaLogin(QMainWindow):
         # Overlay      
         self.texto_over = QLabel("INPERIA\nINTERNO", self.izq)
         self.texto_over.setFont(QFont("Arial", 32, QFont.Bold))
-        self.texto_over.setStyleSheet("""
-            QLabel {
-                background-color: rgba(0, 0, 0, 0.4);
-                color: white;
-                font-size: 32px;
-                font-weight: bold;
-                border-radius: 18px;
-                padding: 18px;
-                padding-top: 10px;
-                padding-bottom: 10px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-            }
-        """)
+        self.texto_over.setStyleSheet(ESTILO_TEXTO_LOGIN)
         self.texto_over.setAlignment(Qt.AlignCenter)
         self.texto_over.setFixedSize(300, 100)
         self.texto_over.move(255,350)             
@@ -96,37 +85,29 @@ class VentanaLogin(QMainWindow):
         self.boton_interno.setIconSize(QSize(50, 50))
         self.boton_interno.setFixedSize(TAM_BOTON, TAM_BOTON)
         self.boton_interno.move(0, 0)
-        self.boton_interno.setStyleSheet("""
-            QPushButton { background: transparent; border: none; padding: 10px; }
-            QPushButton:hover { background-color: rgba(128, 128, 128, 0.6); border-radius: 10px; }
-        """) 
+        self.boton_interno.setStyleSheet(BOTON_PERFIL_LOGIN) 
                 
         self.boton_profesional = QPushButton(self.contenedor_botones_iconos)
         self.boton_profesional.setIcon(icono_profesional)          
         self.boton_profesional.setIconSize(QSize(50, 50))          
         self.boton_profesional.setFixedSize(TAM_BOTON, TAM_BOTON)
         self.boton_profesional.move(TAM_BOTON + ESPACIO, 0) 
-        self.boton_profesional.setStyleSheet("""
-            QPushButton { background: transparent; border: none; padding: 10px; }
-            QPushButton:hover { background-color: rgba(128, 128, 128, 0.6); border-radius: 10px; }
-        """)
+        self.boton_profesional.setStyleSheet(BOTON_PERFIL_LOGIN)
 
         layout_der.setContentsMargins(1, 1, 1, 1)
 
         # Campos de entrada
-        self.input_correo = QLineEdit()
-        self.input_correo.setFont(QFont("Arial", 12))
+        self.input_correo = QLineEdit()        
         self.input_correo.setPlaceholderText("correo@gmail.com")
         self.input_correo.setFixedHeight(40)
-        self.input_correo.setStyleSheet("padding-left: 10px; border-radius: 8px;")
+        self.input_correo.setStyleSheet(ESTILO_INPUT)
         self.input_correo.setFixedWidth(500)
 
-        self.input_contraseña = QLineEdit()
-        self.input_contraseña.setFont(QFont("Arial", 12))
+        self.input_contraseña = QLineEdit()       
         self.input_contraseña.setEchoMode(QLineEdit.Password)
         self.input_contraseña.setPlaceholderText("************")
         self.input_contraseña.setFixedHeight(40)
-        self.input_contraseña.setStyleSheet("padding-left: 10px; border-radius: 8px;")
+        self.input_contraseña.setStyleSheet(ESTILO_INPUT)
         self.input_contraseña.setFixedWidth(500)
 
         label_correo = QLabel("Correo")
@@ -136,11 +117,10 @@ class VentanaLogin(QMainWindow):
         label_contraseña.setFont(QFont("Arial", 16))
         label_contraseña.setFixedWidth(500)
 
-        boton_entrar = QPushButton("Entrar")
-        boton_entrar.setFont(QFont("Arial", 12))
+        boton_entrar = QPushButton("Entrar")        
         boton_entrar.setFixedHeight(50)
         boton_entrar.setFixedWidth(200)         
-        boton_entrar.setStyleSheet("background-color: #222; color: white; border-radius: 8px;")
+        boton_entrar.setStyleSheet(ESTILO_BOTON_NEGRO)
         boton_entrar.setCursor(Qt.PointingHandCursor)  
         boton_entrar.clicked.connect(self.click_entrar)      
 

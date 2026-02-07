@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 
+from gui.estilos import *
+
 class PantallaBienvenidaInterno(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -29,21 +31,8 @@ class PantallaBienvenidaInterno(QWidget):
         principal_layout.addStretch(1)
 
         # Botón iniciar nueva entrevista       
-        self.boton_iniciar = QPushButton("Iniciar nueva entrevista")
-        self.boton_iniciar.setFont(QFont("Arial", 14))        
-        self.boton_iniciar.setStyleSheet("""                                   
-            QPushButton { 
-                color: white; 
-                border: 1px solid rgba(255, 255, 255, 0.4); 
-                padding: 10px 15px; 
-                text-align: center;
-                background-color: black; 
-                border-radius: 15px;
-            }
-            QPushButton:hover { 
-                background-color: rgba(71, 70, 70, 0.7); 
-            }
-        """)
+        self.boton_iniciar = QPushButton("Iniciar nueva entrevista")             
+        self.boton_iniciar.setStyleSheet(ESTILO_BOTON_NEGRO)
 
         principal_layout.addWidget(self.boton_iniciar, alignment=Qt.AlignCenter)
         principal_layout.addStretch(2)

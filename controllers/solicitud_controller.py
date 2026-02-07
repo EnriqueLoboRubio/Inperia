@@ -45,14 +45,14 @@ class SolicitudController(QObject):
             self.vista.actualizar_ui(self.paso_actual)
             return True
         elif self.paso_actual == self.total_pasos:
-            # 1️⃣ Construir resumen (NO guardar)
+            # Construir resumen (NO guardar)
             datos = self.solicitud.get_resumen()
 
-            # 2️⃣ Mostrar diálogo de confirmación
+            # Mostrar diálogo de confirmación
             dialogo = DialogSolicitudEnviada(datos, parent=self.vista)
             confirmado = dialogo.exec_()
 
-            # 3️⃣ Decisión del usuario
+            # Decisión del usuario
             if confirmado == QDialog.Accepted:
                 self.guardar_solicitud()
             else:

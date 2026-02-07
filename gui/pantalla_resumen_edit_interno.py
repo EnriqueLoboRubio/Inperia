@@ -6,6 +6,7 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 import json, os
 
+from gui.estilos import *
 
 
 def cargar_datos_preguntas():
@@ -62,6 +63,7 @@ class PantallaResumen(QWidget):
         scroll_area.setWidgetResizable(True) # contenido se ajuste al ancho
         scroll_area.setFrameShape(QFrame.NoFrame) # Sin borde
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff) # Sin scroll horizontal
+        scroll_area.setStyleSheet(ESTILO_SCROLL)
         
         scroll_content_widget = QWidget()
         scroll_content_layout = QVBoxLayout(scroll_content_widget)       
@@ -85,28 +87,14 @@ class PantallaResumen(QWidget):
 
         # ------------------- 3. Botones Inferior -------------------
         boton_layout = QHBoxLayout()
-        boton_layout.setContentsMargins(0, 0, 0, 0)
-
-        estilo_boton = """                                   
-            QPushButton { 
-                color: white; 
-                border: 1px solid rgba(255, 255, 255, 0.4); 
-                padding: 10px 15px; 
-                text-align: center;
-                background-color: black; 
-                border-radius: 15px;
-            }
-            QPushButton:hover { 
-                background-color: rgba(71, 70, 70, 0.7); 
-            }
-        """
+        boton_layout.setContentsMargins(0, 0, 0, 0)        
         
         #Boton atrás
         self.boton_atras = QPushButton("Atrás")
         self.boton_atras.setFont(QFont("Arial", 12))
         self.boton_atras.setFixedSize(150, 50)
         self.boton_atras.setCursor(Qt.PointingHandCursor)
-        self.boton_atras.setStyleSheet(estilo_boton)
+        self.boton_atras.setStyleSheet(ESTILO_BOTON_SIG_ATR)
         self.boton_atras.setToolTip("Volver a la pantalla de preguntas")
 
         #Boton enviar
@@ -114,7 +102,7 @@ class PantallaResumen(QWidget):
         self.boton_enviar.setFont(QFont("Arial", 12))
         self.boton_enviar.setFixedSize(150, 50)
         self.boton_enviar.setCursor(Qt.PointingHandCursor)       
-        self.boton_enviar.setStyleSheet(estilo_boton.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930"))
+        self.boton_enviar.setStyleSheet(ESTILO_BOTON_SIG_ATR.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930"))
         self.boton_enviar.setToolTip("Enviar respuestas")
 
         
@@ -133,18 +121,7 @@ class PantallaResumen(QWidget):
         
         tarjeta_frame = QFrame()        
 
-        tarjeta_frame.setStyleSheet("""
-            QFrame {
-                background-color: #F5F5F5; 
-                border-radius: 20px;
-                border: 2px solid #E0E0E0;
-            }
-            QLabel {
-                border: none;
-                background-color: transparent;
-                color: black;
-            }               
-        """)
+        tarjeta_frame.setStyleSheet(ESTILO_TARJETA_RESUMEN)
 
         tarjeta_layout = QVBoxLayout(tarjeta_frame)
         tarjeta_layout.setContentsMargins(25, 20, 25, 10)
@@ -184,16 +161,7 @@ class PantallaResumen(QWidget):
         boton_editar.setIcon(icono_editar)
         boton_editar.setIconSize(QSize(25, 25))
         boton_editar.setCursor(Qt.PointingHandCursor)
-        boton_editar.setStyleSheet("""
-            QPushButton {
-                background-color: #B0B0B0; 
-                border: none;
-                border-radius: 22px;
-            }
-            QPushButton:hover {
-                background-color: #909090;
-            }
-        """)
+        boton_editar.setStyleSheet(ESTILO_BOTON_TARJETA)
         boton_editar.setToolTip(f"Ver detalles de la respuesta {numero}")
         
         #Añadir el botón al grupo

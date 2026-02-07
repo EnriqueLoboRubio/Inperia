@@ -8,6 +8,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QDate, QTime, pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 
+from estilos import *
+
 class IndicadorPaso(QWidget):
     """
     Widget para mostrar el indicador de pasos en parte superior
@@ -30,15 +32,7 @@ class IndicadorPaso(QWidget):
             circulo = QLabel(str(i + 1))
             circulo.setFixedSize(60,60)
             circulo.setAlignment(Qt.AlignCenter)
-            circulo.setStyleSheet("""
-                QLabel {
-                    background-color: #E0E0E0;
-                    color: #666;
-                    border-radius: 30px;
-                    font-weight: bold;
-                    font-size: 20px;
-                }
-            """)
+            circulo.setStyleSheet(ESTILO_CIRCULO)
 
             layout.addWidget(circulo)
             self.pasos.append(circulo)
@@ -47,8 +41,7 @@ class IndicadorPaso(QWidget):
                 linea = QFrame()
                 linea.setFrameShape(QFrame.HLine)
                 linea.setStyleSheet("background-color: black")
-                linea.setFixedHeight(4)
-                #linea.setFixedWidth(45)
+                linea.setFixedHeight(4)                
                 linea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
                 
                 layout.addWidget(linea)
@@ -89,7 +82,7 @@ class PermisoTarjeta(QWidget):
         # Icono
         icono_label = QLabel(self)
         icono_label.setPixmap(QPixmap(icono))
-        icono_label.setFixedSize(20,20)
+        icono_label.setFixedSize(60,60)
         icono_label.setAlignment(Qt.AlignCenter)
         icono_label.setAttribute(Qt.WA_TransparentForMouseEvents)
 
@@ -111,6 +104,8 @@ class PermisoTarjeta(QWidget):
 
         layout.addLayout(layout_titulo)
         layout.addWidget(subtitulo_label)
+
+        self.actualizar_estilo()
 
         self.setStyleSheet("""
             PermisoTarjeta {
@@ -143,7 +138,7 @@ class PermisoTarjeta(QWidget):
             """)
         else:
             self.setStyleSheet("""
-                background-color: white;
+                background-color: transparent;
                 border: 2px solid #E0E0E0;
                 border-radius: 8px;
             """)
@@ -223,7 +218,7 @@ class Paso1Widget(QWidget):
         
         self.motivo_texto = QLineEdit()
         self.motivo_texto.setPlaceholderText("Ingrese el motivo específico...")
-        self.estilo_input(self.motivo_texto)
+        self.motivo_texto.setStyleSheet(ESTILO_INPUT)
 
         principal_col1_layout.addWidget(self.motivo_texto)
         principal_contenido_layout.addLayout(principal_col1_layout)
@@ -237,7 +232,7 @@ class Paso1Widget(QWidget):
         self.desc_texto = QTextEdit()
         self.desc_texto.setPlaceholderText("Describa el motivo de su solicitud...")
         self.desc_texto.setFixedHeight(100)
-        self.desc_texto.setStyleSheet("border: 2px solid #E0E0E0; border-radius: 8px; padding: 10px;")
+        self.desc_texto.setStyleSheet(ESTILO_INPUT)
 
         principal_col2_layout.addWidget(self.desc_texto)
 
@@ -259,17 +254,12 @@ class Paso1Widget(QWidget):
         self.urgencia_botones.setExclusive(True) #excluyentes
 
         for boton in [self.boton_normal, self.boton_importante, self.boton_urgente]:
+            boton.setStyleSheet("background-color: transparent;")
             urgencia_layout.addWidget(boton)
 
         principal_col2_layout.addLayout(urgencia_layout)
         principal_contenido_layout.addLayout(principal_col2_layout)
         principal_layout.addLayout(principal_contenido_layout)
-
-    def estilo_input(self, widget):
-        widget.setStyleSheet("""
-            QLineEdit { border: 2px solid #E0E0E0; border-radius: 8px; padding: 10px; min-height: 20px; }
-            QLineEdit:focus { border-color: #2196F3; }
-        """)
 
     def gestionar_seleccion(self, tarjeta_seleccionada):
         """
@@ -315,7 +305,7 @@ class Paso2Widget(QWidget):
         self.fecha_inicio = QDateEdit()
         self.fecha_inicio.setCalendarPopup(True)
         self.fecha_inicio.setDate(QDate.currentDate())
-        self.estilo_date(self.fecha_inicio)
+        self.fecha_inicio.setStyleSheet(ESTILO_INPUT)
 
         inicio_layout.addWidget(inicio_label)
         inicio_layout.addWidget(self.fecha_inicio)
@@ -326,7 +316,7 @@ class Paso2Widget(QWidget):
         self.fecha_fin = QDateEdit()
         self.fecha_fin.setCalendarPopup(True)
         self.fecha_fin.setDate(QDate.currentDate())
-        self.estilo_date(self.fecha_fin)
+        self.fecha_fin.setStyleSheet(ESTILO_INPUT)
         fin_layout.addWidget(fin_label)
         fin_layout.addWidget(self.fecha_fin)
 
@@ -345,7 +335,7 @@ class Paso2Widget(QWidget):
         salida_label.setStyleSheet("font-weight: bold;")
         self.hora_salida = QTimeEdit()
         self.hora_salida.setTime(QTime.currentTime())
-        self.estilo_time(self.hora_salida)
+        self.hora_salida.setStyleSheet(ESTILO_INPUT)
         salida_layout.addWidget(salida_label)
         salida_layout.addWidget(self.hora_salida)
 
@@ -354,7 +344,7 @@ class Paso2Widget(QWidget):
         llegada_label.setStyleSheet("font-weight: bold;")
         self.hora_llegada = QTimeEdit()
         self.hora_llegada.setTime(QTime.currentTime())
-        self.estilo_time(self.hora_llegada)
+        self.hora_llegada.setStyleSheet(ESTILO_INPUT)
         llegada_layout.addWidget(llegada_label)
         llegada_layout.addWidget(self.hora_llegada)
 
@@ -371,7 +361,7 @@ class Paso2Widget(QWidget):
         destino_label.setStyleSheet("font-weight: bold;")
         self.destino_texto = QLineEdit()
         self.destino_texto.setPlaceholderText("Ingrese el destino principal...")
-        self.estilo_input(self.destino_texto)
+        self.destino_texto.setStyleSheet(ESTILO_INPUT)
         destino_principal_layout.addWidget(destino_label)
         destino_principal_layout.addWidget(self.destino_texto)
 
@@ -380,7 +370,7 @@ class Paso2Widget(QWidget):
         ciudad_label.setStyleSheet("font-weight: bold;")
         self.ciudad_texto = QLineEdit()
         self.ciudad_texto.setPlaceholderText("Ciudad...")
-        self.estilo_input(self.ciudad_texto)
+        self.ciudad_texto.setStyleSheet(ESTILO_INPUT)
         ciudad_layout.addWidget(ciudad_label)
         ciudad_layout.addWidget(self.ciudad_texto)
 
@@ -398,7 +388,7 @@ class Paso2Widget(QWidget):
         direccion_label.setStyleSheet("font-weight: bold;")
         self.direccion_texto = QLineEdit()
         self.direccion_texto.setPlaceholderText("Calle, número, referencias...")
-        self.estilo_input(self.direccion_texto)
+        self.direccion_texto.setStyleSheet(ESTILO_INPUT)
         direccion_completa_layout.addWidget(direccion_label)
         direccion_completa_layout.addWidget(self.direccion_texto)
 
@@ -407,7 +397,7 @@ class Paso2Widget(QWidget):
         codigo_label.setStyleSheet("font-weight: bold;")
         self.codigo_texto  = QLineEdit()
         self.codigo_texto.setPlaceholderText("C.P.")
-        self.estilo_input(self.codigo_texto)
+        self.codigo_texto.setStyleSheet(ESTILO_INPUT)
         codigo_layout.addWidget(codigo_label)
         codigo_layout.addWidget(self.codigo_texto)
         
@@ -415,16 +405,7 @@ class Paso2Widget(QWidget):
         direccion_layout.addLayout(codigo_layout, 1)
 
         principal_layout.addLayout(direccion_layout)
-        principal_layout.addStretch()
-
-    def estilo_input(self, widget):
-        widget.setStyleSheet("QLineEdit { border: 2px solid #E0E0E0; border-radius: 8px; padding: 10px; min-height: 20px; }")
-
-    def estilo_date(self, widget):
-        widget.setStyleSheet("QDateEdit { border: 2px solid #E0E0E0; border-radius: 8px; padding: 10px; min-height: 20px; }")
-    
-    def estilo_time(self, widget):
-        widget.setStyleSheet("QTimeEdit { border: 2px solid #E0E0E0; border-radius: 8px; padding: 10px; min-height: 20px; }")
+        principal_layout.addStretch()    
 
 
 class Paso3Widget(QWidget):
@@ -463,7 +444,7 @@ class Paso3Widget(QWidget):
         nombre_prin_label.setStyleSheet("font-weight: bold; font-size: 12px;")
         self.nombre_prin_texto = QLineEdit()
         self.nombre_prin_texto.setPlaceholderText("Nombre y apellidos...")
-        self.nombre_prin_texto.setStyleSheet(self.estilo())
+        self.nombre_prin_texto.setStyleSheet(ESTILO_INPUT)
         nombre_prin_layout.addWidget(nombre_prin_label)
         nombre_prin_layout.addWidget(self.nombre_prin_texto)
 
@@ -472,7 +453,7 @@ class Paso3Widget(QWidget):
         telefono_prin_label.setStyleSheet("font-weight: bold; font-size: 12px;")
         self.telefono_prin_texto = QLineEdit()
         self.telefono_prin_texto.setPlaceholderText("Número de teléfono...")
-        self.telefono_prin_texto.setStyleSheet(self.estilo())
+        self.telefono_prin_texto.setStyleSheet(ESTILO_INPUT)
         telefono_prin_layout.addWidget(telefono_prin_label)
         telefono_prin_layout.addWidget(self.telefono_prin_texto)
 
@@ -482,7 +463,7 @@ class Paso3Widget(QWidget):
         self.relacion_prin_combo = QComboBox()
         self.relacion_prin_combo.addItems(["Seleccionar...", "Padre/Madre", "Hermano/a", 
                                        "Esposo/a", "Hijo/a", "Otro"])
-        self.relacion_prin_combo.setStyleSheet(self.estilo())
+        self.relacion_prin_combo.setStyleSheet(ESTILO_INPUT)
         relacion_prin_layout.addWidget(relacion_prin_label)
         relacion_prin_layout.addWidget(self.relacion_prin_combo)
 
@@ -498,7 +479,7 @@ class Paso3Widget(QWidget):
         direccion_prin_label.setStyleSheet("font-weight: bold; font-size: 12px;")
         self.direccion_prin_texto = QLineEdit()
         self.direccion_prin_texto.setPlaceholderText("Dirección completa del contacto...")
-        self.direccion_prin_texto.setStyleSheet(self.estilo())
+        self.direccion_prin_texto.setStyleSheet(ESTILO_INPUT)
         direccion_prin_layout.addWidget(direccion_prin_label)
         direccion_prin_layout.addWidget(self.direccion_prin_texto)
         # Falta añadirlo al layout principal
@@ -519,7 +500,7 @@ class Paso3Widget(QWidget):
         nombre_secun_label.setStyleSheet("font-weight: bold; font-size: 12px;")
         self.nombre_secun_texto = QLineEdit()
         self.nombre_secun_texto.setPlaceholderText("Nombre y apellidos...")
-        self.nombre_secun_texto.setStyleSheet(self.estilo())
+        self.nombre_secun_texto.setStyleSheet(ESTILO_INPUT)
         nombre_secun_layout.addWidget(nombre_secun_label)
         nombre_secun_layout.addWidget(self.nombre_secun_texto)
 
@@ -528,7 +509,7 @@ class Paso3Widget(QWidget):
         telefono_secun_label.setStyleSheet("font-weight: bold; font-size: 12px;")
         self.telefono_secun_texto = QLineEdit()
         self.telefono_secun_texto.setPlaceholderText("Número de teléfono...")
-        self.telefono_secun_texto.setStyleSheet(self.estilo())
+        self.telefono_secun_texto.setStyleSheet(ESTILO_INPUT)
         telefono_secun_layout.addWidget(telefono_secun_label)
         telefono_secun_layout.addWidget(self.telefono_secun_texto)
         
@@ -538,7 +519,7 @@ class Paso3Widget(QWidget):
         self.relacion_secun_combo = QComboBox()
         self.relacion_secun_combo.addItems(["Seleccionar...", "Padre/Madre", "Hermano/a", 
                                        "Esposo/a", "Hijo/a", "Otro"])
-        self.relacion_secun_combo.setStyleSheet(self.estilo())
+        self.relacion_secun_combo.setStyleSheet(ESTILO_INPUT)
         relacion_secun_layout.addWidget(relacion_secun_label)
         relacion_secun_layout.addWidget(self.relacion_secun_combo)
 
@@ -692,28 +673,29 @@ class PantallaSolicitudInterno(QWidget):
 
         # --- ENCABEZADO --- 
         encabezado_frame = QFrame()
+        encabezado_frame.setObjectName("encabezado")
         encabezado_frame.setStyleSheet("""
-            QFrame {
-                border: 2px solid #E0E0E0;   /* Borde gris */
-                border-radius: 15px;         /* Esquinas redondeadas */
-                background-color: white;     /* Fondo blanco */
+            #encabezado {
+                border: 2px solid #E0E0E0;   
+                border-radius: 15px;         
+                background-color: #f0f0f0;     
             }
         """)
 
         encabezado_layout = QVBoxLayout(encabezado_frame)
-        encabezado_layout.setContentsMargins(20, 20, 20, 20)
+        encabezado_layout.setContentsMargins(20, 20, 5, 20)
         encabezado_layout.setSpacing(5)       
 
 
         # Titulo
         titulo = QLabel("Nueva Solicitud Permiso")
-        titulo.setStyleSheet("font-size: 24px; font-weight: bold; background-color: transparent;")
+        titulo.setStyleSheet("font-size: 30px; font-weight: bold; background-color: transparent;")
 
         self.descripcion_paso = QLabel("Paso 1 de 4 - Complete toda la información requerida")
-        self.descripcion_paso.setStyleSheet("color: #666; font-size: 14px; background-color: transparent;")
+        self.descripcion_paso.setStyleSheet("color: #666; font-size: 18px; background-color: transparent;")
 
         self.subtitulo_paso = QLabel("Información básica del permiso")
-        self.subtitulo_paso.setStyleSheet("color: #666; font-size: 12px; background-color: transparent;")
+        self.subtitulo_paso.setStyleSheet("color: #666; font-size: 16px; background-color: transparent;")
 
         # Indicador pasos
         self.indicador_pasos = IndicadorPaso()
@@ -723,24 +705,16 @@ class PantallaSolicitudInterno(QWidget):
         encabezado_layout.addWidget(self.indicador_pasos)
         encabezado_layout.addWidget(self.subtitulo_paso)
     
-        principal_layout.addWidget(encabezado_frame)       
+        principal_layout.addWidget(encabezado_frame)    
 
-        # Scroll para el contenido
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.NoFrame)
-        scroll.setStyleSheet("QScrollArea { border: none; background-color: transparent; }")
-
-        # Widget contenedor para los pasos
-        contenido_widget = QWidget()
-        contenido_layout = QVBoxLayout(contenido_widget)
-        contenido_layout.setContentsMargins(0, 20, 0, 20)
+        principal_layout.addSpacing(20)
 
         # Frame para el contenido con borde
         self.contenido_frame = QFrame()
+        self.contenido_frame.setObjectName("contenido_frame")
         self.contenido_frame.setStyleSheet("""
-            QFrame {
-                background-color: white;
+            #contenido_frame {
+                background-color: #f0f0f0;
                 border: 2px solid #E0E0E0;
                 border-radius: 12px;
                 padding: 30px;
@@ -748,6 +722,19 @@ class PantallaSolicitudInterno(QWidget):
         """)
 
         frame_layout = QVBoxLayout(self.contenido_frame)
+        frame_layout.setContentsMargins(0, 5, 0, 5)
+
+        # --- SCROLL AREA ---
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame) 
+        scroll.setStyleSheet("background-color: transparent;")    
+        scroll.setStyleSheet(ESTILO_SCROLL)
+
+        scroll_widget = QWidget()
+        scroll_widget.setStyleSheet("background-color: transparent;")   
+
+        scroll_layout = QVBoxLayout(scroll_widget)        
 
         # Stacked para pasos
         self.stacked_widget = QStackedWidget()
@@ -762,13 +749,11 @@ class PantallaSolicitudInterno(QWidget):
         self.stacked_widget.addWidget(self.paso3)
         self.stacked_widget.addWidget(self.paso4)
 
-        frame_layout.addWidget(self.stacked_widget)
-
-        contenido_layout.addWidget(self.contenido_frame)
+        scroll_layout.addWidget(self.stacked_widget) 
+        scroll.setWidget(scroll_widget)              
+        frame_layout.addWidget(scroll)
         
-        scroll.setWidget(contenido_widget) 
-        
-        principal_layout.addWidget(scroll)
+        principal_layout.addWidget(self.contenido_frame, 1)
 
         # --- BOTONES NAVEGACION ---
         botones_layout = QHBoxLayout()
@@ -776,52 +761,26 @@ class PantallaSolicitudInterno(QWidget):
 
         self.boton_anterior = QPushButton("Anterior")
         self.boton_anterior.setFixedSize(120, 45)
-        self.boton_anterior.setEnabled(False)
-        self.boton_anterior.setStyleSheet("""
-            QPushButton {
-                background-color: #333;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #555;
-            }
-            QPushButton:disabled {
-                background-color: #CCC;
-                color: #888;
-            }
-        """)
+        #self.boton_anterior.setEnabled(False)
+        self.boton_anterior.setVisible(False)
+        self.boton_anterior.setStyleSheet(ESTILO_BOTON_SIG_ATR)
 
         self.boton_siguiente = QPushButton("Siguiente")
         self.boton_siguiente.setFixedSize(120, 45)
-        self.boton_siguiente.setStyleSheet("""
-            QPushButton {
-                background-color: #000;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #333;
-            }
-        """)
+        self.boton_siguiente.setStyleSheet(ESTILO_BOTON_SIG_ATR)
 
         botones_layout.addWidget(self.boton_anterior)
         botones_layout.addStretch()
         botones_layout.addWidget(self.boton_siguiente)
 
         principal_layout.addLayout(botones_layout)
+        
 
         # Conectar botones
-        #self.boton_siguiente.clicked.connect(self.ir_siguiente)
-        #self.boton_anterior.clicked.connect(self.ir_anterior)
+        self.boton_siguiente.clicked.connect(self.ir_siguiente)
+        self.boton_anterior.clicked.connect(self.ir_anterior)
 
-        self.setStyleSheet("QWidget { background-color: #F5F5F5; }")
+        self.setStyleSheet("QWidget { background-color: #f0f0f0; }")
 
     def ir_siguiente(self):
         actual = self.stacked_widget.currentIndex()
@@ -841,7 +800,8 @@ class PantallaSolicitudInterno(QWidget):
         self.indicador_pasos.actualizar_paso(paso)
 
         # Actualizar botones
-        self.boton_anterior.setEnabled(paso > 1)
+        #self.boton_anterior.setEnabled(paso > 1)
+        self.boton_anterior.setVisible(paso > 1)
         if paso == 4:
             self.boton_siguiente.setText("Enviar")
         else:
@@ -858,7 +818,7 @@ class PantallaSolicitudInterno(QWidget):
         subtitulos = [
             "Información básica del permiso",
             "Detalles del destino y fechas",
-            "Contactos e información adicional"
+            "Contactos e información adicional",
             "Revisión y confirmación"
         ]
 
@@ -868,3 +828,19 @@ class PantallaSolicitudInterno(QWidget):
 
     def mostrar_validacion_error(self, mensaje):
         QMessageBox.critical(self, "Error de Validación", mensaje)
+
+if __name__ == "__main__":
+    # Inicializar la aplicación
+    app = QApplication(sys.argv)
+    
+    # Crear la ventana principal de solicitud
+    ventana = PantallaSolicitudInterno()
+    
+    # Ajustar un tamaño inicial grande para ver bien el diseño
+    ventana.resize(1200, 800) 
+    
+    # Mostrar la ventana
+    ventana.show()
+    
+    # Ejecutar el bucle de eventos
+    sys.exit(app.exec_())        

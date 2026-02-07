@@ -4,6 +4,8 @@ from PyQt5.QtCore import QUrl, Qt, QSize
 from PyQt5.QtGui import QFont, QIcon
 import json, os
 
+from gui.estilos import *
+
 def cargar_datos_preguntas():
     ruta_base = os.path.dirname(os.path.dirname(__file__))
     ruta_json = os.path.join(ruta_base, 'data', 'preguntas.json')
@@ -26,8 +28,7 @@ class VentanaDetallePregunta(QDialog):
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
 
         self.setWindowTitle(f"Detalle Pregunta {numero}")
-        self.setFixedSize(1000, 900) 
-        self.setStyleSheet("background-color: white;")
+        self.setFixedSize(1000, 900)        
 
         principal_layout = QVBoxLayout(self)
         principal_layout.setSpacing(20)
@@ -49,30 +50,13 @@ class VentanaDetallePregunta(QDialog):
         
         lbl_nivel = QLabel(f"Nivel: {pregunta.nivel}")
         lbl_nivel.setFont(QFont("Arial", 11, QFont.Bold))
-        lbl_nivel.setStyleSheet(("""
-            background-color: transparent; 
-            border: 1.5px solid #808080; 
-            color: #555555;
-            border-radius: 10px; 
-            padding: 2px 12px;
-        """)) 
+        lbl_nivel.setStyleSheet(ESTILO_NIVEL) 
         lbl_nivel.setFixedSize(110,50)
         top_layout.addWidget(lbl_nivel)
         
         principal_layout.addLayout(top_layout)   
 
-        # --- Texto de la Respuesta (Transcripción) ---
-        estilo_text_box = """
-        QTextEdit {
-            background-color: #F9FAFB; 
-            border: 1px solid #E5E7EB;
-            border-radius: 10px;
-            padding: 10px;
-            color: #374151;
-            font-family: Arial;
-            font-size: 18px; 
-        }
-        """     
+        # --- Texto de la Respuesta (Transcripción) ---         
 
         lbl_trancripcion = QLabel("<b>Transcripción:</b>")
         lbl_trancripcion.setFont(QFont("Arial",11))
@@ -80,7 +64,7 @@ class VentanaDetallePregunta(QDialog):
 
         self.txt_respuesta = QTextEdit()
         self.txt_respuesta.setReadOnly(True)
-        self.txt_respuesta.setStyleSheet(estilo_text_box)
+        self.txt_respuesta.setStyleSheet(ESTILO_INPUT)
         self.txt_respuesta.setText(pregunta.respuesta)
         self.txt_respuesta.setMaximumHeight(150) # Altura limitada para dejar sitio al scroll
         self.txt_respuesta.setMinimumHeight(60)
@@ -102,23 +86,7 @@ class VentanaDetallePregunta(QDialog):
         self.slider_audio = QSlider(Qt.Horizontal)
         self.slider_audio.setRange(0, 0)
         self.slider_audio.setCursor(Qt.PointingHandCursor)
-        self.slider_audio.setStyleSheet("""
-        QSlider::groove:horizontal {
-            height: 6px;
-            background: #E5E7EB;
-            border-radius: 3px;
-        }
-        QSlider::handle:horizontal {
-            width: 14px;
-            background: #1E5631;
-            border-radius: 7px;
-            margin: -4px 0;
-        }
-        QSlider::sub-page:horizontal {
-            background: #3A9D5A;
-            border-radius: 3px;
-        }
-        """)
+        self.slider_audio.setStyleSheet(ESTILO_SLIDER)
 
         # Tiempo
         time_layout = QHBoxLayout()
@@ -188,7 +156,7 @@ class VentanaDetallePregunta(QDialog):
 
         self.txt_analisis = QTextEdit()
         self.txt_analisis.setReadOnly(True)
-        self.txt_analisis.setStyleSheet(estilo_text_box)
+        self.txt_analisis.setStyleSheet(ESTILO_INPUT)
         self.txt_analisis.setText(pregunta.valoracion_ia)
         self.txt_analisis.setMaximumHeight(150)
         self.txt_analisis.setMinimumHeight(60)
@@ -206,16 +174,7 @@ class VentanaDetallePregunta(QDialog):
         scroll_area.setFrameShape(QFrame.StyledPanel)
                 
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)            
-        scroll_area.setStyleSheet("""
-        QScrollArea {
-            background-color: #F9FAFB; 
-            border: 1px solid #E5E7EB;
-            border-radius: 10px;
-            padding: 10px;
-            color: #374151;
-            font-family: Arial;
-            font-size: 14px; 
-        }""")
+        scroll_area.setStyleSheet(ESTILO_SCROLL)
         
         scroll_content_widget = QWidget()
         scroll_content_layout = QVBoxLayout(scroll_content_widget)
@@ -254,19 +213,7 @@ class VentanaDetallePregunta(QDialog):
         boton_cerrar.clicked.connect(self.close)
         boton_cerrar.setFont(QFont("Arial", 11))   
         boton_cerrar.setFixedSize(110,40)
-        boton_cerrar.setStyleSheet("""                                   
-            QPushButton { 
-                color: white; 
-                border: 1px solid rgba(255, 255, 255, 0.4); 
-                padding: 10px 15px; 
-                text-align: center;
-                background-color: black; 
-                border-radius: 15px;
-            }
-            QPushButton:hover { 
-                background-color: rgba(71, 70, 70, 0.7); 
-            }
-        """)
+        boton_cerrar.setStyleSheet(ESTILO_BOTON_SIG_ATR)
         boton_cerrar.setCursor(Qt.PointingHandCursor)
         boton_cerrar.setToolTip("Cerrar detalles de la pregunta")
         principal_layout.addWidget(boton_cerrar, alignment=Qt.AlignCenter)
@@ -289,18 +236,7 @@ class VentanaDetallePregunta(QDialog):
 
     def crear_tarjeta_comentario(self, comentario):
         tarjeta_frame = QFrame()        
-        tarjeta_frame.setStyleSheet("""
-            QFrame {
-                background-color: #F5F5F5; 
-                border-radius: 20px;
-                border: 2px solid #E0E0E0;
-            }
-            QLabel {
-                border: none;
-                background-color: transparent;
-                color: black;
-            }               
-        """)
+        tarjeta_frame.setStyleSheet(ESTILO_TARJETA_RESUMEN)
 
         tarjeta_layout = QVBoxLayout(tarjeta_frame)
         tarjeta_layout.setContentsMargins(25, 20, 25, 10)
