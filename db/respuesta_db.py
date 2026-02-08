@@ -14,6 +14,7 @@ def crear_respuesta():
             id_pregunta INTEGER NOT NULL,
             texto_respuesta TEXT,            
             puntuacion_ia REAL,
+            nivel INTEGER,       
             FOREIGN KEY (id_entrevista) REFERENCES entrevistas(id) ON DELETE CASCADE
         )
     ''')
@@ -37,5 +38,25 @@ def agregar_respuesta(id_entrevista, id_pregunta, texto_respuesta, puntacion_ia)
     conexion.commit()
     conexion.close()
     return True
+
+def actualizar_puntuacion_respuesta(id_entrevista, id_pregunta, puntuacion_ia, nivel):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    
+    try:
+        cursor.execute('''
+            UPDATE respuestas 
+            SET puntuacion_ia = ?, 
+                nivel = ?
+            WHERE id_entrevista = ? AND id_pregunta = ?
+        ''', (puntuacion_ia, nivel, id_entrevista, id_pregunta))
+        
+        conexion.commit()
+        return True
+    except Exception as e:
+        print(f"Error al actualizar: {e}")
+        return False
+    finally:
+        conexion.close()
     
     

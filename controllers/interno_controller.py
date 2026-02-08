@@ -1,4 +1,5 @@
 from PyQt5.QtCore import pyqtSignal, QObject
+from datetime import date
 
 from controllers.solicitud_controller import SolicitudController
 
@@ -41,6 +42,9 @@ class InternoController(QObject):
         if self.tiene_pendiente_iniciada is True:         
             self.tiene_entrevista = self.solicitud_pedendiente_iniciada.estado == Tipo_estado_solicitud.PENDIENTE  
         self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(self.tiene_pendiente_iniciada, self.tiene_entrevista)
+
+        # ENTREVISTA
+        
 
         self.conectar_senales()
 
@@ -186,7 +190,12 @@ class InternoController(QObject):
         )
 
         self.ventana_interno.pantalla_preguntas.boton_finalizar.clicked.connect(
-            self.finalizar_entrevista
+            self.ventana_interno.pantalla_preguntas.finalizar_entrevista
+        )        
+
+        # Si la validación pasa
+        self.ventana_interno.pantalla_preguntas.entrevista_finalizada.connect(
+            self.guardar_y_finalizar_entrevista
         )        
 
         #PANTALLA RESUMEN ENTREVISTA
@@ -233,16 +242,35 @@ class InternoController(QObject):
 
         ventana_detalle = VentanaDetallePregunta()
 
-    def finalizar_entrevista(self):
-        self.ventana_interno.mostrar_pantalla_resumen() 
+    def guardar_y_finalizar_entrevista(self, lista_respuestas):
+        """
+        Se ejecuta cuando la vista confirma que todas las preguntas están respondidas.
+        Crea el objeto Entrevista y actualiza el estado.
+        """
+        
+        # 1. Crear Objeto Entrevista
+        nueva_entrevista = Entrevista(
+            id_entrevista=None, # Se generará en BD
+            id_interno=self.interno.num_RC,
+            id_profesional=None, # Aún no asignado
+            fecha=date.today().strftime("%d/%m/%Y") # Fecha de hoy
+        )
+        
+        # Asignamos las respuestas
+        nueva_entrevista.respuestas = lista_respuestas
+        
+        # 2. Asociar a la solicitud actual
+        if self.solicitud_pedendiente_iniciada:
+            self.solicitud_pedendiente_iniciada.entrevista = nueva_entrevista                       
 
-        #Debe comprobar los datos de la entrevista: si hay algunas respuestas incompletas, mensaje de error
-
-        # Guardarlos en el objeto Interno, creando primero el objeto Entrevista
-
-        #
-
-        #Y en la base de datos (aún no implementado)
+        # 3. Cambiar UI                        
+        self.tiene_entrevista = True
+        
+        # Ir a la pantalla de resumen
+        self.ventana_interno.mostrar_pantalla_resumen()
+        
+        # Recargar resumen en la vista
+        # self.ventana_interno.pantalla_resumen_profesional.cargar_datos(nueva_entrevista)
 
     def pantalla_resumen_atras(self):
         self.ventana_interno.abrir_pregunta(10)  # Ir a la última pregunta

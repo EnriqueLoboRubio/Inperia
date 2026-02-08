@@ -108,29 +108,21 @@ def borrar_solicitudes():
     conexion.close()
 
 
-def buscar_y_mostrar_solicitud(id_interno):
-    """
-    Busca una solicitud pendiente o iniciada para un interno específico
-    y muestra los detalles por pantalla.
-    """
-    print(f"\n--- 🔍 BUSCANDO SOLICITUD PARA EL INTERNO: {id_interno} ---")
+def actualizar_estado_solicitud(id_solicitud, estado):   
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
     
-    # Llamamos a la función importada de db/solicitud_db.py
-    solicitud = encontrar_solicitud_pendiente_por_interno(id_interno)
+    try:
+        cursor.execute('''
+            UPDATE solicitudes 
+            SET estado = ?
+            WHERE id_solicitud = ?
+        ''', (id_solicitud, estado))
+        
+        conexion.commit()
+        return True
+    except Exception as e:        
+        return False
+    finally:
+        conexion.close()
 
-    if solicitud:
-        print("✅ Solicitud encontrada con éxito:")
-        print("-" * 40)
-        # Accedemos a los índices según el orden de creación en la tabla
-        print(f"🆔 ID Solicitud: {solicitud[0]}")
-        print(f"👤 ID Interno:   {solicitud[1]}")
-        print(f"📂 Tipo:         {solicitud[2]}")
-        print(f"📝 Motivo:       {solicitud[3]}")
-        print(f"📄 Descripción:  {solicitud[4]}")
-        print(f"🚨 Urgencia:     {solicitud[5]}")
-        print(f"📅 Fecha Inicio: {solicitud[6]}")
-        print(f"📍 Destino:      {solicitud[10]}")
-        print(f"📊 Estado:       {solicitud[24]}") # El estado está en la última columna
-        print("-" * 40)
-    else:
-        print(f"❌ No se encontró ninguna solicitud pendiente o iniciada para el ID {id_interno}.")    

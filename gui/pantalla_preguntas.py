@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QTextEdit
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QTextEdit, QDialog, QFrame
 )
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtCore import Qt, QSize, QTimer 
+from PyQt5.QtGui import QIcon, QFont, QPixmap
+from PyQt5.QtCore import Qt, QSize, QTimer, pyqtSignal 
 import json, os
 
 from gui.estilos import *
@@ -24,7 +24,9 @@ class PantallaPreguntas(QWidget):
         super().__init__(parent)    
 
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
-        self.grabando = False # Estado inicial de la grabación
+        self.grabando = False # Estado inicial de la grabación 
+
+        self.entrevista_finalizada = pyqtSignal()        
             
         principal_layout = QVBoxLayout(self)                     
         
@@ -281,22 +283,103 @@ class PantallaPreguntas(QWidget):
     def finalizar_entrevista(self):
         # Guardar la última respuesta
         self.lista_respuestas[self.numero_pregunta-1] = self.respuesta_widget.toPlainText()
-        print("Entrevista finalizada. Respuestas:", self.lista_respuestas)
-        # Aquí emitirías la señal
+        
+        preguntas_sin_contestar = []
+        for i, respuesta in enumerate(self.lista_respuestas):            
+            if not respuesta or respuesta.strip() == "":
+                preguntas_sin_contestar.append(str(i + 1))    
+        
+        if preguntas_sin_contestar:
+            mensaje = f"Aún faltan por contestar las siguientes preguntas: {', '.join(preguntas_sin_contestar)}.\n\nPor favor, complete todas las respuestas antes de finalizar."
+            self.mostrar_validacion_error(mensaje)
+        else:
+            # Todo correcto
+            self.entrevista_finalizada.emit(self.lista_respuestas)
 
     def eventFilter(self, obj, event):
         if obj == self.boton_info:
-            if event.type() == 10: # Evento Enter (Ratón entra)
-                # Actualizar texto (si cambia dinámicamente)
-                # self.popup_ayuda.setText(texto_actual...) 
-
-                # Calcular posición: justo debajo o al lado del botón
+            if event.type() == 10: 
+    
                 pos = self.boton_info.mapTo(self, self.boton_info.rect().bottomRight())
                 self.popup_ayuda.move(pos.x(), pos.y())
-                self.popup_ayuda.raise_() # Ponerlo encima de todo
+                self.popup_ayuda.raise_() 
                 self.popup_ayuda.show()
                 return True
-            elif event.type() == 11: # Evento Leave (Ratón sale)
+            elif event.type() == 11: 
                 self.popup_ayuda.hide()
                 return True
         return super().eventFilter(obj, event)
+    
+    def mostrar_validacion_error(self, mensaje):
+
+        dialogo = QDialog(self)
+        dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
+        dialogo.setAttribute(Qt.WA_TranslucentBackground)
+        
+        # Layout principal del diálogo
+        layout_main = QVBoxLayout(dialogo)
+        layout_main.setContentsMargins(0, 0, 0, 0)
+        
+        # --- MARCO DE FONDO ---
+        fondo = QFrame()
+        fondo.setObjectName("FondoDialogo") 
+        fondo.setStyleSheet(ESTILO_DIALOGO_ERROR)
+            
+        layout_interno = QVBoxLayout(fondo)
+        layout_interno.setContentsMargins(20, 20, 20, 20)
+        layout_interno.setSpacing(5)
+        
+        # --- ICONO Y TÍTULO  ---
+        layout_cabecera = QHBoxLayout()
+        layout_cabecera.setSpacing(10)
+        
+        lbl_icono = QLabel()
+        pixmap = QPixmap("assets/error.png").scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)     
+        lbl_icono.setPixmap(pixmap) 
+        lbl_icono.setFixedSize(30, 30)
+        lbl_icono.setStyleSheet("background: transparent; border: none;")
+
+
+        titulo = QLabel("Atención")
+        titulo.setObjectName("TituloError")
+        
+        layout_cabecera.addWidget(lbl_icono)
+        layout_cabecera.addWidget(titulo)
+        layout_cabecera.addStretch()
+        
+        # --- TEXTO DEL MENSAJE ---
+        lbl_mensaje = QLabel(mensaje)
+        lbl_mensaje.setObjectName("TextoError")
+        lbl_mensaje.setWordWrap(True)
+        lbl_mensaje.setMinimumWidth(300) 
+        
+        # --- BOTÓN ---
+        boton = QPushButton("Entendido")
+        boton.setCursor(Qt.PointingHandCursor)
+        boton.setStyleSheet("""
+            QPushButton { 
+                background-color: black; 
+                color: white; 
+                border-radius: 10px; 
+                padding: 8px 20px;
+                font-family: 'Arial';
+                font-weight: bold;
+                font-size: 9pt;
+            }
+            QPushButton:hover { background-color: #333; }
+        """)
+        boton.clicked.connect(dialogo.accept)
+     
+        layout_boton = QHBoxLayout()
+        layout_boton.addStretch()
+        layout_boton.addWidget(boton)
+                
+        layout_interno.addLayout(layout_cabecera)
+        layout_interno.addSpacing(5)
+        layout_interno.addWidget(lbl_mensaje)
+        layout_interno.addSpacing(15)
+        layout_interno.addLayout(layout_boton)
+        
+        layout_main.addWidget(fondo)
+        
+        dialogo.exec_()       

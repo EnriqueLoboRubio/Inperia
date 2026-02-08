@@ -5,15 +5,15 @@ class Entrevista:
         self.id_interno = id_interno
         self.fecha = fecha
         self.puntuacion = -1
-        self.preguntas = []
+        self.respuestas = []
         self.resumen = ""
         self.comentarios = []   
 
     def add_comentario(self, nuevo_comentario):
         self.comentarios.append(nuevo_comentario)
     
-    def add_pregunta(self, pregunta):
-        self.preguntas.append(pregunta)
+    def add_respuestas(self, respuesta):
+        self.respuestas.append(respuesta)
     
     def to_json(self):
         "Devuelve un diccionario con el formato JSON de la entrevista, para mandar a LLM"
@@ -23,7 +23,7 @@ class Entrevista:
             "id_interno": self.id_interno,            
             "fecha": self.fecha,
             "puntuacion_global": self.puntuacion if self.puntuacion != -1 else None,
-            "respuestas": [pregunta.to_json() for pregunta in self.preguntas],
+            "respuestas": [respuesta.to_json() for respuesta in self.respuestas],
         }
 
 

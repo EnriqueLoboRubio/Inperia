@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QLabel, QLineEdit, QPushButton,
-    QHBoxLayout, QVBoxLayout, QMessageBox, QGraphicsOpacityEffect 
+    QHBoxLayout, QVBoxLayout, QMessageBox, QGraphicsOpacityEffect, QFrame, QDialog 
 )
 from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtCore import Qt, QSize, QParallelAnimationGroup, QEasingCurve, QPropertyAnimation, QRect, QTimer, pyqtSignal
@@ -267,12 +267,79 @@ class VentanaLogin(QMainWindow):
         self.signal_solicitar_login.emit(correo, contrasena, self.tipo_pantalla)
 
     def mostrar_mensaje_error(self, mensaje):
-        if "CRITICO" in mensaje:
-            QMessageBox.critical(self, "Cuenta Suprimida", mensaje.replace("CRITICO: ", ""))
+        if "CRITICO" in mensaje:        
+            imagen = "assets/borrado.png"
+            tit = "Cuenta eliminada"
             self.input_correo.clear()
             self.input_contraseña.clear()
-        else:
-            QMessageBox.warning(self, "Error de acceso", mensaje)
+        else:            
+            imagen = "assets/error.png"
+            tit = "Atención"
             if "existe" in mensaje:
                 self.input_correo.clear()
                 self.input_contraseña.clear()
+
+        """
+        Crea un diálogo personalizado para tener control total del espaciado
+        """
+        dialogo = QDialog(self)
+        dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
+        dialogo.setAttribute(Qt.WA_TranslucentBackground)
+        
+        # Layout principal del diálogo
+        layout_main = QVBoxLayout(dialogo)
+        layout_main.setContentsMargins(0, 0, 0, 0)
+        
+        # --- MARCO DE FONDO ---
+        fondo = QFrame()
+        fondo.setObjectName("FondoDialogo") 
+        fondo.setStyleSheet(ESTILO_DIALOGO_ERROR)
+            
+        layout_interno = QVBoxLayout(fondo)
+        layout_interno.setContentsMargins(20, 20, 20, 20)
+        layout_interno.setSpacing(5)
+        
+        # --- ICONO Y TÍTULO  ---
+        layout_cabecera = QHBoxLayout()
+        layout_cabecera.setSpacing(10)
+        
+        lbl_icono = QLabel()
+                 
+        pixmap = QPixmap(imagen).scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)  
+        lbl_icono.setPixmap(pixmap) 
+        lbl_icono.setFixedSize(30, 30)
+        lbl_icono.setStyleSheet("background: transparent; border: none;")
+
+
+        titulo = QLabel(tit)
+        titulo.setObjectName("TituloError")
+        
+        layout_cabecera.addWidget(lbl_icono)
+        layout_cabecera.addWidget(titulo)
+        layout_cabecera.addStretch()
+        
+        # --- TEXTO DEL MENSAJE ---
+        lbl_mensaje = QLabel(mensaje)
+        lbl_mensaje.setObjectName("TextoError")
+        lbl_mensaje.setWordWrap(True)
+        lbl_mensaje.setMinimumWidth(300) 
+        
+        # --- BOTÓN ---
+        boton = QPushButton("Entendido")
+        boton.setCursor(Qt.PointingHandCursor)
+        boton.setStyleSheet(ESTILO_BOTON_ERROR)
+        boton.clicked.connect(dialogo.accept)
+     
+        layout_boton = QHBoxLayout()
+        layout_boton.addStretch()
+        layout_boton.addWidget(boton)
+                
+        layout_interno.addLayout(layout_cabecera)
+        layout_interno.addSpacing(5)
+        layout_interno.addWidget(lbl_mensaje)
+        layout_interno.addSpacing(15)
+        layout_interno.addLayout(layout_boton)
+        
+        layout_main.addWidget(fondo)
+        
+        dialogo.exec_() 

@@ -8,7 +8,7 @@ from PyQt5.QtGui import QFont, QPixmap
 class DialogSolicitudEnviada(QDialog):
     def __init__(self, datos, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Solicitud Enviada")
+        self.setWindowTitle("Comprobar Solicitud")
         self.setModal(True)
         self.setFixedSize(520, 420)
         self.init_ui(datos)
@@ -26,7 +26,7 @@ class DialogSolicitudEnviada(QDialog):
 
         textos = QVBoxLayout()
 
-        titulo = QLabel("Solicitud Enviada Exitosamente")
+        titulo = QLabel("¿Desea enviar esta solicitud?")
         titulo.setFont(QFont("Arial", 14, QFont.Bold))
 
         textos.addWidget(titulo)

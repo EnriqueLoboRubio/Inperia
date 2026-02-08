@@ -1,5 +1,6 @@
 import sqlite3
 from db.conexion import obtener_conexion
+from db.respuesta_db import *
 
 # -------------------------------- ENTREVISTA ------------------------------- #
 
@@ -25,7 +26,7 @@ def crear_entrevista():
     conexion.close()
 
 # Función para agregar un nuevo entrevista a la base de datos
-def agregar_entrevista(id_profesional, id_interno, id_solicitud, fecha, puntuacion_global):
+def agregar_entrevista(id_profesional, id_interno, id_solicitud, fecha, puntuacion_global, lista_respuestas):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:        
@@ -33,9 +34,21 @@ def agregar_entrevista(id_profesional, id_interno, id_solicitud, fecha, puntuaci
             INSERT INTO entrevistas (id_profesional, id_interno, id_solicitud, fecha, puntuacion_global)
             VALUES (?, ?, ?, ?, ?)
         ''', (id_profesional, id_interno, id_solicitud, fecha, puntuacion_global))
+
+        id_entrevista = cursor.lastrowid
+
+        for i, texto in enumerate(lista_respuestas):
+            id_pregunta = i + 1
+            
+            cursor.execute('''
+                INSERT INTO respuestas (id_entrevista, id_pregunta, texto_respuesta)
+                VALUES (?, ?, ?, ?)
+            ''', (id_entrevista, id_pregunta, texto))
+
     except sqlite3.IntegrityError:
         print("Error: No se ha podido crear la entrevista")
         return False
+     
     
     conexion.commit()
     conexion.close()
@@ -66,3 +79,22 @@ def borrar_entrevista():
     cursor.execute('DROP TABLE IF EXISTS entrevistas')
     conexion.commit()
     conexion.close()
+
+def actualizar_puntuacion_entrevista(id, puntuacion_global):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    
+    try:
+        cursor.execute('''
+            UPDATE entrevista 
+            SET puntuacion_global = ?,                 
+            WHERE id = ?
+        ''', (puntuacion_global, id))
+        
+        conexion.commit()
+        return True
+    except Exception as e:
+        print(f"Error al actualizar: {e}")
+        return False
+    finally:
+        conexion.close()    

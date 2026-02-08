@@ -1,4 +1,5 @@
 from utils.enums import Tipo_estado_solicitud
+from datetime import datetime
 
 class Solicitud:
     def __init__(self):
@@ -50,6 +51,10 @@ class Solicitud:
     def valida_paso2(self):
         """
         Valida los datos del paso 2
+            1. Fecha fin no anterior a fecha inicio.
+            2. Duración máxima de 7 días.
+            3. Hora de salida entre 10:30 y 12:00.
+            4. Hora de llegada máximo a las 20:00.        
         """
         if not self.fecha_inicio or not self.fecha_fin:
             return False, "Debe seleccionar las fechas de inicio y fin"
@@ -60,8 +65,47 @@ class Solicitud:
         if not self.ciudad.strip():
             return False, "Debe ingresar la ciudad"
         if not self.direccion.strip():
-            return False, "Debe ingresar la dirección"
-        return True, ""
+            return False, "Debe ingresar la dirección"           
+        try:
+                    # 1. Convertir Cadenas a Objetos (Parsing)
+                    # El formato debe coincidir con el usado en el controller: "dd/MM/yyyy" y "HH:mm"
+                    formato_fecha = "%d/%m/%Y"
+                    formato_hora = "%H:%M"
+
+                    f_inicio = datetime.strptime(self.fecha_inicio, formato_fecha).date()
+                    f_fin = datetime.strptime(self.fecha_fin, formato_fecha).date()
+                    
+                    h_salida = datetime.strptime(self.hora_salida, formato_hora).time()
+                    h_llegada = datetime.strptime(self.hora_llegada, formato_hora).time()
+
+                    # --- REGLA 1: Coherencia de fechas ---
+                    if f_fin < f_inicio:
+                        return False, "La fecha de fin no puede ser anterior a la de inicio."
+
+                    # --- REGLA 2: Máximo 7 días ---
+                    dias_diferencia = (f_fin - f_inicio).days
+                    if dias_diferencia > 7:
+                        return False, f"El permiso no puede exceder los 7 días (Has seleccionado {dias_diferencia})."
+
+                    # --- REGLA 3: Hora de salida (10:30 - 12:00) ---
+                    # Creamos los límites de tiempo para comparar
+                    limite_salida_inicio = datetime.strptime("10:30", "%H:%M").time()
+                    limite_salida_fin = datetime.strptime("12:00", "%H:%M").time()
+
+                    if not (limite_salida_inicio <= h_salida <= limite_salida_fin):
+                        return False, "La hora de salida debe ser entre las 10:30 y las 12:00."
+
+                    # --- REGLA 4: Hora de llegada (Máximo 20:00) ---
+                    limite_llegada = datetime.strptime("20:00", "%H:%M").time()
+
+                    if h_llegada > limite_llegada:
+                        return False, "La hora de llegada no puede ser después de las 20:00."
+
+                    # Si pasa todas las validaciones
+                    return True, ""
+
+        except ValueError:
+            return False, "Error en el formato de las fechas u horas."
     
     def valida_paso3(self):
         """
