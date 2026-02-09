@@ -44,6 +44,7 @@ class PantallaResumen(QWidget):
         super().__init__(parent)
 
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
+        self.respuestas = []
         
         #Contenedor lógico para manejar botones de entrar
         self.grupo_botones_entrar = QButtonGroup(self)
@@ -52,38 +53,24 @@ class PantallaResumen(QWidget):
         principal_layout = QVBoxLayout(self)       
 
         # ------------------- 1. Título Superior -------------------
-        titulo_pantalla = QLabel("Entrevista de interno X")
+        titulo_pantalla = QLabel("Resumen de Entrevista")
         titulo_pantalla.setFont(QFont("Arial", 20, QFont.Bold))
         titulo_pantalla.setAlignment(Qt.AlignLeft)
         principal_layout.addWidget(titulo_pantalla)
 
         # ------------------- 2. Área de Scroll -------------------
         
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True) # contenido se ajuste al ancho
-        scroll_area.setFrameShape(QFrame.NoFrame) # Sin borde
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff) # Sin scroll horizontal
-        scroll_area.setStyleSheet(ESTILO_SCROLL)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True) # contenido se ajuste al ancho
+        self.scroll_area.setFrameShape(QFrame.NoFrame) # Sin borde
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff) # Sin scroll horizontal
+        self.scroll_area.setStyleSheet(ESTILO_SCROLL)
         
         scroll_content_widget = QWidget()
-        scroll_content_layout = QVBoxLayout(scroll_content_widget)       
-        scroll_content_layout.setAlignment(Qt.AlignTop)
-        scroll_content_layout.setSpacing(20) # Espacio entre tarjetas
-        scroll_content_layout.setContentsMargins(50, 20, 50, 0)
-
-        # --- crear 10 tarjetas ---
-        for i in range(1, 11):
-            clave = str(i)
-            datos = self.PREGUNTAS_DATA.get(clave, {})
-            titulo_json = datos.get("titulo", f"Pregunta {i}")
-
-            # crear la tarjeta
-            tarjeta = self.crear_tarjeta_pregunta(i, titulo_json)
-            scroll_content_layout.addWidget(tarjeta) 
-
-        scroll_area.setWidget(scroll_content_widget)                
-        
-        principal_layout.addWidget(scroll_area, 1) # máximo espacio posible 
+        self.scroll_content_layout = QVBoxLayout(scroll_content_widget)       
+        self.scroll_content_layout.setAlignment(Qt.AlignTop)
+        self.scroll_content_layout.setSpacing(20) # Espacio entre tarjetas
+        self.scroll_content_layout.setContentsMargins(50, 20, 50, 0) 
 
         # ------------------- 3. Botones Inferior -------------------
         boton_layout = QHBoxLayout()
@@ -117,7 +104,7 @@ class PantallaResumen(QWidget):
 
     # ------------------- Funciones Auxiliares -------------------
     
-    def crear_tarjeta_pregunta(self, numero, titulo): #Cambiar a  objeto pregunta
+    def crear_tarjeta_pregunta(self, numero, titulo, texto): #Cambiar a  objeto pregunta
         
         tarjeta_frame = QFrame()        
 
@@ -141,9 +128,11 @@ class PantallaResumen(QWidget):
 
         tarjeta_layout.addLayout(top_tarjeta_layout)
                 
-        # Contenido (Respuesta, Nivel, Análisis)        
-        lbl_respuesta = QLabel("<b>Respuesta:</b> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
-        # lbl_respuesta.setText(f"<b>Respuesta:</b> {datos.get('respuesta', 'Sin datos')}")
+        # Contenido (Respuesta, Nivel, Análisis)  
+        if not texto:
+            texto = "<i>Sin respuesta registrada</i>"
+
+        lbl_respuesta = QLabel(texto)
         lbl_respuesta.setFont(QFont("Arial", 11))
         lbl_respuesta.setWordWrap(True) # texto salta de línea si es muy largo
         lbl_respuesta.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
@@ -172,3 +161,36 @@ class PantallaResumen(QWidget):
         tarjeta_layout.addLayout(boton_layout)
 
         return tarjeta_frame
+    
+    def cargar_datos_respuestas(self, entrevista):
+        """
+        Genera un contenedor NUEVO con las tarjetas.
+        """
+        # 1. Crear un nuevo widget contenedor y un nuevo layout
+        nuevo_widget_contenido = QWidget()
+        nuevo_layout = QVBoxLayout(nuevo_widget_contenido)
+        nuevo_layout.setAlignment(Qt.AlignTop)
+        nuevo_layout.setSpacing(20)
+        nuevo_layout.setContentsMargins(50, 20, 50, 0)
+
+        # 3. Generar las tarjetas en el NUEVO layout
+        for i, respuesta_texto in enumerate(entrevista.respuestas):
+            numero_pregunta = i + 1
+            clave_json = str(numero_pregunta)
+            
+            # Obtener título del JSON (asegúrate de tener acceso a PREGUNTAS_DATA)
+            datos_pregunta = self.PREGUNTAS_DATA.get(clave_json, {})
+            titulo = datos_pregunta.get("titulo", f"Pregunta {numero_pregunta}")
+
+            # Crear tarjeta
+            tarjeta = self.crear_tarjeta_pregunta(numero_pregunta, titulo, respuesta_texto)
+            nuevo_layout.addWidget(tarjeta)
+            
+        nuevo_layout.addStretch()
+
+        # 4. ASIGNACIÓN FINAL: Reemplazamos el widget antiguo por el nuevo
+        # Esto elimina automáticamente el layout viejo y sus hijos de forma segura
+        self.scroll_area.setWidget(nuevo_widget_contenido)
+        
+        # Opcional: Actualizar la referencia por si necesitas acceder luego (aunque no deberías)
+        self.scroll_content_layout = nuevo_layout

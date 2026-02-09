@@ -1,15 +1,18 @@
 from PyQt5.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QStackedWidget, QMessageBox
+    QMainWindow, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QStackedWidget, QMessageBox,
+    QDialog, QFrame, QLabel, 
 )
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QIcon, QFont, QPixmap
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
 
 from gui.pantalla_bienvenida_interno import PantallaBienvenidaInterno
 from gui.pantalla_preguntas import PantallaPreguntas
-from gui.pantalla_resumen_profesional import PantallaResumen as PantallaResumenProfesional
+from gui.pantalla_resumen_edit_interno import PantallaResumen as PantallaResumenEdit
 from gui.pantalla_progreso import PantallaProgresoInterno as PantallaProgreso
 from gui.pantalla_solicitud import PantallaSolicitudInterno as PantallaSolicitud
 from gui.pantalla_perfil import PantallaPerfil
+
+from gui.estilos import *
 
 class VentanaInterno(QMainWindow):
     
@@ -233,7 +236,7 @@ class VentanaInterno(QMainWindow):
 
         self.pantalla_bienvenida = PantallaBienvenidaInterno()
         self.pantalla_preguntas = PantallaPreguntas()
-        self.pantalla_resumen_profesional = PantallaResumenProfesional()
+        self.pantalla_resumen_profesional = PantallaResumenEdit()
         self.pantalla_progreso = PantallaProgreso()
         self.pantalla_solicitud = PantallaSolicitud()
         self.pantalla_perfil = PantallaPerfil()
@@ -453,16 +456,95 @@ class VentanaInterno(QMainWindow):
         self.pantalla_bienvenida.set_interno(interno)
 
     def mostrar_confirmacion_logout(self):
-            """
-            Muestra un cuadro de diálogo preguntando sí o no.
-            Devuelve True si el interno dice "Sí", False si dice "No".
-            """
-            respuesta = QMessageBox.question(
-                self,
-                "Cerrar Sesión",
-                "¿Estás seguro de que quieres cerrar sesión?\nPerderá los datos no guardados",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No
-            )
-            
-            return respuesta == QMessageBox.Yes        
+        dialogo = QDialog(self)
+        dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
+        dialogo.setAttribute(Qt.WA_TranslucentBackground)
+        dialogo.setModal(True)
+
+        # Layout principal
+        layout_main = QVBoxLayout(dialogo)
+        layout_main.setContentsMargins(0, 0, 0, 0)
+
+        # --- FONDO ---
+        fondo = QFrame()
+        fondo.setObjectName("FondoDialogo")
+        fondo.setStyleSheet(ESTILO_DIALOGO_ERROR)  # puedes usar otro estilo si quieres
+
+        layout_interno = QVBoxLayout(fondo)
+        layout_interno.setContentsMargins(20, 20, 20, 20)
+        layout_interno.setSpacing(10)
+
+        # --- CABECERA ---
+        layout_cabecera = QHBoxLayout()
+
+        lbl_icono = QLabel()
+        pixmap = QPixmap("assets/warning.png").scaled(
+            30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        lbl_icono.setPixmap(pixmap)
+
+        titulo = QLabel("Cerrar sesión")
+        titulo.setObjectName("TituloError")
+
+        layout_cabecera.addWidget(lbl_icono)
+        layout_cabecera.addWidget(titulo)
+        layout_cabecera.addStretch()
+
+        # --- MENSAJE ---
+        lbl_mensaje = QLabel(
+            "¿Estás seguro de que quieres cerrar sesión?\n\n"
+            "Perderá los datos no guardados."
+        )
+        lbl_mensaje.setObjectName("TextoError")
+        lbl_mensaje.setWordWrap(True)
+        lbl_mensaje.setMinimumWidth(320)
+
+        # --- BOTONES ---
+        btn_si = QPushButton("Sí")
+        btn_no = QPushButton("No")
+
+        btn_si.setCursor(Qt.PointingHandCursor)
+        btn_no.setCursor(Qt.PointingHandCursor)
+
+        btn_si.setStyleSheet("""
+            QPushButton {
+                background-color: #792A24;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 25px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #C03930; }
+        """)
+
+        btn_no.setStyleSheet("""
+            QPushButton {
+                background-color: #555;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 25px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #777; }
+        """)
+
+        btn_si.clicked.connect(dialogo.accept)
+        btn_no.clicked.connect(dialogo.reject)
+
+        layout_botones = QHBoxLayout()
+        layout_botones.addStretch()
+        layout_botones.addWidget(btn_no)
+        layout_botones.addWidget(btn_si)
+
+        # --- ENSAMBLADO ---
+        layout_interno.addLayout(layout_cabecera)
+        layout_interno.addSpacing(10)
+        layout_interno.addWidget(lbl_mensaje)
+        layout_interno.addSpacing(20)
+        layout_interno.addLayout(layout_botones)
+
+        layout_main.addWidget(fondo)
+
+        # --- EJECUCIÓN ---
+        resultado = dialogo.exec_()
+        return resultado == QDialog.Accepted

@@ -58,9 +58,9 @@ def main():
 
     #ventanaResumenProf.show()
     #ventanaResumenInterno.show()
-    #ventanaResumenEditInterno.show()
+    ventanaResumenEditInterno.show()
 
-    VentanaDetalleProfesional.show()
+    #VentanaDetalleProfesional.show()
     #VentanaDetalleInterno.show()
     #VentanaDetalleEditInterno.show()
 

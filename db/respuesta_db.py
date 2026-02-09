@@ -58,5 +58,13 @@ def actualizar_puntuacion_respuesta(id_entrevista, id_pregunta, puntuacion_ia, n
         return False
     finally:
         conexion.close()
+
+# Función para borrar la tabla de respuesta (para pruebas)
+def borrar_respuestas():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute('DROP TABLE IF EXISTS respuestas')
+    conexion.commit()
+    conexion.close()        
     
     

@@ -2,6 +2,7 @@ from db.usuario_db import *
 from db.interno_db import *
 from db.solicitud_db import *
 from db.entrevista_db import *
+from db.respuesta_db import *
 
 def generar_usuario():    
     agregar_usuario("admin", "admin@g.com", "Admin123", "administrador") #1
@@ -27,16 +28,29 @@ def generar_solicitud():
                       "carmen", "2222", "madre",
                       "123", "123456", "nada", "pendiente") #2  
 
+
 def generar_entrevista():
-    agregar_entrevista("4", "5", "2", "22/11/2020", "34")
+    lista_respuestas = [
+        "respuesta 1",
+        "respuesta 2",
+        "respuesta 3",
+        "respuesta 4",
+        "respuesta 5",
+        "respuesta 6",
+        "respuesta 7",
+        "respuesta 8",
+        "respuesta 9",
+        "respuesta 10",
+    ]
+    agregar_entrevista("4", "5", "2", "22/11/2020", "34", lista_respuestas)
 
 def reiniciar_base_de_datos():
     
 
-    print("Borrando tablas antiguas...")
-    # PASO 1: Borrar en orden de dependencia (de hijas a padres)
+    print("Borrando tablas antiguas...")    
     
-    borrar_entrevista()
+    borrar_respuestas()
+    borrar_entrevistas()
     borrar_solicitudes()
     borrar_internos()
     borrar_usuarios()    
@@ -49,9 +63,9 @@ def reiniciar_base_de_datos():
     crear_usuario()       #
     crear_interno()       #
     #crear_profesional()   #
+    crear_respuesta()     #
     crear_solicitud()     #
     crear_entrevista()    #
-    #crear_respuesta()     #
     #crear_comentario()    #
     
     print("Base de datos reconstruida completamente.")    
@@ -64,7 +78,7 @@ if __name__ == "__main__":
     generar_usuario()
     generar_internos()
     generar_solicitud()    
-    generar_entrevista() 
+    generar_entrevista()
     
     #buscar_y_mostrar_solicitud("3")                 
     

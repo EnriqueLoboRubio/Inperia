@@ -25,7 +25,7 @@ def crear_entrevista():
     conexion.commit()
     conexion.close()
 
-# Función para agregar un nuevo entrevista a la base de datos
+# Función para agregar un nuevo entrevista a la base de datos, y añade las respuestas a su tabla
 def agregar_entrevista(id_profesional, id_interno, id_solicitud, fecha, puntuacion_global, lista_respuestas):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
@@ -42,7 +42,7 @@ def agregar_entrevista(id_profesional, id_interno, id_solicitud, fecha, puntuaci
             
             cursor.execute('''
                 INSERT INTO respuestas (id_entrevista, id_pregunta, texto_respuesta)
-                VALUES (?, ?, ?, ?)
+                VALUES (?, ?, ?)
             ''', (id_entrevista, id_pregunta, texto))
 
     except sqlite3.IntegrityError:
@@ -73,7 +73,7 @@ def encontrar_entrevista_por_solicitud(id_solicitud):
     return entrevista
 
 # Función para borrar la tabla de entrevistas (para pruebas)
-def borrar_entrevista():
+def borrar_entrevistas():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     cursor.execute('DROP TABLE IF EXISTS entrevistas')

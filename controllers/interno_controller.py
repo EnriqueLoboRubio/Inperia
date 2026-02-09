@@ -4,7 +4,7 @@ from datetime import date
 from controllers.solicitud_controller import SolicitudController
 
 from gui.interno_inicio import VentanaInterno
-from gui.ventana_detalle_pregunta_profesional import VentanaDetallePregunta
+from gui.ventana_detalle_edit_pregunta_interno import VentanaDetallePregunta
 
 from db.interno_db import *
 from db.solicitud_db import *
@@ -153,7 +153,7 @@ class InternoController(QObject):
             self.verificar_creacion_solicitud
         )
 
-        #Botom Perfil
+        #Boton Perfil
         self.ventana_interno.boton_usuario.clicked.connect(
             self.iniciar_perfil
         )
@@ -264,13 +264,13 @@ class InternoController(QObject):
             self.solicitud_pedendiente_iniciada.entrevista = nueva_entrevista                       
 
         # 3. Cambiar UI                        
-        self.tiene_entrevista = True
+        #self.tiene_entrevista = True
         
         # Ir a la pantalla de resumen
         self.ventana_interno.mostrar_pantalla_resumen()
         
         # Recargar resumen en la vista
-        # self.ventana_interno.pantalla_resumen_profesional.cargar_datos(nueva_entrevista)
+        self.ventana_interno.pantalla_resumen_profesional.cargar_datos_respuestas(nueva_entrevista)
 
     def pantalla_resumen_atras(self):
         self.ventana_interno.abrir_pregunta(10)  # Ir a la última pregunta

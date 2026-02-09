@@ -20,13 +20,15 @@ def cargar_datos_preguntas():
         return {"1": {"titulo": "Error", "texto": "Error al cargar archivo."}}
 
 class PantallaPreguntas(QWidget):
+
+    #Señales
+    entrevista_finalizada = pyqtSignal(list)  
+
     def __init__(self, parent=None):
         super().__init__(parent)    
 
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
-        self.grabando = False # Estado inicial de la grabación 
-
-        self.entrevista_finalizada = pyqtSignal()        
+        self.grabando = False # Estado inicial de la grabación               
             
         principal_layout = QVBoxLayout(self)                     
         
@@ -74,14 +76,13 @@ class PantallaPreguntas(QWidget):
         self.titulo_pregunta = QLabel("Pregunta "+ str(self.numero_pregunta) + " :")
         self.titulo_pregunta.setFont(QFont("Arial", 18, QFont.Bold))
         self.titulo_pregunta.setAlignment(Qt.AlignLeft)
-        self.pregunta_layout.addWidget(self.titulo_pregunta)
 
         self.pregunta_layout.addWidget(self.boton_info)
         self.pregunta_layout.setSpacing(10)
         self.pregunta_layout.addWidget(self.titulo_pregunta)
 
         # ------------------- 2. Texto con la pregunta -------------------        
-        self.lista_respuestas = [""] * 10 
+        self.lista_respuestas = [""] * len(self.PREGUNTAS_DATA)
 
         self.texto_pregunta = QLabel()
         self.texto_pregunta.setFont(QFont("Arial", 14))
@@ -224,6 +225,7 @@ class PantallaPreguntas(QWidget):
         self.lbl_estado_grabacion.setStyleSheet("color: #388E3C; font-weight: bold;")
 
     def cargar_pregunta(self, numero):
+        self.numero_pregunta = numero
         # Resetear estado de grabación al cambiar de pregunta
         self.grabando = False
         self.boton_grabar.setProperty("grabando", False)
