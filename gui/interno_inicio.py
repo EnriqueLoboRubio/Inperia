@@ -440,13 +440,81 @@ class VentanaInterno(QMainWindow):
     def mostrar_pantalla_perfil(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_perfil)
 
-    def mostrar_advertencia(self, titulo, mensaje):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setWindowTitle(titulo)
-        msg.setText(mensaje)
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.exec_()  
+    def mostrar_advertencia(self, tit, mensaje):
+        """
+        Crea un diálogo personalizado para tener control total del espaciado
+        """
+        dialogo = QDialog(self)
+        dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
+        dialogo.setAttribute(Qt.WA_TranslucentBackground)
+        
+        # Layout principal del diálogo
+        layout_main = QVBoxLayout(dialogo)
+        layout_main.setContentsMargins(0, 0, 0, 0)
+        
+        # --- MARCO DE FONDO ---
+        fondo = QFrame()
+        fondo.setObjectName("FondoDialogo") 
+        fondo.setStyleSheet(ESTILO_DIALOGO_ERROR)
+            
+        layout_interno = QVBoxLayout(fondo)
+        layout_interno.setContentsMargins(20, 20, 20, 20)
+        layout_interno.setSpacing(5)
+        
+        # --- ICONO Y TÍTULO  ---
+        layout_cabecera = QHBoxLayout()
+        layout_cabecera.setSpacing(10)
+        
+        lbl_icono = QLabel()
+        pixmap = QPixmap("assets/error.png").scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)     
+        lbl_icono.setPixmap(pixmap) 
+        lbl_icono.setFixedSize(30, 30)
+        lbl_icono.setStyleSheet("background: transparent; border: none;")
+
+
+        titulo = QLabel(tit)
+        titulo.setObjectName("TituloError")
+        
+        layout_cabecera.addWidget(lbl_icono)
+        layout_cabecera.addWidget(titulo)
+        layout_cabecera.addStretch()
+        
+        # --- TEXTO DEL MENSAJE ---
+        lbl_mensaje = QLabel(mensaje)
+        lbl_mensaje.setObjectName("TextoError")
+        lbl_mensaje.setWordWrap(True)
+        lbl_mensaje.setMinimumWidth(300) 
+        
+        # --- BOTÓN ---
+        boton = QPushButton("Ok")
+        boton.setCursor(Qt.PointingHandCursor)
+        boton.setStyleSheet("""
+            QPushButton { 
+                background-color: black; 
+                color: white; 
+                border-radius: 10px; 
+                padding: 8px 20px;
+                font-family: 'Arial';
+                font-weight: bold;
+                font-size: 9pt;
+            }
+            QPushButton:hover { background-color: #333; }
+        """)
+        boton.clicked.connect(dialogo.accept)
+     
+        layout_boton = QHBoxLayout()
+        layout_boton.addStretch()
+        layout_boton.addWidget(boton)
+                
+        layout_interno.addLayout(layout_cabecera)
+        layout_interno.addSpacing(5)
+        layout_interno.addWidget(lbl_mensaje)
+        layout_interno.addSpacing(15)
+        layout_interno.addLayout(layout_boton)
+        
+        layout_main.addWidget(fondo)
+        
+        dialogo.exec_()  
 
      # ------------------- 7. Método para pasar datos -------------------
     def cargar_datos_interno(self, interno):

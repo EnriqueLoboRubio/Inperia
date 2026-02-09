@@ -279,6 +279,7 @@ ESTILO_BOTON_SIG_ATR = """
             QPushButton:hover { 
                 background-color: rgba(71, 70, 70, 0.7); 
             }
+            QPushButton:disabled { background-color: #E0E0E0; opacity: 0.5; }
         """
 
 ESTILO_BOTON_TARJETA = """

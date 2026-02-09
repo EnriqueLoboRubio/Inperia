@@ -325,7 +325,7 @@ class VentanaLogin(QMainWindow):
         lbl_mensaje.setMinimumWidth(300) 
         
         # --- BOTÓN ---
-        boton = QPushButton("Entendido")
+        boton = QPushButton("Ok")
         boton.setCursor(Qt.PointingHandCursor)
         boton.setStyleSheet(ESTILO_BOTON_ERROR)
         boton.clicked.connect(dialogo.accept)

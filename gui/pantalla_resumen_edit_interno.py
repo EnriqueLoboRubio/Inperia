@@ -72,6 +72,10 @@ class PantallaResumen(QWidget):
         self.scroll_content_layout.setSpacing(20) # Espacio entre tarjetas
         self.scroll_content_layout.setContentsMargins(50, 20, 50, 0) 
 
+        self.scroll_area.setWidget(self.scroll_content_widget)
+
+        principal_layout.addWidget(self.scroll_area, 1)
+        
         # ------------------- 3. Botones Inferior -------------------
         boton_layout = QHBoxLayout()
         boton_layout.setContentsMargins(0, 0, 0, 0)        
