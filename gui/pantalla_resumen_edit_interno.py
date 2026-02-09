@@ -66,8 +66,8 @@ class PantallaResumen(QWidget):
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff) # Sin scroll horizontal
         self.scroll_area.setStyleSheet(ESTILO_SCROLL)
         
-        scroll_content_widget = QWidget()
-        self.scroll_content_layout = QVBoxLayout(scroll_content_widget)       
+        self.scroll_content_widget = QWidget()
+        self.scroll_content_layout = QVBoxLayout(self.scroll_content_widget)       
         self.scroll_content_layout.setAlignment(Qt.AlignTop)
         self.scroll_content_layout.setSpacing(20) # Espacio entre tarjetas
         self.scroll_content_layout.setContentsMargins(50, 20, 50, 0) 
@@ -166,31 +166,25 @@ class PantallaResumen(QWidget):
         """
         Genera un contenedor NUEVO con las tarjetas.
         """
-        # 1. Crear un nuevo widget contenedor y un nuevo layout
-        nuevo_widget_contenido = QWidget()
-        nuevo_layout = QVBoxLayout(nuevo_widget_contenido)
-        nuevo_layout.setAlignment(Qt.AlignTop)
-        nuevo_layout.setSpacing(20)
-        nuevo_layout.setContentsMargins(50, 20, 50, 0)
+        while self.scroll_content_layout.count():
+            item = self.scroll_content_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
 
-        # 3. Generar las tarjetas en el NUEVO layout
-        for i, respuesta_texto in enumerate(entrevista.respuestas):
-            numero_pregunta = i + 1
-            clave_json = str(numero_pregunta)
+        respuestas = entrevista.respuestas
+
+        for i in range(1, 11):
+            clave = str(i)
+            datos_json = self.PREGUNTAS_DATA.get(clave, {})
+            titulo = datos_json.get("titulo", f"Pregunta {i}")
             
-            # Obtener título del JSON (asegúrate de tener acceso a PREGUNTAS_DATA)
-            datos_pregunta = self.PREGUNTAS_DATA.get(clave_json, {})
-            titulo = datos_pregunta.get("titulo", f"Pregunta {numero_pregunta}")
-
-            # Crear tarjeta
-            tarjeta = self.crear_tarjeta_pregunta(numero_pregunta, titulo, respuesta_texto)
-            nuevo_layout.addWidget(tarjeta)
+            # Obtener respuesta segura (evitar error de índice)
+            if i <= len(respuestas):
+                texto_respuesta = respuestas[i-1]
+            else:
+                texto_respuesta = "Sin respuesta"
             
-        nuevo_layout.addStretch()
+            tarjeta = self.crear_tarjeta_pregunta(i, titulo, texto_respuesta)
 
-        # 4. ASIGNACIÓN FINAL: Reemplazamos el widget antiguo por el nuevo
-        # Esto elimina automáticamente el layout viejo y sus hijos de forma segura
-        self.scroll_area.setWidget(nuevo_widget_contenido)
-        
-        # Opcional: Actualizar la referencia por si necesitas acceder luego (aunque no deberías)
-        self.scroll_content_layout = nuevo_layout
+            self.scroll_content_layout.addWidget(tarjeta)

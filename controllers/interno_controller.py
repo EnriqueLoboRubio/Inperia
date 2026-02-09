@@ -199,12 +199,12 @@ class InternoController(QObject):
         )        
 
         #PANTALLA RESUMEN ENTREVISTA
-        self.ventana_interno.pantalla_resumen_profesional.boton_atras.clicked.connect(
+        self.ventana_interno.pantalla_resumen_edit.boton_atras.clicked.connect(
             self.pantalla_resumen_atras
         )
 
         #VENTANAS DE LAS PREGUNTAS
-        self.ventana_interno.pantalla_resumen_profesional.grupo_botones_entrar.idClicked.connect(
+        self.ventana_interno.pantalla_resumen_edit.grupo_botones_entrar.idClicked.connect(
             self.mostrar_detalle_pregunta
         )
 
@@ -270,7 +270,7 @@ class InternoController(QObject):
         self.ventana_interno.mostrar_pantalla_resumen()
         
         # Recargar resumen en la vista
-        self.ventana_interno.pantalla_resumen_profesional.cargar_datos_respuestas(nueva_entrevista)
+        self.ventana_interno.pantalla_resumen_edit.cargar_datos_respuestas(nueva_entrevista)
 
     def pantalla_resumen_atras(self):
         self.ventana_interno.abrir_pregunta(10)  # Ir a la última pregunta

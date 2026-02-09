@@ -236,14 +236,14 @@ class VentanaInterno(QMainWindow):
 
         self.pantalla_bienvenida = PantallaBienvenidaInterno()
         self.pantalla_preguntas = PantallaPreguntas()
-        self.pantalla_resumen_profesional = PantallaResumenEdit()
+        self.pantalla_resumen_edit = PantallaResumenEdit()
         self.pantalla_progreso = PantallaProgreso()
         self.pantalla_solicitud = PantallaSolicitud()
         self.pantalla_perfil = PantallaPerfil()
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                          
         self.stacked_widget.addWidget(self.pantalla_preguntas)
-        self.stacked_widget.addWidget(self.pantalla_resumen_profesional)
+        self.stacked_widget.addWidget(self.pantalla_resumen_edit)
         self.stacked_widget.addWidget(self.pantalla_progreso)
         self.stacked_widget.addWidget(self.pantalla_solicitud)
         self.stacked_widget.addWidget(self.pantalla_perfil)
@@ -429,7 +429,7 @@ class VentanaInterno(QMainWindow):
         self.pantalla_preguntas.cargar_pregunta(numero)       
 
     def mostrar_pantalla_resumen(self):
-        self.stacked_widget.setCurrentWidget(self.pantalla_resumen_profesional)
+        self.stacked_widget.setCurrentWidget(self.pantalla_resumen_edit)
 
     def mostrar_pantalla_progreso(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_progreso)
