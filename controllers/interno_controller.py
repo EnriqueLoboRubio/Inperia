@@ -234,12 +234,16 @@ class InternoController(QObject):
         self.ventana_interno.pantalla_preguntas.ir_pregunta_siguiente()
 
     def mostrar_detalle_pregunta(self, id_pregunta):
+
+        self.pregunta_mostrar = None
         
-        """
+        #Buscar pregunta en el objeto Entrevista por id
+        for pregunta in self.solicitud_pedendiente_iniciada.entrevista.respuestas:
+            if pregunta.id_pregunta == id_pregunta:
+                self.pregunta_mostrar = pregunta
+                break                        
 
-        """
-
-        ventana_detalle = VentanaDetallePreguntaEdit( )
+        ventana_detalle = VentanaDetallePreguntaEdit(self.pregunta_mostrar, id_pregunta)
 
     def finalizar_entrevista(self, lista_respuestas, lista_audios):
         """
@@ -255,18 +259,16 @@ class InternoController(QObject):
             fecha=date.today().strftime("%d/%m/%Y") # Fecha de hoy
         )
         
-        # Asignamos las respuestas
-        respuestas = [] * 10
+        # Asignamos las respuestas      
+        for i, (texto_res, ruta_audio) in enumerate(zip(lista_respuestas, lista_audios)):
+            id_pregunta = i + 1
 
-        for respuesta, audio in lista_respuestas, lista_audios:
-            respuesta[]
+            obj_pregunta = Pregunta(id_pregunta, texto_res)            
 
-        nueva_entrevista.respuestas = lista_respuestas    
+            if ruta_audio:
+                obj_pregunta.set_archivo_audio(ruta_audio)
 
-        nueva_entrevista.id = agregar_entrevista(nueva_entrevista.id_interno, nueva_entrevista.fecha)
-
-        
-
+            nueva_entrevista.add_respuestas(obj_pregunta)        
         
         
         # 2. Asociar a la solicitud actual

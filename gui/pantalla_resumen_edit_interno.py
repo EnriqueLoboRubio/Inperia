@@ -97,7 +97,7 @@ class PantallaResumen(QWidget):
         self.boton_enviar.setToolTip("Enviar respuestas")
 
         
-        boton_layout.addWidget(self.boton_atras)
+        #boton_layout.addWidget(self.boton_atras)
         boton_layout.addStretch() # botón a la izquierda
 
         boton_layout.addWidget(self.boton_enviar)
@@ -185,7 +185,7 @@ class PantallaResumen(QWidget):
             
             # Obtener respuesta segura (evitar error de índice)
             if i <= len(respuestas):
-                texto_respuesta = respuestas[i-1]
+                texto_respuesta = respuestas[i-1].respuesta
             else:
                 texto_respuesta = "Sin respuesta"
             

@@ -25,8 +25,7 @@ class VentanaDetallePreguntaEdit(QDialog):
     def __init__(self, pregunta, numero, parent=None):
         super().__init__(parent)
 
-        self.PREGUNTAS_DATA = cargar_datos_preguntas()
-        self.pregunta_actual = pregunta
+        self.PREGUNTAS_DATA = cargar_datos_preguntas()        
         self.grabando = False # Estado inicial de grabación
 
         self.setWindowTitle(f"Detalle Pregunta {numero}")

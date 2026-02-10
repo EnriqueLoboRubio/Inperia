@@ -24,7 +24,7 @@ def cargar_datos_preguntas():
 class PantallaPreguntas(QWidget):
 
     #Señales
-    entrevista_finalizada = pyqtSignal(list)  
+    entrevista_finalizada = pyqtSignal(list, list)  
 
     def __init__(self, parent=None):
         super().__init__(parent)    
@@ -34,7 +34,7 @@ class PantallaPreguntas(QWidget):
         self.hilo_grabacion = None
 
         ruta_base = os.path.dirname(os.path.dirname(__file__))
-        self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "big")      
+        self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small")      
 
         self.id_entrevista = 0
         self.carpeta_audios = os.path.join(ruta_base, "data", "grabaciones")
@@ -94,6 +94,7 @@ class PantallaPreguntas(QWidget):
 
         # ------------------- 2. Texto con la pregunta -------------------        
         self.lista_respuestas = [""] * len(self.PREGUNTAS_DATA)
+        self.lista_audios = [""] * len(self.PREGUNTAS_DATA)
 
         self.texto_pregunta = QLabel()
         self.texto_pregunta.setFont(QFont("Arial", 14))
@@ -212,11 +213,13 @@ class PantallaPreguntas(QWidget):
             #Archivo de salida
             nombre_audio = f"ent_{self.id_entrevista}_pre_{self.numero_pregunta}.wav"
             ruta_audio_salida = os.path.join(self.carpeta_audios, nombre_audio)
+
+            if self.lista_audios[self.numero_pregunta - 1] == "":
+                self.lista_audios[self.numero_pregunta - 1] = ruta_audio_salida
             
             #Hilo
             self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk, ruta_audio_salida)
             
-
             #Señales
             self.hilo_grabacion.texto_signal.connect(self.actualizar_texto_final)
             self.hilo_grabacion.parcial_signal.connect(self.actualizar_texto_parcial)
@@ -369,7 +372,7 @@ class PantallaPreguntas(QWidget):
             self.mostrar_validacion_error(mensaje)
         else:
             # Todo correcto
-            self.entrevista_finalizada.emit(self.lista_respuestas)
+            self.entrevista_finalizada.emit(self.lista_respuestas, self.lista_audios)
 
     def eventFilter(self, obj, event):
         if obj == self.boton_info:

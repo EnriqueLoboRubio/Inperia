@@ -42,7 +42,7 @@ def generar_entrevista():
         "respuesta 9",
         "respuesta 10",
     ]
-    agregar_entrevista("4", "5", "2", "22/11/2020", "34", lista_respuestas)
+    agregar_entrevista_y_respuestas("4", "5", "2", "22/11/2020", "34", lista_respuestas)
 
 def reiniciar_base_de_datos():
     
