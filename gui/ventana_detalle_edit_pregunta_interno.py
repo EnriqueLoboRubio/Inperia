@@ -21,7 +21,7 @@ def cargar_datos_preguntas():
         print(f"Error: El archivo {ruta_json} tiene un formato JSON inválido.")
         return {"1": {"titulo": "Error", "texto": "Error al leer el archivo 'preguntas.json'."}}
 
-class VentanaDetallePregunta(QDialog):
+class VentanaDetallePreguntaEdit(QDialog):
     def __init__(self, pregunta, numero, parent=None):
         super().__init__(parent)
 

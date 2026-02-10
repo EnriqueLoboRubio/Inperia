@@ -2,73 +2,62 @@ import os
 import json
 import queue
 import sounddevice as sd
-from vosk import Model, KaldiRecognizer
+import numpy as np
+from faster_whisper import WhisperModel
 from PyQt5.QtCore import QThread, pyqtSignal
 
 class HiloTranscripcion(QThread):
     # Señales para comunicarse con la interfaz gráfica
-    texto_transcrito_signal = pyqtSignal(str) 
+    texto_signal = pyqtSignal(str) 
     error_signal = pyqtSignal(str)
 
-    def __init__(self, ruta_modelo):
+    def __init__(self):
         super().__init__()
-        self.ruta_modelo = ruta_modelo
+        self.modelo = WhisperModel(
+            "utils/whisper-small",
+            device="cpu",
+            compute_type="int8" 
+        )
         self.corriendo = False
         self.cola = queue.Queue()
 
     def run(self):
-        # existencia del modelo
-        if not os.path.exists(self.ruta_modelo):
-            self.error_signal.emit(f"Error: No se encuentra el modelo en {self.ruta_modelo}")
-            return
+        self.corriendo = True
 
         try:
-            # modelo Vosk
-            modelo = Model(self.ruta_modelo)
-            reconocedor = KaldiRecognizer(modelo, 16000)
-            
-            # Iniciar micrófono
-            self.corriendo = True
-            with sd.RawInputStream(samplerate=16000, 
-                                   blocksize=8000, 
-                                   dtype='int16',
-                                   channels=1, 
-                                   callback=self.callback):
-                
-                self.ultimo_parcial = ""
-                
-                while self.corriendo:
-                    try:
-                        # Sacar datos de la cola
-                        data = self.cola.get(timeout=0.5)
-                        
-                        if reconocedor.AcceptWaveform(data):
-                            resultado = json.loads(reconocedor.Result())
-                            texto = resultado.get("text", "")
-                            if texto:
-                                self.texto_transcrito_signal.emit(texto)
-                        else:
-                            parcial = json.loads(reconocedor.PartialResult())
-                            texto_parcial = parcial.get("partial", "")
-                            if texto_parcial and texto_parcial != self.ultimo_parcial:
-                                self.ultimo_parcial = texto_parcial
-                                self.texto_transcrito_signal.emit(texto_parcial)
-      
-                    except queue.Empty:
-                        continue
-                    except Exception as e:
-                        self.error_signal.emit(str(e))
-                        break
+            with sd.InputStream(
+                samplerate=16000,
+                channels=1,
+                dtype="float32",
+                callback=self.callback
+            ):
+                buffer = []
+
+                while self.running:
+                    data = self.audio_queue.get()
+                    buffer.extend(data)
+
+                    if len(buffer) > 16000 * 3:  # 3 segundos
+                        audio_np = np.array(buffer, dtype=np.float32)
+                        buffer.clear()
+
+                        segments, _ = self.model.transcribe(
+                            audio_np,
+                            language="es",
+                            vad_filter=True
+                        )
+
+                        for segment in segments:
+                            if segment.text.strip():
+                                self.texto_signal.emit(segment.text)
 
         except Exception as e:
-            self.error_signal.emit(f"Error al iniciar micrófono o modelo: {str(e)}")
+            self.error_signal.emit(str(e))
 
     def callback(self, indata, frames, time, status):
-        """Función que llama sounddevice con audio crudo"""
         if self.corriendo:
-            self.cola.put(bytes(indata))
+            self.cola.put(indata[:, 0].copy())
 
     def detener(self):
-        """Método seguro para detener el hilo"""
         self.corriendo = False
         self.wait()

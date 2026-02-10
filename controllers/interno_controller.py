@@ -4,7 +4,7 @@ from datetime import date
 from controllers.solicitud_controller import SolicitudController
 
 from gui.interno_inicio import VentanaInterno
-from gui.ventana_detalle_edit_pregunta_interno import VentanaDetallePregunta
+from gui.ventana_detalle_edit_pregunta_interno import VentanaDetallePreguntaEdit
 
 from db.interno_db import *
 from db.solicitud_db import *
@@ -13,6 +13,7 @@ from db.entrevista_db import *
 from models.interno import Interno
 from models.solicitud import Solicitud
 from models.entrevista import Entrevista
+from models.pregunta import Pregunta
 
 from utils.enums import Tipo_estado_solicitud
 
@@ -27,7 +28,7 @@ class InternoController(QObject):
         self.ventana_interno = VentanaInterno()            
 
         self.interno = self.cargar_interno()
-        self.solicitud_pedendiente_iniciada = self.cargar_solicitud_pendiente_iniciada() 
+        self.solicitud_pedendiente_iniciada = self.cargar_solicitud_pendiente_iniciada()         
               
         if self.interno:                       
             self.ventana_interno.cargar_datos_interno(self.interno)
@@ -42,8 +43,6 @@ class InternoController(QObject):
         if self.tiene_pendiente_iniciada is True:         
             self.tiene_entrevista = self.solicitud_pedendiente_iniciada.estado == Tipo_estado_solicitud.PENDIENTE  
         self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(self.tiene_pendiente_iniciada, self.tiene_entrevista)
-
-        # ENTREVISTA
         
 
         self.conectar_senales()
@@ -195,7 +194,7 @@ class InternoController(QObject):
 
         # Si la validación pasa
         self.ventana_interno.pantalla_preguntas.entrevista_finalizada.connect(
-            self.guardar_y_finalizar_entrevista
+            self.finalizar_entrevista
         )        
 
         #PANTALLA RESUMEN ENTREVISTA
@@ -240,9 +239,9 @@ class InternoController(QObject):
 
         """
 
-        ventana_detalle = VentanaDetallePregunta()
+        ventana_detalle = VentanaDetallePreguntaEdit( )
 
-    def guardar_y_finalizar_entrevista(self, lista_respuestas):
+    def finalizar_entrevista(self, lista_respuestas, lista_audios):
         """
         Se ejecuta cuando la vista confirma que todas las preguntas están respondidas.
         Crea el objeto Entrevista y actualiza el estado.
@@ -257,7 +256,18 @@ class InternoController(QObject):
         )
         
         # Asignamos las respuestas
-        nueva_entrevista.respuestas = lista_respuestas
+        respuestas = [] * 10
+
+        for respuesta, audio in lista_respuestas, lista_audios:
+            respuesta[]
+
+        nueva_entrevista.respuestas = lista_respuestas    
+
+        nueva_entrevista.id = agregar_entrevista(nueva_entrevista.id_interno, nueva_entrevista.fecha)
+
+        
+
+        
         
         # 2. Asociar a la solicitud actual
         if self.solicitud_pedendiente_iniciada:

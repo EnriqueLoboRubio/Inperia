@@ -10,7 +10,7 @@ from gui.pantalla_resumen_interno import PantallaResumen as PantallaResumenInter
 from gui.pantalla_resumen_edit_interno import PantallaResumen as PantallaResumenEditInterno
 from gui.ventana_detalle_pregunta_profesional import VentanaDetallePregunta as VentanaDetallePreguntaProfesional
 from gui.ventana_detalle_pregunta_interno import VentanaDetallePregunta as VentanaDetallePreguntaInterno
-from gui.ventana_detalle_edit_pregunta_interno import VentanaDetallePregunta as VentanaDetalleEditPreguntaInterno
+from gui.ventana_detalle_edit_pregunta_interno import VentanaDetallePreguntaEdit as VentanaDetalleEditPreguntaInterno
 from gui.pantalla_preguntas import PantallaPreguntas as PantallaPreguntas
 from gui.pantalla_solicitud import PantallaSolicitudInterno
 
@@ -58,11 +58,11 @@ def main():
 
     #ventanaResumenProf.show()
     #ventanaResumenInterno.show()
-    ventanaResumenEditInterno.show()
+    #ventanaResumenEditInterno.show()
 
     #VentanaDetalleProfesional.show()
     #VentanaDetalleInterno.show()
-    #VentanaDetalleEditInterno.show()
+    VentanaDetalleEditInterno.show()
 
     #ventanaPreguntas.show()
 

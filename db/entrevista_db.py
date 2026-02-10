@@ -26,7 +26,28 @@ def crear_entrevista():
     conexion.close()
 
 # Función para agregar un nuevo entrevista a la base de datos, y añade las respuestas a su tabla
-def agregar_entrevista(id_profesional, id_interno, id_solicitud, fecha, puntuacion_global, lista_respuestas):
+def agregar_entrevista(id_interno, id_solicitud, fecha):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:        
+        cursor.execute('''
+            INSERT INTO entrevistas (id_interno, id_solicitud, fecha)
+            VALUES (?, ?, ?, ?)
+        ''', (id_interno, id_solicitud, fecha))
+
+        id_entrevista = cursor.lastrowid       
+
+    except sqlite3.IntegrityError:
+        print("Error: No se ha podido crear la entrevista")
+        return False
+     
+    
+    conexion.commit()
+    conexion.close()
+    return id_entrevista    
+
+# Función para agregar un nuevo entrevista a la base de datos, y añade las respuestas a su tabla
+def agregar_entrevista_y_respuestas(id_profesional, id_interno, id_solicitud, fecha, puntuacion_global, lista_respuestas):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:        

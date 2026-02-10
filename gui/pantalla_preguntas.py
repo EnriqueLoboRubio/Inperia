@@ -1,11 +1,11 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QTextEdit, QDialog, QFrame
 )
-from PyQt5.QtGui import QIcon, QFont, QPixmap
-from PyQt5.QtCore import Qt, QSize, QTimer, pyqtSignal 
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QTextCursor
+from PyQt5.QtCore import Qt, QSize, pyqtSignal 
 import json, os
 
-from utils.transcripcion import HiloTranscripcion
+from utils.transcripcionVosk import HiloTranscripcion
 
 from gui.estilos import *
 
@@ -31,9 +31,15 @@ class PantallaPreguntas(QWidget):
 
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
         self.grabando = False # Estado inicial de la grabación    
+        self.hilo_grabacion = None
 
         ruta_base = os.path.dirname(os.path.dirname(__file__))
-        self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small2")           
+        self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "big")      
+
+        self.id_entrevista = 0
+        self.carpeta_audios = os.path.join(ruta_base, "data", "grabaciones")
+        if not os.path.exists(self.carpeta_audios):
+            os.makedirs(self.carpeta_audios)     
             
         principal_layout = QVBoxLayout(self)                     
         
@@ -203,10 +209,19 @@ class PantallaPreguntas(QWidget):
             self.boton_grabar.setIcon(QIcon("assets/pausa.png"))
             self.boton_grabar.setIconSize((QSize(20, 20))) 
 
-            self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk)
-            self.hilo_grabacion.texto_transcrito_signal.connect(self.actualizar_texto_transcrito)
+            #Archivo de salida
+            nombre_audio = f"ent_{self.id_entrevista}_pre_{self.numero_pregunta}.wav"
+            ruta_audio_salida = os.path.join(self.carpeta_audios, nombre_audio)
+            
+            #Hilo
+            self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk, ruta_audio_salida)
+            
+
+            #Señales
+            self.hilo_grabacion.texto_signal.connect(self.actualizar_texto_final)
+            self.hilo_grabacion.parcial_signal.connect(self.actualizar_texto_parcial)
             self.hilo_grabacion.error_signal.connect(self.mostrar_error_transcripcion)
-            self.hilo_grabacion.start()
+            self.hilo_grabacion.start()        
             
             # Mensajes
             self.lbl_estado_grabacion.setText("🔴 Grabando... (Hable ahora)")
@@ -232,26 +247,28 @@ class PantallaPreguntas(QWidget):
             # Mensajes
             self.lbl_estado_grabacion.setText("⏳ Procesando audio...")
             self.lbl_estado_grabacion.setStyleSheet("color: #F57C00; font-weight: bold;")
-
-            self.respuesta_widget.setPlaceholderText("Escriba su respuesta aquí o use el micrófono...")       
+        
+            #self.respuesta_widget.setPlaceholderText("Escriba su respuesta aquí o use el micrófono...")       
 
             # DESBLOQUEAR botones de navegación
             self.boton_atras.setEnabled(True)
             self.boton_siguiente.setEnabled(True)
             self.boton_finalizar.setEnabled(True)
 
-    def actualizar_texto_transcrito(self, texto):
+    def actualizar_texto_final(self, texto):
         """Recibe el texto del hilo y lo añade al cuadro de texto"""
-        cursor = self.respuesta_widget.textCursor()
-        cursor.movePosition(cursor.End) 
-        self.respuesta_widget.setTextCursor(cursor)
-        
-        if self.respuesta_widget.toPlainText():
-            self.respuesta_widget.insertPlainText(" " + texto)
+        texto_actual = self.respuesta_widget.toPlainText()
+        if texto_actual:
+            self.respuesta_widget.append(texto) # Añade en nueva línea o con espacio
         else:
-            self.respuesta_widget.insertPlainText(texto)
+            self.respuesta_widget.setText(texto)
+        
+        # Movemos el cursor al final
+        cursor = self.respuesta_widget.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        self.respuesta_widget.setTextCursor(cursor)
 
-    def detener_grabacion_forzada(self):
+    def detener_grabacion(self):
         self.grabando = False
 
         if self.hilo_grabacion:
@@ -264,15 +281,25 @@ class PantallaPreguntas(QWidget):
         self.boton_grabar.setIconSize(QSize(30, 30))
 
         self.lbl_estado_grabacion.setText("Pulse para grabar")
-        self.lbl_estado_grabacion.setStyleSheet("color: #666;")            
+        self.lbl_estado_grabacion.setStyleSheet("color: #666;")        
+
+    def actualizar_texto_parcial(self, parcial):
+        """Muestra lo que se está hablando en tiempo real en la etiqueta de estado"""
+        # Limitamos el largo para que no descuadre la interfaz
+        if len(parcial) > 50:
+            parcial = "..." + parcial[-50:]
+        self.lbl_estado_grabacion.setText(f"👂 {parcial}")        
 
     def mostrar_error_transcripcion(self, error):
-        self.detener_grabacion_forzada() # Detener grabación visualmente
+        self.detener_grabacion() # Detener grabación visualmente
         self.mostrar_validacion_error(f"Error de audio: {error}\n\nVerifique la carpeta del modelo: {self.ruta_modelo_vosk}")
 
     def cargar_pregunta(self, numero):
         self.numero_pregunta = numero
         # Resetear estado de grabación al cambiar de pregunta
+        if self.grabando:
+            self.detener_grabacion()
+
         self.grabando = False
         self.boton_grabar.setProperty("grabando", False)
         self.boton_grabar.style().polish(self.boton_grabar)
@@ -429,4 +456,7 @@ class PantallaPreguntas(QWidget):
         
         layout_main.addWidget(fondo)
         
-        dialogo.exec_()       
+        dialogo.exec_()    
+
+    def cargar_id_entrevista(self, id):
+        self.id_entrevista = id
