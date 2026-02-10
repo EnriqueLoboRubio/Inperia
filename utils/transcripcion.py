@@ -29,8 +29,13 @@ class HiloTranscripcion(QThread):
             
             # Iniciar micrófono
             self.corriendo = True
-            with sd.RawInputStream(samplerate=16000, blocksize=8000, dtype='int16',
-                                   channels=1, callback=self.callback):
+            with sd.RawInputStream(samplerate=16000, 
+                                   blocksize=8000, 
+                                   dtype='int16',
+                                   channels=1, 
+                                   callback=self.callback):
+                
+                self.ultimo_parcial = ""
                 
                 while self.corriendo:
                     try:
@@ -42,7 +47,13 @@ class HiloTranscripcion(QThread):
                             texto = resultado.get("text", "")
                             if texto:
                                 self.texto_transcrito_signal.emit(texto)
-                                
+                        else:
+                            parcial = json.loads(reconocedor.PartialResult())
+                            texto_parcial = parcial.get("partial", "")
+                            if texto_parcial and texto_parcial != self.ultimo_parcial:
+                                self.ultimo_parcial = texto_parcial
+                                self.texto_transcrito_signal.emit(texto_parcial)
+      
                     except queue.Empty:
                         continue
                     except Exception as e:
@@ -53,7 +64,7 @@ class HiloTranscripcion(QThread):
             self.error_signal.emit(f"Error al iniciar micrófono o modelo: {str(e)}")
 
     def callback(self, indata, frames, time, status):
-        """Función que llama sounddevice con el audio crudo"""
+        """Función que llama sounddevice con audio crudo"""
         if self.corriendo:
             self.cola.put(bytes(indata))
 

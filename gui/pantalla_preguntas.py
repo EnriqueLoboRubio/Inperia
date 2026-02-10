@@ -5,7 +5,7 @@ from PyQt5.QtGui import QIcon, QFont, QPixmap
 from PyQt5.QtCore import Qt, QSize, QTimer, pyqtSignal 
 import json, os
 
-from ia.transcripcion import HiloTranscripcion
+from utils.transcripcion import HiloTranscripcion
 
 from gui.estilos import *
 
@@ -33,7 +33,7 @@ class PantallaPreguntas(QWidget):
         self.grabando = False # Estado inicial de la grabación    
 
         ruta_base = os.path.dirname(os.path.dirname(__file__))
-        self.ruta_modelo_vosk = os.path.join(ruta_base, "ia", "vosk_big")           
+        self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small2")           
             
         principal_layout = QVBoxLayout(self)                     
         
@@ -251,9 +251,24 @@ class PantallaPreguntas(QWidget):
         else:
             self.respuesta_widget.insertPlainText(texto)
 
+    def detener_grabacion_forzada(self):
+        self.grabando = False
+
+        if self.hilo_grabacion:
+            self.hilo_grabacion.detener()
+            self.hilo_grabacion = None
+
+        self.boton_grabar.setProperty("grabando", False)
+        self.boton_grabar.style().polish(self.boton_grabar)
+        self.boton_grabar.setIcon(QIcon("assets/micro.png"))
+        self.boton_grabar.setIconSize(QSize(30, 30))
+
+        self.lbl_estado_grabacion.setText("Pulse para grabar")
+        self.lbl_estado_grabacion.setStyleSheet("color: #666;")            
+
     def mostrar_error_transcripcion(self, error):
-        self.toggle_grabacion() # Detener grabación visualmente
-        self.mostrar_validacion_error(f"Error de audio: {error}\n\nVerifique la carpeta del modelo'.")
+        self.detener_grabacion_forzada() # Detener grabación visualmente
+        self.mostrar_validacion_error(f"Error de audio: {error}\n\nVerifique la carpeta del modelo: {self.ruta_modelo_vosk}")
 
     def cargar_pregunta(self, numero):
         self.numero_pregunta = numero
