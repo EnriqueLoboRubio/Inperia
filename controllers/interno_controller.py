@@ -76,10 +76,10 @@ class InternoController(QObject):
         datos_solicitud = encontrar_solicitud_pendiente_por_interno(self.interno.num_RC)
         if datos_solicitud:
             solicitud = Solicitud()
-            id_solicitud=datos_solicitud[0],                
-            tipo=datos_solicitud[2],
-            motivo=datos_solicitud[3],
-            descripcion=datos_solicitud[4],
+            id_solicitud=datos_solicitud[0]               
+            tipo=datos_solicitud[2]
+            motivo=datos_solicitud[3]
+            descripcion=datos_solicitud[4]
             urgencia=datos_solicitud[5]
 
             solicitud.fecha_inicio = datos_solicitud[6]
@@ -201,8 +201,7 @@ class InternoController(QObject):
         self.ventana_interno.pantalla_resumen_edit.boton_atras.clicked.connect(
             self.pantalla_resumen_atras
         )
-
-        #VENTANAS DE LAS PREGUNTAS
+        
         self.ventana_interno.pantalla_resumen_edit.grupo_botones_entrar.idClicked.connect(
             self.mostrar_detalle_pregunta
         )
@@ -243,7 +242,10 @@ class InternoController(QObject):
                 self.pregunta_mostrar = pregunta
                 break                        
 
-        ventana_detalle = VentanaDetallePreguntaEdit(self.pregunta_mostrar, id_pregunta)
+        if self.pregunta_mostrar:
+            ventana_detalle = VentanaDetallePreguntaEdit(self.pregunta_mostrar, id_pregunta)
+            #ventana_detalle.boton_guardar.clicked.connect(ventana)
+            ventana_detalle.exec_()
 
     def finalizar_entrevista(self, lista_respuestas, lista_audios):
         """

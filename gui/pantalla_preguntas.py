@@ -102,12 +102,12 @@ class PantallaPreguntas(QWidget):
         self.texto_pregunta.setWordWrap(True) # Para que el texto no se corte si es largo
 
         # ------------------- 3. Entrada de la pregunta -------------------  
-        self.respuesta_widget = QTextEdit()
-        self.respuesta_widget.setFont(QFont("Arial", 12))
-        self.respuesta_widget.setPlaceholderText("Escriba su respuesta aquí o use el micrófono...")
-        self.respuesta_widget.setFixedHeight(350)
+        self.txt_respuesta = QTextEdit()
+        self.txt_respuesta.setFont(QFont("Arial", 12))
+        self.txt_respuesta.setPlaceholderText("Escriba su respuesta aquí o use el micrófono...")
+        self.txt_respuesta.setFixedHeight(350)
         # self.respuesta_widget.setFixedWidth(1600)
-        self.respuesta_widget.setStyleSheet("""
+        self.txt_respuesta.setStyleSheet("""
             QTextEdit {
                 border-radius: 10px;
                 border: 1px solid #ccc;
@@ -179,7 +179,7 @@ class PantallaPreguntas(QWidget):
         principal_layout.addSpacing(20)
         principal_layout.addWidget(self.texto_pregunta)
         principal_layout.addSpacing(10)
-        principal_layout.addWidget(self.respuesta_widget)
+        principal_layout.addWidget(self.txt_respuesta)
         principal_layout.addSpacing(15)
         
         # Añadir mensaje y botón de grabar centrados
@@ -229,8 +229,8 @@ class PantallaPreguntas(QWidget):
             # Mensajes
             self.lbl_estado_grabacion.setText("🔴 Grabando... (Hable ahora)")
             self.lbl_estado_grabacion.setStyleSheet("color: #D32F2F; font-weight: bold;")
-            self.respuesta_widget.setPlaceholderText("Escuchando...")
-            self.respuesta_widget.clear()
+            self.txt_respuesta.setPlaceholderText("Escuchando...")
+            self.txt_respuesta.clear()
             
         else:
             # DETENER GRABACIÓN
@@ -248,8 +248,8 @@ class PantallaPreguntas(QWidget):
             self.boton_grabar.setIconSize(QSize(30, 30))
             
             # Mensajes
-            self.lbl_estado_grabacion.setText("⏳ Procesando audio...")
-            self.lbl_estado_grabacion.setStyleSheet("color: #F57C00; font-weight: bold;")
+            self.lbl_estado_grabacion.setText("✅ Audio listo")
+            self.lbl_estado_grabacion.setStyleSheet("color: #388E3C; font-weight: bold;")
         
             #self.respuesta_widget.setPlaceholderText("Escriba su respuesta aquí o use el micrófono...")       
 
@@ -260,16 +260,16 @@ class PantallaPreguntas(QWidget):
 
     def actualizar_texto_final(self, texto):
         """Recibe el texto del hilo y lo añade al cuadro de texto"""
-        texto_actual = self.respuesta_widget.toPlainText()
+        texto_actual = self.txt_respuesta.toPlainText()
         if texto_actual:
-            self.respuesta_widget.append(texto) # Añade en nueva línea o con espacio
+            self.txt_respuesta.append(texto) # Añade en nueva línea o con espacio
         else:
-            self.respuesta_widget.setText(texto)
+            self.txt_respuesta.setText(texto)
         
         # Movemos el cursor al final
-        cursor = self.respuesta_widget.textCursor()
+        cursor = self.txt_respuesta.textCursor()
         cursor.movePosition(QTextCursor.End)
-        self.respuesta_widget.setTextCursor(cursor)
+        self.txt_respuesta.setTextCursor(cursor)
 
     def detener_grabacion(self):
         self.grabando = False
@@ -340,27 +340,27 @@ class PantallaPreguntas(QWidget):
             self.boton_finalizar.hide()
 
     def ir_pregunta_atras(self):
-        self.lista_respuestas[self.numero_pregunta-1] = self.respuesta_widget.toPlainText()
+        self.lista_respuestas[self.numero_pregunta-1] = self.txt_respuesta.toPlainText()
         self.numero_pregunta -= 1
         self.restaurar_respuesta() # Refactorizado para no repetir código
 
     def ir_pregunta_siguiente(self):
-        self.lista_respuestas[self.numero_pregunta-1] = self.respuesta_widget.toPlainText()
+        self.lista_respuestas[self.numero_pregunta-1] = self.txt_respuesta.toPlainText()
         self.numero_pregunta += 1
         self.restaurar_respuesta()
 
     def restaurar_respuesta(self):
         # Método auxiliar para cargar la respuesta y la pregunta
         if(self.lista_respuestas[self.numero_pregunta - 1] != ""):
-            self.respuesta_widget.setText(self.lista_respuestas[self.numero_pregunta - 1]) 
+            self.txt_respuesta.setText(self.lista_respuestas[self.numero_pregunta - 1]) 
         else:
-            self.respuesta_widget.clear() 
+            self.txt_respuesta.clear() 
         
         self.cargar_pregunta(self.numero_pregunta)
 
     def finalizar_entrevista(self):
         # Guardar la última respuesta
-        self.lista_respuestas[self.numero_pregunta-1] = self.respuesta_widget.toPlainText()
+        self.lista_respuestas[self.numero_pregunta-1] = self.txt_respuesta.toPlainText()
         
         preguntas_sin_contestar = []
         for i, respuesta in enumerate(self.lista_respuestas):            

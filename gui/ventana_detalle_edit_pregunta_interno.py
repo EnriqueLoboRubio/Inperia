@@ -1,10 +1,11 @@
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QTextEdit, QMessageBox, QSlider
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QTextEdit, QSlider, QFrame
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl, Qt, QSize, QTimer
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont, QIcon, QPixmap, QTextCursor
 import json, os
-
+from gui.mensajes import Mensajes
 from gui.estilos import *
+from utils.transcripcionVosk import HiloTranscripcion
 
 def cargar_datos_preguntas():
     ruta_base = os.path.dirname(os.path.dirname(__file__))
@@ -25,8 +26,17 @@ class VentanaDetallePreguntaEdit(QDialog):
     def __init__(self, pregunta, numero, parent=None):
         super().__init__(parent)
 
+        self.pregunta_actual = pregunta
+
         self.PREGUNTAS_DATA = cargar_datos_preguntas()        
         self.grabando = False # Estado inicial de grabación
+
+        self.hilo_grabacion = None
+        ruta_base = os.path.dirname(os.path.dirname(__file__))
+        self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small")    
+        self.carpeta_audios = os.path.join(ruta_base, "data", "grabaciones")
+        if not os.path.exists(self.carpeta_audios):
+            os.makedirs(self.carpeta_audios)
 
         self.setWindowTitle(f"Detalle Pregunta {numero}")
         self.setFixedSize(1000, 650)        
@@ -60,7 +70,7 @@ class VentanaDetallePreguntaEdit(QDialog):
         self.txt_respuesta = QTextEdit()    
         self.txt_respuesta.setReadOnly(False) 
         self.txt_respuesta.setStyleSheet(ESTILO_INPUT)
-        self.txt_respuesta.setText(pregunta.respuesta)
+        self.txt_respuesta.setText(self.pregunta_actual.respuesta)
         self.txt_respuesta.setMinimumHeight(100)
 
         principal_layout.addWidget(self.txt_respuesta)
@@ -111,9 +121,9 @@ class VentanaDetallePreguntaEdit(QDialog):
         self.boton_play.setCursor(Qt.PointingHandCursor)
         self.boton_play.setStyleSheet(ESTILO_BOTON_PLAY)
         
-        self.boton_play.clicked.connect(lambda: self.toggle_audio(pregunta.archivo_audio))
+        self.boton_play.clicked.connect(lambda: self.toggle_audio(self.pregunta_actual.archivo_audio))
 
-        # CAMBIO 2: Botón Grabar
+        # Botón Grabar
         self.boton_grabar = QPushButton()
         self.boton_grabar.setIcon(QIcon("assets/micro.png"))
         self.boton_grabar.setIconSize(QSize(25, 25))
@@ -171,6 +181,15 @@ class VentanaDetallePreguntaEdit(QDialog):
         if not self.grabando:
             # INICIAR GRABACIÓN
             self.grabando = True
+
+            #Bloquear botones cerrar y guardar
+            self.boton_cerrar.setEnabled(False) 
+            self.boton_guardar.setEnabled(False)  
+
+            # Bloquear reproducción
+            if self.player.state() == QMediaPlayer.PlayingState:
+                self.player.stop()
+            self.boton_play.setEnabled(False) # No reproducir mientras grabas      
             
             # Visuales
             self.boton_grabar.setProperty("grabando", True)
@@ -178,12 +197,19 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.boton_grabar.style().polish(self.boton_grabar)
             self.boton_grabar.setIcon(QIcon("assets/pausa.png")) # Icono de stop
             self.boton_grabar.setIconSize((QSize(20, 20)))
-            
-            # Bloquear reproducción
-            if self.player.state() == QMediaPlayer.PlayingState:
-                self.player.stop()
-            self.boton_play.setEnabled(False) # No reproducir mientras grabas
-            
+
+            #Archivo salida
+            ruta_audio_salida = os.path.join(self.carpeta_audios, self.pregunta_actual.archivo_audio)
+
+            # Hilo
+            self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk, ruta_audio_salida)
+
+            #Señales
+            self.hilo_grabacion.texto_signal.connect(self.actualizar_texto_final)
+            self.hilo_grabacion.parcial_signal.connect(self.actualizar_texto_parcial)
+            self.hilo_grabacion.error_signal.connect(self.mostrar_error_transcripcion)
+            self.hilo_grabacion.start() 
+                                    
             # Feedback
             self.lbl_estado_grabacion.setText("🔴 Grabando... (Hable ahora)")
             self.lbl_estado_grabacion.setStyleSheet("color: #D32F2F; font-weight: bold;")
@@ -193,6 +219,11 @@ class VentanaDetallePreguntaEdit(QDialog):
         else:
             # DETENER GRABACIÓN
             self.grabando = False
+
+            # Detener hilo
+            if self.hilo_grabacion:
+                self.hilo_grabacion.detener()
+                self.hilo_grabacion = None
             
             # Visuales
             self.boton_grabar.setProperty("grabando", False)
@@ -200,30 +231,57 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.boton_grabar.style().polish(self.boton_grabar)
             self.boton_grabar.setIcon(QIcon("assets/micro.png"))
             
-            # Desbloquear reproducción
+            # Desbloquear botones
             self.boton_play.setEnabled(True)
+            self.boton_cerrar.setEnabled(True)
+            self.boton_guardar.setEnabled(True)
             
             # Feedback
-            self.lbl_estado_grabacion.setText("⏳ Procesando audio...")
-            self.lbl_estado_grabacion.setStyleSheet("color: #F57C00; font-weight: bold;")
+            self.lbl_estado_grabacion.setText("✅ Audio listo")
+            self.lbl_estado_grabacion.setStyleSheet("color: #388E3C; font-weight: bold;")
             
-            # SIMULACIÓN DE TRANSCRIPCIÓN (Delay de 1.5 seg)
-            QTimer.singleShot(1500, self.simular_transcripcion)
-
-    def simular_transcripcion(self):
-        # Esta función simula que la IA ha transcrito el audio
-        texto_simulado = "Esta es una nueva respuesta transcrita automáticamente después de grabar el audio. El usuario puede editar esto si hay errores."
-        
-        self.txt_respuesta.setText(texto_simulado)
-        self.lbl_estado_grabacion.setText("✅ Transcripción completada")
-        self.lbl_estado_grabacion.setStyleSheet("color: #388E3C; font-weight: bold;")
-        
-        # IMPORTANTE: actualizar ruta del audio en self.pregunta_actual.archivo_audio para que al dar play suene el nuevo archivo.
-        # self.pregunta_actual.archivo_audio = "ruta/del/nuevo/audio.wav"
-        
-        # Resetear player para nuevo archivo
+            # Resetear player para nuevo archivo
         self.player.stop()
         self.player.setMedia(QMediaContent()) 
+
+    def actualizar_texto_final(self,texto):
+        """Recibe el texto del hilo y lo añade al cuadro de texto"""
+        texto_actual = self.txt_respuesta.toPlainText()
+        if texto_actual:
+            self.txt_respuesta.append(texto) # Añade en nueva línea o con espacio
+        else:
+            self.txt_respuesta.setText(texto)
+        
+        # Movemos el cursor al final
+        cursor = self.txt_respuesta.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        self.txt_respuesta.setTextCursor(cursor)
+
+    def detener_grabacion(self):
+        self.grabando = False
+
+        if self.hilo_grabacion:
+            self.hilo_grabacion.detener()
+            self.hilo_grabacion = None
+
+        self.boton_grabar.setProperty("grabando", False)
+        self.boton_grabar.style().polish(self.boton_grabar)
+        self.boton_grabar.setIcon(QIcon("assets/micro.png"))
+        self.boton_grabar.setIconSize(QSize(30, 30))
+
+        self.lbl_estado_grabacion.setText("Pulse para grabar")
+        self.lbl_estado_grabacion.setStyleSheet("color: #666;")     
+
+    def actualizar_texto_parcial(self, parcial):
+        """Muestra lo que se está hablando en tiempo real en la etiqueta de estado"""
+        # Limitamos el largo para que no descuadre la interfaz
+        if len(parcial) > 50:
+            parcial = "..." + parcial[-50:]
+        self.lbl_estado_grabacion.setText(f"👂 {parcial}")    
+
+    def mostrar_error_transcripcion(self, error):
+        self.detener_grabacion() # Detener grabación visualmente
+        self.mostrar_validacion_error(f"Error de audio: {error}\n\nVerifique la carpeta del modelo: {self.ruta_modelo_vosk}")
 
     # --- LÓGICA DE REPRODUCCIÓN ---
     def toggle_audio(self, ruta):
@@ -234,7 +292,7 @@ class VentanaDetallePreguntaEdit(QDialog):
         if not ruta or not os.path.exists(ruta):
             # Nota: En un caso real, si acabas de grabar, la ruta debería apuntar al temporal
             self.lbl_estado_grabacion.setText("⚠️ Archivo de audio no encontrado (Simulación)")
-            # return # Comentado para permitir probar la UI sin archivo real
+            return
 
         if self.player.mediaStatus() == QMediaPlayer.NoMedia or self.player.mediaStatus() == QMediaPlayer.InvalidMedia:
              # Aquí cargamos el audio (el original o el nuevo grabado)
@@ -278,12 +336,97 @@ class VentanaDetallePreguntaEdit(QDialog):
         return f"{minutos:02}:{segundos:02}"
     
     def mostrar_confirmacion_cerrar(self):
-            respuesta = QMessageBox.question(
-                self, "Cerrar Respuesta",
-                "¿Está seguro de cerrar?\nPerderá los datos no guardados",
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
-            )
-            return respuesta == QMessageBox.Yes 
+        dialogo = QDialog(self)
+        dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
+        dialogo.setAttribute(Qt.WA_TranslucentBackground)
+        dialogo.setModal(True)
+
+        # Layout principal
+        layout_main = QVBoxLayout(dialogo)
+        layout_main.setContentsMargins(0, 0, 0, 0)
+
+        # --- FONDO ---
+        fondo = QFrame()
+        fondo.setObjectName("FondoDialogo")
+        fondo.setStyleSheet(ESTILO_DIALOGO_ERROR)  # puedes usar otro estilo si quieres
+
+        layout_interno = QVBoxLayout(fondo)
+        layout_interno.setContentsMargins(20, 20, 20, 20)
+        layout_interno.setSpacing(10)
+
+        # --- CABECERA ---
+        layout_cabecera = QHBoxLayout()
+
+        lbl_icono = QLabel()
+        pixmap = QPixmap("assets/warning.png").scaled(
+            30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        lbl_icono.setPixmap(pixmap)        
+
+        titulo = QLabel("Cerrar respuesta")
+        titulo.setObjectName("TituloError")
+
+        layout_cabecera.addWidget(lbl_icono)
+        layout_cabecera.addWidget(titulo)
+        layout_cabecera.addStretch()
+
+        # --- MENSAJE ---
+        lbl_mensaje = QLabel(
+            "¿Está seguro de cerrar?\nPerderá los datos no guardados"
+        )
+        lbl_mensaje.setObjectName("TextoError")
+        lbl_mensaje.setWordWrap(True)
+        lbl_mensaje.setMinimumWidth(320)
+
+        # --- BOTONES ---
+        btn_si = QPushButton("Sí")
+        btn_no = QPushButton("No")
+
+        btn_si.setCursor(Qt.PointingHandCursor)
+        btn_no.setCursor(Qt.PointingHandCursor)
+
+        btn_si.setStyleSheet("""
+            QPushButton {
+                background-color: #792A24;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 25px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #C03930; }
+        """)
+
+        btn_no.setStyleSheet("""
+            QPushButton {
+                background-color: #555;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 25px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #777; }
+        """)
+
+        btn_si.clicked.connect(dialogo.accept)
+        btn_no.clicked.connect(dialogo.reject)
+
+        layout_botones = QHBoxLayout()
+        layout_botones.addStretch()
+        layout_botones.addWidget(btn_no)
+        layout_botones.addWidget(btn_si)
+
+        # --- ENSAMBLADO ---
+        layout_interno.addLayout(layout_cabecera)
+        layout_interno.addSpacing(10)
+        layout_interno.addWidget(lbl_mensaje)
+        layout_interno.addSpacing(20)
+        layout_interno.addLayout(layout_botones)
+
+        layout_main.addWidget(fondo)
+
+        # --- EJECUCIÓN ---
+        resultado = dialogo.exec_()
+        return resultado == QDialog.Accepted
 
     def cerrar_ventana(self):
         if self.mostrar_confirmacion_cerrar() is True:
