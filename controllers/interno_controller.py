@@ -276,18 +276,19 @@ class InternoController(QObject):
                         shutil.move(ruta_temp, ruta_final)
                         
                         # Actualizar objeto
-                        self.pregunta_mostrar.archivo_audio = ruta_final
+                        self.pregunta_mostrar.set_archivo_audio(ruta_final)
                         
                     except Exception as e:
                         print(f"Error moviendo audio: {e}")
-                        Mensajes.mostrar_error("Error", "No se pudo guardar el audio correctamente.")
+                        msg = Mensajes(self.ventana_interno)
+                        msg.mostrar_advertencia("Error", "No se pudo guardar el audio correctamente.")
 
                 self.ventana_interno.pantalla_resumen_edit.cargar_datos_respuestas(entrevista_actual)
 
-                Mensajes.mostrar_mensaje(
+                msg = Mensajes(self.ventana_interno)
+                msg.mostrar_mensaje(
                     "Guardado", 
-                    f"La pregunta {id_pregunta} se ha actualizado correctamente.",
-                    self.ventana_interno # Usamos la ventana principal como padre
+                    f"La pregunta {id_pregunta} se ha actualizado correctamente."                   
                 )
 
     def finalizar_entrevista(self, lista_respuestas, lista_audios):

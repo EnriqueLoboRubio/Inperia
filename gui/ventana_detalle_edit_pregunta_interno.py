@@ -135,7 +135,7 @@ class VentanaDetallePreguntaEdit(QDialog):
         self.boton_play.setCursor(Qt.PointingHandCursor)
         self.boton_play.setStyleSheet(ESTILO_BOTON_PLAY)
         
-        self.boton_play.clicked.connect(lambda: self.toggle_audio)
+        self.boton_play.clicked.connect(self.toggle_audio)
 
         # Botón Grabar
         self.boton_grabar = QPushButton()
@@ -235,7 +235,6 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.tiene_nuevo_audio = True
 
 
-
             # Detener hilo
             if self.hilo_grabacion:
                 self.hilo_grabacion.detener()
@@ -257,8 +256,8 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.lbl_estado_grabacion.setStyleSheet("color: #388E3C; font-weight: bold;")
             
             # Resetear player para nuevo archivo
-        self.player.stop()
-        self.player.setMedia(QMediaContent()) 
+            self.player.stop()
+            self.player.setMedia(QMediaContent()) 
 
     def actualizar_texto_final(self,texto):
         """Recibe el texto del hilo y lo añade al cuadro de texto"""
@@ -301,33 +300,29 @@ class VentanaDetallePreguntaEdit(QDialog):
 
     # --- LÓGICA DE REPRODUCCIÓN ---
     def toggle_audio(self):
-        # Si está grabando, no hacemos nada
+
         if self.grabando:
             return
-        
-        ruta_a_reproducir = None
+
+        ruta = None
 
         if self.tiene_nuevo_audio and os.path.exists(self.ruta_audio_temp):
-            # Si grabó uno nuevo, reproducimos el temporal
-            ruta_a_reproducir = self.ruta_audio_temp
+            ruta = self.ruta_audio_temp
         elif self.ruta_audio_original and os.path.exists(self.ruta_audio_original):
-            # Si no ha grabado nada nuevo, reproducimos el original
-            ruta_a_reproducir = self.ruta_audio_original
-            
-        if not ruta_a_reproducir:
-            self.lbl_estado_grabacion.setText("⚠️ No hay audio grabado")
+            ruta = self.ruta_audio_original
+
+        if not ruta:
+            self.lbl_estado_grabacion.setText("⚠️ No hay audio disponible")
             return
 
-        if self.player.mediaStatus() == QMediaPlayer.NoMedia or self.player.mediaStatus() == QMediaPlayer.InvalidMedia:
-             # Aquí cargamos el audio (el original o el nuevo grabado)
-             if os.path.exists(ruta_a_reproducir):
-                url = QUrl.fromLocalFile(os.path.abspath(ruta_a_reproducir))
-                self.player.setMedia(QMediaContent(url))
+        url = QUrl.fromLocalFile(os.path.abspath(ruta))
+        self.player.setMedia(QMediaContent(url))
 
         if self.player.state() == QMediaPlayer.PlayingState:
             self.player.pause()
         else:
             self.player.play()
+
 
     def cambio_estado_reproductor(self, estado):
         # Bloquear grabación si se está reproduciendo
@@ -489,4 +484,10 @@ class VentanaDetallePreguntaEdit(QDialog):
                 except Exception as e:
                     print(f"Error borrando temp: {e}")
         
-        event.accept()
+            event.accept()
+        else:
+            if os.path.exists(self.ruta_audio_temp):
+                try:
+                    os.remove(self.ruta_audio_temp)
+                except:
+                    pass

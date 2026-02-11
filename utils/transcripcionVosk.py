@@ -1,6 +1,5 @@
 import os
 import json
-import queue
 import sounddevice as sd
 import wave
 import pyaudio
@@ -8,8 +7,8 @@ from vosk import Model, KaldiRecognizer
 from PyQt5.QtCore import QThread, pyqtSignal
 
 class HiloTranscripcion(QThread):
-    # Señales para comunicarse con la interfaz gráfica
-    texto_signal = pyqtSignal(str) 
+
+    texto_signal = pyqtSignal(str)
     error_signal = pyqtSignal(str)
     parcial_signal = pyqtSignal(str)
 
@@ -17,80 +16,83 @@ class HiloTranscripcion(QThread):
         super().__init__()
         self.ruta_modelo = ruta_modelo
         self.archivo_salida = archivo_salida
-        self.corriendo = False       
+        self.corriendo = False
+        self.stream = None
+        self.p = None
+        self.wf = None
 
     def run(self):
-        # existencia del modelo
+
         if not os.path.exists(self.ruta_modelo):
-            self.error_signal.emit(f"Error: No se encuentra el modelo en {self.ruta_modelo}")
+            self.error_signal.emit(f"No se encuentra el modelo en {self.ruta_modelo}")
             return
-        
-        wf = None
-        p = None
-        stream = None
 
         try:
-            # modelo Vosk
             modelo = Model(self.ruta_modelo)
-            reconocedor = KaldiRecognizer(modelo, 16000)
+            self.reconocedor = KaldiRecognizer(modelo, 16000)
 
-            p = pyaudio.PyAudio()
-            stream = p.open(format=pyaudio.paInt16, 
-                channels=1, 
-                rate=16000, 
-                input=True, 
-                frames_per_buffer=8000)            
+            self.p = pyaudio.PyAudio()
 
-            #Archivo salida            
             if self.archivo_salida:
-                try:
-                    wf = wave.open(self.archivo_salida, "wb")
-                    wf.setnchannels(1)
-                    wf.setsampwidth(p.get_sample_size(pyaudio.paInt16))
-                    wf.setframerate(16000)
-                except Exception as e:
-                    self.error_signal.emit(f"Error creando archivo de audio: {e}")
-                    return
+                self.wf = wave.open(self.archivo_salida, "wb")
+                self.wf.setnchannels(1)
+                self.wf.setsampwidth(self.p.get_sample_size(pyaudio.paInt16))
+                self.wf.setframerate(16000)
 
             self.corriendo = True
 
-            while self.corriendo:
-                data = stream.read(4000, exception_on_overflow=False)
+            def callback(in_data, frame_count, time_info, status):
 
-                if len(data) == 0:
-                    break
+                if not self.corriendo:
+                    return (None, pyaudio.paComplete)
 
-                # guardar audio si hay archivo
-                if wf:
-                    wf.writeframes(data)  
+                if self.wf:
+                    self.wf.writeframes(in_data)
 
-                # Procesar con vosk
-                if reconocedor.AcceptWaveform(data):
-                    resultado = json.loads(reconocedor.Result())
+                if self.reconocedor.AcceptWaveform(in_data):
+                    resultado = json.loads(self.reconocedor.Result())
                     texto = resultado.get("text", "")
                     if texto:
                         self.texto_signal.emit(texto)
                 else:
-                    #Frase en construcción
-                    parcial = json.loads(reconocedor.PartialResult())
+                    parcial = json.loads(self.reconocedor.PartialResult())
                     texto_parcial = parcial.get("partial", "")
                     if texto_parcial:
                         self.parcial_signal.emit(texto_parcial)
 
+                return (None, pyaudio.paContinue)
+
+            self.stream = self.p.open(
+                format=pyaudio.paInt16,
+                channels=1,
+                rate=16000,
+                input=True,
+                frames_per_buffer=4000,
+                stream_callback=callback
+            )
+
+            self.stream.start_stream()
+
+            while self.stream.is_active():
+                self.msleep(100)
+
         except Exception as e:
-            self.error_signal.emit(f"Error crítico en el hilo: {str(e)}")
+            self.error_signal.emit(f"Error crítico: {str(e)}")
 
         finally:
-            #Limpieza
-            self.corriendo = False
-            if wf:         
-                wf.close()
-            if stream:
-                stream.stop_stream()    
-                stream.close()
-            if p:
-                p.terminate()
+            self.limpiar()
+
     def detener(self):
-        """Método seguro para detener el hilo"""
         self.corriendo = False
-        self.wait()
+
+    def limpiar(self):
+
+        if self.stream:
+            self.stream.stop_stream()
+            self.stream.close()
+
+        if self.wf:
+            self.wf.close()
+
+        if self.p:
+            self.p.terminate()

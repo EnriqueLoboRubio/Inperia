@@ -6,11 +6,14 @@ from gui.estilos import *
 
 
 class Mensajes:
+    def __init__(self, parent=None):
+        self.parent = parent
+
     def mostrar_advertencia(self, tit, mensaje):
         """
         Crea un diálogo personalizado para tener control total del espaciado
         """
-        dialogo = QDialog(self)
+        dialogo = QDialog(self.parent)
         dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
         dialogo.setAttribute(Qt.WA_TranslucentBackground)
         
@@ -82,9 +85,9 @@ class Mensajes:
         
         dialogo.exec_()  
 
-    def mostrar_mensaje(self, mensaje):
+    def mostrar_mensaje(self, titulo,mensaje):
 
-        dialogo = QDialog(self)
+        dialogo = QDialog(self.parent)
         dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
         dialogo.setAttribute(Qt.WA_TranslucentBackground)
         
@@ -111,7 +114,7 @@ class Mensajes:
         lbl_icono.setFixedSize(30, 30)
         lbl_icono.setStyleSheet("background: transparent; border: none;")
 
-        titulo = QLabel("Atención")
+        titulo = QLabel(titulo)
         titulo.setObjectName("TituloError")
         
         layout_cabecera.addWidget(lbl_icono)
@@ -156,7 +159,7 @@ class Mensajes:
         dialogo.exec_()    
 
     def mostrar_confirmacion(self, titulo, mensaje):
-        dialogo = QDialog(self)
+        dialogo = QDialog(self.parent)
         dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
         dialogo.setAttribute(Qt.WA_TranslucentBackground)
         dialogo.setModal(True)
@@ -265,7 +268,7 @@ class Mensajes:
         """
         Crea un diálogo personalizado para tener control total del espaciado
         """
-        dialogo = QDialog(self)
+        dialogo = QDialog(self.parent)
         dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
         dialogo.setAttribute(Qt.WA_TranslucentBackground)
         
