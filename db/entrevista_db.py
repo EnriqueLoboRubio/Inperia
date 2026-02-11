@@ -47,33 +47,33 @@ def agregar_entrevista(id_interno, id_solicitud, fecha):
     return id_entrevista    
 
 # Función para agregar un nuevo entrevista a la base de datos, y añade las respuestas a su tabla
-def agregar_entrevista_y_respuestas(id_profesional, id_interno, id_solicitud, fecha, puntuacion_global, lista_respuestas):
+def agregar_entrevista_y_respuestas(id_interno, id_solicitud, fecha, lista_respuestas):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:        
         cursor.execute('''
-            INSERT INTO entrevistas (id_profesional, id_interno, id_solicitud, fecha, puntuacion_global)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (id_profesional, id_interno, id_solicitud, fecha, puntuacion_global))
+            INSERT INTO entrevistas (id_interno, id_solicitud, fecha)
+            VALUES (?, ?, ?)
+        ''', (id_interno, id_solicitud, fecha))
 
         id_entrevista = cursor.lastrowid
 
-        for i, texto in enumerate(lista_respuestas):
+        for i, pregunta in enumerate(lista_respuestas):
             id_pregunta = i + 1
             
             cursor.execute('''
-                INSERT INTO respuestas (id_entrevista, id_pregunta, texto_respuesta)
-                VALUES (?, ?, ?)
-            ''', (id_entrevista, id_pregunta, texto))
+                INSERT INTO respuestas (id_entrevista, id_pregunta, texto_respuesta, ruta_audio)
+                VALUES (?, ?, ?, ?)
+            ''', (id_entrevista, id_pregunta, pregunta.respuesta, pregunta.archivo_audio))
 
-    except sqlite3.IntegrityError:
-        print("Error: No se ha podido crear la entrevista")
-        return False
+    except Exception as e:
+        print(f"CRITICAL ERROR DB: {e}")
+        return None
      
     
     conexion.commit()
     conexion.close()
-    return True
+    return id_entrevista 
 
 # Función para eliminar una entrevista de la base de datos
 def eliminar_entrevista(id):

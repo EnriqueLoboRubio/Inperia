@@ -85,7 +85,7 @@ class Mensajes:
         
         dialogo.exec_()  
 
-    def mostrar_mensaje(self, titulo,mensaje):
+    def mostrar_mensaje(self, titulo, mensaje):
 
         dialogo = QDialog(self.parent)
         dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
@@ -194,10 +194,7 @@ class Mensajes:
         layout_cabecera.addStretch()
 
         # --- MENSAJE ---
-        lbl_mensaje = QLabel(
-            "¿Estás seguro de que quieres cerrar sesión?\n\n"
-            "Perderá los datos no guardados."
-        )
+        lbl_mensaje = QLabel(mensaje)
         lbl_mensaje.setObjectName("TextoError")
         lbl_mensaje.setWordWrap(True)
         lbl_mensaje.setMinimumWidth(320)

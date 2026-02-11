@@ -48,6 +48,7 @@ class InternoController(QObject):
             self.tiene_entrevista = self.solicitud_pedendiente_iniciada.estado == Tipo_estado_solicitud.PENDIENTE  
         self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(self.tiene_pendiente_iniciada, self.tiene_entrevista)
         
+        self.msg = Mensajes(self.ventana_interno)
 
         self.conectar_senales()
 
@@ -80,11 +81,11 @@ class InternoController(QObject):
         datos_solicitud = encontrar_solicitud_pendiente_por_interno(self.interno.num_RC)
         if datos_solicitud:
             solicitud = Solicitud()
-            id_solicitud=datos_solicitud[0]               
-            tipo=datos_solicitud[2]
-            motivo=datos_solicitud[3]
-            descripcion=datos_solicitud[4]
-            urgencia=datos_solicitud[5]
+            solicitud.id_solicitud=datos_solicitud[0]               
+            solicitud.tipo=datos_solicitud[2]
+            solicitud.motivo=datos_solicitud[3]
+            solicitud.descripcion=datos_solicitud[4]
+            solicitud.urgencia=datos_solicitud[5]
 
             solicitud.fecha_inicio = datos_solicitud[6]
             solicitud.fecha_fin = datos_solicitud[7]
@@ -210,6 +211,10 @@ class InternoController(QObject):
             self.mostrar_detalle_pregunta
         )
 
+        self.ventana_interno.pantalla_resumen_edit.boton_enviar.clicked.connect(
+            self.almacenar_entrevista
+        )
+
         #PANTALLA SOLICITUD
         self.solicitud_controller.solicitud_finalizada.connect(
             self.on_solicitud_finalizada
@@ -235,61 +240,6 @@ class InternoController(QObject):
 
     def siguiente_pregunta(self):
         self.ventana_interno.pantalla_preguntas.ir_pregunta_siguiente()
-
-    def mostrar_detalle_pregunta(self, id_pregunta):
-
-        self.pregunta_mostrar = None
-
-        entrevista_actual = self.solicitud_pedendiente_iniciada.entrevista
-        id_entrevista = entrevista_actual.id_entrevista
-        id_interno = entrevista_actual.id_interno
-        
-        #Buscar pregunta en el objeto Entrevista por id
-        for pregunta in self.solicitud_pedendiente_iniciada.entrevista.respuestas:
-            if pregunta.id_pregunta == id_pregunta:
-                self.pregunta_mostrar = pregunta
-                break                        
-
-        if self.pregunta_mostrar:
-            ventana_detalle = VentanaDetallePreguntaEdit(self.pregunta_mostrar, id_pregunta, id_entrevista)            
-            resultado = ventana_detalle.exec_()
-
-            if resultado == QDialog.Accepted:
-                datos = ventana_detalle.get_datos()
-                nuevo_texto = datos["texto"]
-                ruta_temp = datos["ruta_temporal"]
-                hay_nuevo_audio = datos["hay_nuevo_audio"]
-
-                self.pregunta_mostrar.respuesta = nuevo_texto
-
-                if hay_nuevo_audio and os.path.exists(ruta_temp):
-                    carpeta_grabaciones = os.path.dirname(ruta_temp)
-                    nombre_final = f"{id_interno}_{id_entrevista}_{id_pregunta}.wav"
-                    ruta_final = os.path.join(carpeta_grabaciones, nombre_final)
-
-                    try:
-                        # Borrar anterior si existe
-                        if os.path.exists(ruta_final):
-                            os.remove(ruta_final)
-                        
-                        # Mover temporal a definitivo
-                        shutil.move(ruta_temp, ruta_final)
-                        
-                        # Actualizar objeto
-                        self.pregunta_mostrar.set_archivo_audio(ruta_final)
-                        
-                    except Exception as e:
-                        print(f"Error moviendo audio: {e}")
-                        msg = Mensajes(self.ventana_interno)
-                        msg.mostrar_advertencia("Error", "No se pudo guardar el audio correctamente.")
-
-                self.ventana_interno.pantalla_resumen_edit.cargar_datos_respuestas(entrevista_actual)
-
-                msg = Mensajes(self.ventana_interno)
-                msg.mostrar_mensaje(
-                    "Guardado", 
-                    f"La pregunta {id_pregunta} se ha actualizado correctamente."                   
-                )
 
     def finalizar_entrevista(self, lista_respuestas, lista_audios):
         """
@@ -329,6 +279,71 @@ class InternoController(QObject):
         
         # Recargar resumen en la vista
         self.ventana_interno.pantalla_resumen_edit.cargar_datos_respuestas(nueva_entrevista)
+
+    def mostrar_detalle_pregunta(self, id_pregunta):
+        """
+        Mostrar detalle de la pregunta para editar, se puede cambiar el audio o el texto de la respuesta
+        y cambia el objeto de entrevista
+
+        """
+        self.pregunta_mostrar = None
+
+        entrevista_actual = self.solicitud_pedendiente_iniciada.entrevista
+        id_entrevista = entrevista_actual.id_entrevista
+        
+        #Buscar pregunta en el objeto Entrevista por id
+        for pregunta in self.solicitud_pedendiente_iniciada.entrevista.respuestas:
+            if pregunta.id_pregunta == id_pregunta:
+                self.pregunta_mostrar = pregunta
+                break                        
+
+        if self.pregunta_mostrar:
+            ventana_detalle = VentanaDetallePreguntaEdit(self.pregunta_mostrar, id_pregunta, id_entrevista)            
+            resultado = ventana_detalle.exec_()
+
+            if resultado == QDialog.Accepted:
+                datos = ventana_detalle.get_datos()
+                nuevo_texto = datos["texto"]
+                ruta_definitiva = datos["ruta_audio"]
+
+                self.pregunta_mostrar.respuesta = nuevo_texto
+                self.pregunta_mostrar.archivo_audio = ruta_definitiva
+
+                self.ventana_interno.pantalla_resumen_edit.cargar_datos_respuestas(entrevista_actual)
+                
+                self.msg.mostrar_mensaje(
+                    "Guardado", 
+                    f"La pregunta {id_pregunta} se ha actualizado correctamente."                   
+                )  
+
+            self.solicitud_pedendiente_iniciada.entrevista = entrevista_actual      
+
+    def almacenar_entrevista(self):
+        """
+        Recibe la confirmación después de editar la entrevista y la almacena en la base de datos
+        """
+
+        #Mensaje de confirmación para guardar
+        confirmacion = self.msg.mostrar_confirmacion(
+            "Enviar entrevista",
+            "¿Desea enviar la entrevista?\n\nProximamente será evaluado por un profesional"
+        )
+
+        if confirmacion:
+            #Almacenar entrevista con pregunta en bd
+            id_entrevista = agregar_entrevista_y_respuestas(self.interno.num_RC, self.solicitud_pedendiente_iniciada.id_solicitud, 
+                                                            self.solicitud_pedendiente_iniciada.entrevista.fecha,
+                                                            self.solicitud_pedendiente_iniciada.entrevista.respuestas)
+            
+            self.solicitud_pedendiente_iniciada.entrevista.id_entrevista = id_entrevista
+
+            # Mensaje + ir a progreso
+            if id_entrevista:
+                self.msg.mostrar_mensaje("Entrevista enviada", "La entrevista ha sido enviada correctamente")
+                self.iniciar_progreso()
+            else:
+                self.msg.mostrar_mensaje("Error en entrevista", "No ha podido realizarse el envío de la entrevista.\n\nContacte con un administrador.")
+            
 
     def pantalla_resumen_atras(self):
         self.ventana_interno.abrir_pregunta(10)  # Ir a la última pregunta

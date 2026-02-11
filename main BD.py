@@ -4,6 +4,8 @@ from db.solicitud_db import *
 from db.entrevista_db import *
 from db.respuesta_db import *
 
+from models.pregunta import Pregunta
+
 def generar_usuario():    
     agregar_usuario("admin", "admin@g.com", "Admin123", "administrador") #1
     agregar_usuario("interno 2", "2@g.com", "2", "interno") #2
@@ -30,19 +32,15 @@ def generar_solicitud():
 
 
 def generar_entrevista():
-    lista_respuestas = [
-        "respuesta 1",
-        "respuesta 2",
-        "respuesta 3",
-        "respuesta 4",
-        "respuesta 5",
-        "respuesta 6",
-        "respuesta 7",
-        "respuesta 8",
-        "respuesta 9",
-        "respuesta 10",
-    ]
-    agregar_entrevista_y_respuestas("4", "5", "2", "22/11/2020", "34", lista_respuestas)
+    lista_objetos_pregunta = []
+
+    # Creamos 10 objetos Pregunta con datos de relleno
+    for i in range(1, 11):
+        # Instanciamos: ID (i) y Texto ("respuesta X")
+        nueva_pregunta = Pregunta(i, f"respuesta {i}")
+        lista_objetos_pregunta.append(nueva_pregunta)
+
+    agregar_entrevista_y_respuestas("5", "2", "22/11/2020", lista_objetos_pregunta)
 
 def reiniciar_base_de_datos():
     

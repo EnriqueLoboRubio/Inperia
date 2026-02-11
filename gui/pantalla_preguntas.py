@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QTextCursor
 from PyQt5.QtCore import Qt, QSize, pyqtSignal 
+from datetime import datetime
 import json, os
 
 from utils.transcripcionVosk import HiloTranscripcion
@@ -212,7 +213,8 @@ class PantallaPreguntas(QWidget):
             self.boton_grabar.setIconSize((QSize(20, 20))) 
 
             #Archivo de salida
-            nombre_audio = f"ent_{self.id_entrevista}_pre_{self.numero_pregunta}.wav"
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre_audio = f"audio_{timestamp}.wav"
             ruta_audio_salida = os.path.join(self.carpeta_audios, nombre_audio)
 
             if self.lista_audios[self.numero_pregunta - 1] == "":
@@ -469,8 +471,6 @@ class PantallaPreguntas(QWidget):
         
         dialogo.exec_()    
 
-    def cargar_id_entrevista(self, id):
-        self.id_entrevista = id
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Space:

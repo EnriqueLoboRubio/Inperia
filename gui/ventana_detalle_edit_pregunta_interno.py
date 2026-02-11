@@ -26,6 +26,8 @@ class VentanaDetallePreguntaEdit(QDialog):
     def __init__(self, pregunta, numero, id_entrevista ,parent=None):
         super().__init__(parent)
 
+        self.setWindowFlags(Qt.FramelessWindowHint)  #Quitar menu de pantalla, no se puede mover
+
         self.pregunta_actual = pregunta        
         self.id_entrevista = id_entrevista
         self.num_pregunta = numero
@@ -44,12 +46,14 @@ class VentanaDetallePreguntaEdit(QDialog):
         if not os.path.exists(self.carpeta_audios):
             os.makedirs(self.carpeta_audios)
 
-        # Ruta temporal
-        nombre_temp = f"ent_{id_entrevista}_pre_{numero}_e.wav"
-        self.ruta_audio_temp = os.path.join(self.carpeta_audios, nombre_temp)
-
         #Ruta original
         self.ruta_audio_original = pregunta.archivo_audio
+
+        # Ruta temporal
+        base, extension = os.path.splitext(self.ruta_audio_original)
+        self.ruta_audio_temp = f"{base}_temp{extension}"
+
+        
 
         self.setWindowTitle(f"Detalle Pregunta {self.num_pregunta}")
         self.setFixedSize(1000, 650)        
@@ -184,13 +188,42 @@ class VentanaDetallePreguntaEdit(QDialog):
         self.boton_guardar.setToolTip("Guardar datos")
         self.boton_guardar.setStyleSheet(ESTILO_BOTON_SIG_ATR.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930"))
         self.boton_guardar.setCursor(Qt.PointingHandCursor)
-        self.boton_guardar.clicked.connect(self.accept)
+        self.boton_guardar.clicked.connect(self.guardar_datos)
 
         boton_layout.addWidget(self.boton_cerrar)
         boton_layout.addStretch() 
         boton_layout.addWidget(self.boton_guardar)
 
         principal_layout.addLayout(boton_layout)
+
+    def guardar_datos(self):
+        """
+        Si hay audio nuevo, borra el original y renombra el temporal.
+        Luego acepta el diálogo.
+        """
+        # 1. Detener cualquier reproducción para liberar el archivo
+        self.player.stop()
+        self.player.setMedia(QMediaContent())
+
+        # Si se grabó un nuevo audio
+        if self.tiene_nuevo_audio and os.path.exists(self.ruta_audio_temp):
+            try:
+                # Si existe el original, lo borramos
+                if os.path.exists(self.ruta_audio_original):
+                    os.remove(self.ruta_audio_original)
+                
+                # Renombramos el temporal -> original
+                os.rename(self.ruta_audio_temp, self.ruta_audio_original)
+                
+                print(f"Audio actualizado: {self.ruta_audio_original}")
+                
+            except Exception as e:
+                print(f"Error al guardar/renombrar audio: {e}")                
+                self.mostrar_validacion_error("Error", f"No se pudo guardar el audio: {e}")
+                return
+
+        # 3. Cerramos el diálogo con éxito
+        self.accept()
 
     # --- LÓGICA DE GRABACIÓN ---
     def toggle_grabacion(self):
@@ -369,8 +402,7 @@ class VentanaDetallePreguntaEdit(QDialog):
         """
         return {
             "texto": self.txt_respuesta.toPlainText(),
-            "ruta_temporal": self.ruta_audio_temp,
-            "hay_nuevo_audio": self.tiene_nuevo_audio
+            "ruta_audio": self.ruta_audio_original,            
         }
     
     def mostrar_confirmacion_cerrar(self):
@@ -386,7 +418,7 @@ class VentanaDetallePreguntaEdit(QDialog):
         # --- FONDO ---
         fondo = QFrame()
         fondo.setObjectName("FondoDialogo")
-        fondo.setStyleSheet(ESTILO_DIALOGO_ERROR)  # puedes usar otro estilo si quieres
+        fondo.setStyleSheet(ESTILO_DIALOGO_ERROR) 
 
         layout_interno = QVBoxLayout(fondo)
         layout_interno.setContentsMargins(20, 20, 20, 20)
@@ -472,34 +504,27 @@ class VentanaDetallePreguntaEdit(QDialog):
 
     def closeEvent(self, event):
         """
-        Gestiona la limpieza de archivos temporales al cerrar.
-        Se ejecuta tanto con la X de la ventana como con self.reject().
-        NO se ejecuta limpieza si es self.accept() (Guardar).
+        Si cerramos (reject), borramos el temporal.
+        Si guardamos (accept), el temporal ya se renombró en guardar_datos, 
+        así que no hay nada que borrar en esa ruta.
         """
-        # Si NO estamos aceptando (es decir, estamos cancelando o cerrando)
-        if self.result() != QDialog.Accepted:
-            
-            # Detener procesos
-            if self.hilo_grabacion:
-                self.detener_grabacion()
-            self.player.stop()
-            self.player.setMedia(QMediaContent()) # Liberar archivo
+        # Detener procesos siempre
+        if self.hilo_grabacion:
+            self.detener_grabacion()
+        
+        self.player.stop()
+        self.player.setMedia(QMediaContent()) # Liberar archivo
 
-            # Borrar basura temporal
+        # Si el resultado NO es aceptado (es decir, es cancelar/cerrar)
+        if self.result() != QDialog.Accepted:
             if os.path.exists(self.ruta_audio_temp):
                 try:
                     os.remove(self.ruta_audio_temp)
-                    print("Limpieza: Audio temporal eliminado.")
+                    print("Cancelado: Audio temporal eliminado.")
                 except Exception as e:
                     print(f"Error borrando temp: {e}")
         
-            event.accept()
-        else:
-            if os.path.exists(self.ruta_audio_temp):
-                try:
-                    os.remove(self.ruta_audio_temp)
-                except:
-                    pass
+        event.accept()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Space:

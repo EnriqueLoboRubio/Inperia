@@ -13,8 +13,9 @@ def crear_respuesta():
             id_entrevista INTEGER NOT NULL,
             id_pregunta INTEGER NOT NULL,
             texto_respuesta TEXT,            
+            ruta_audio TEXT,
             puntuacion_ia REAL,
-            nivel INTEGER,       
+            nivel INTEGER,                          
             FOREIGN KEY (id_entrevista) REFERENCES entrevistas(id) ON DELETE CASCADE
         )
     ''')
@@ -23,14 +24,14 @@ def crear_respuesta():
     conexion.close()
 
 #Función para agregar nueva respuesta
-def agregar_respuesta(id_entrevista, id_pregunta, texto_respuesta, puntacion_ia):
+def agregar_respuesta(id_entrevista, id_pregunta, texto_respuesta, ruta_audio, puntacion_ia):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:
         cursor.execute('''
-            INSERT INTO respuestas (id_entrevista, id_pregunta, texto_respuesta, puntacion_ia)
+            INSERT INTO respuestas (id_entrevista, id_pregunta, texto_respuesta, ruta_audio, puntacion_ia)
             VALUES (?,?,?,?)
-        ''', (id_entrevista, id_pregunta, texto_respuesta, puntacion_ia))
+        ''', (id_entrevista, id_pregunta, texto_respuesta, ruta_audio, puntacion_ia))
     except sqlite3.IntegrityError:
         print("ERror: No se ha podido crear la respuesta")
         return False
