@@ -23,22 +23,36 @@ def cargar_datos_preguntas():
         return {"1": {"titulo": "Error", "texto": "Error al leer el archivo 'preguntas.json'."}}
 
 class VentanaDetallePreguntaEdit(QDialog):
-    def __init__(self, pregunta, numero, parent=None):
+    def __init__(self, pregunta, numero, id_interno, id_entrevista ,parent=None):
         super().__init__(parent)
 
         self.pregunta_actual = pregunta
+        self.id_interno = id_interno
+        self.id_entrevista = id_entrevista
+        self.num_pregunta = numero
 
         self.PREGUNTAS_DATA = cargar_datos_preguntas()        
         self.grabando = False # Estado inicial de grabación
+        self.tiene_nuevo_audio = False
 
         self.hilo_grabacion = None
+         
+        # Gestion ruta de audios
         ruta_base = os.path.dirname(os.path.dirname(__file__))
-        self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small")    
+        self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small")  
+
         self.carpeta_audios = os.path.join(ruta_base, "data", "grabaciones")
         if not os.path.exists(self.carpeta_audios):
             os.makedirs(self.carpeta_audios)
 
-        self.setWindowTitle(f"Detalle Pregunta {numero}")
+        # Ruta temporal
+        nombre_temp = f"{id_interno}_{id_entrevista}_{numero}_e.wav"
+        self.ruta_audio_temp = os.path.join(self.carpeta_audios, nombre_temp)
+
+        #Ruta original
+        self.ruta_audio_original = pregunta.archivo_audio
+
+        self.setWindowTitle(f"Detalle Pregunta {self.num_pregunta}")
         self.setFixedSize(1000, 650)        
 
         principal_layout = QVBoxLayout(self)
@@ -47,10 +61,10 @@ class VentanaDetallePreguntaEdit(QDialog):
 
         # --- Título y Nivel ---
         top_layout = QHBoxLayout()
-        datos = self.PREGUNTAS_DATA.get(str(numero), {})
-        titulo_json = datos.get("titulo", f"Pregunta {numero}")
+        datos = self.PREGUNTAS_DATA.get(str(self.num_pregunta), {})
+        titulo_json = datos.get("titulo", f"Pregunta {self.num_pregunta}")
         
-        titulo_texto = f"Pregunta {numero}: {titulo_json}"
+        titulo_texto = f"Pregunta {self.num_pregunta}: {titulo_json}"
         lbl_titulo = QLabel(titulo_texto)
         lbl_titulo.setFont(QFont("Arial", 16, QFont.Bold))
         lbl_titulo.setStyleSheet("border: none; color: black;")
@@ -121,7 +135,7 @@ class VentanaDetallePreguntaEdit(QDialog):
         self.boton_play.setCursor(Qt.PointingHandCursor)
         self.boton_play.setStyleSheet(ESTILO_BOTON_PLAY)
         
-        self.boton_play.clicked.connect(lambda: self.toggle_audio(self.pregunta_actual.archivo_audio))
+        self.boton_play.clicked.connect(lambda: self.toggle_audio)
 
         # Botón Grabar
         self.boton_grabar = QPushButton()
@@ -169,6 +183,7 @@ class VentanaDetallePreguntaEdit(QDialog):
         self.boton_guardar.setToolTip("Guardar datos")
         self.boton_guardar.setStyleSheet(ESTILO_BOTON_SIG_ATR.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930"))
         self.boton_guardar.setCursor(Qt.PointingHandCursor)
+        self.boton_guardar.clicked.connect(self.accept)
 
         boton_layout.addWidget(self.boton_cerrar)
         boton_layout.addStretch() 
@@ -196,13 +211,10 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.boton_grabar.style().unpolish(self.boton_grabar)
             self.boton_grabar.style().polish(self.boton_grabar)
             self.boton_grabar.setIcon(QIcon("assets/pausa.png")) # Icono de stop
-            self.boton_grabar.setIconSize((QSize(20, 20)))
-
-            #Archivo salida
-            ruta_audio_salida = os.path.join(self.carpeta_audios, self.pregunta_actual.archivo_audio)
+            self.boton_grabar.setIconSize((QSize(20, 20)))        
 
             # Hilo
-            self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk, ruta_audio_salida)
+            self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk, self.ruta_audio_temp)
 
             #Señales
             self.hilo_grabacion.texto_signal.connect(self.actualizar_texto_final)
@@ -219,6 +231,10 @@ class VentanaDetallePreguntaEdit(QDialog):
         else:
             # DETENER GRABACIÓN
             self.grabando = False
+
+            self.tiene_nuevo_audio = True
+
+
 
             # Detener hilo
             if self.hilo_grabacion:
@@ -284,20 +300,28 @@ class VentanaDetallePreguntaEdit(QDialog):
         self.mostrar_validacion_error(f"Error de audio: {error}\n\nVerifique la carpeta del modelo: {self.ruta_modelo_vosk}")
 
     # --- LÓGICA DE REPRODUCCIÓN ---
-    def toggle_audio(self, ruta):
+    def toggle_audio(self):
         # Si está grabando, no hacemos nada
         if self.grabando:
             return
+        
+        ruta_a_reproducir = None
 
-        if not ruta or not os.path.exists(ruta):
-            # Nota: En un caso real, si acabas de grabar, la ruta debería apuntar al temporal
-            self.lbl_estado_grabacion.setText("⚠️ Archivo de audio no encontrado (Simulación)")
+        if self.tiene_nuevo_audio and os.path.exists(self.ruta_audio_temp):
+            # Si grabó uno nuevo, reproducimos el temporal
+            ruta_a_reproducir = self.ruta_audio_temp
+        elif self.ruta_audio_original and os.path.exists(self.ruta_audio_original):
+            # Si no ha grabado nada nuevo, reproducimos el original
+            ruta_a_reproducir = self.ruta_audio_original
+            
+        if not ruta_a_reproducir:
+            self.lbl_estado_grabacion.setText("⚠️ No hay audio grabado")
             return
 
         if self.player.mediaStatus() == QMediaPlayer.NoMedia or self.player.mediaStatus() == QMediaPlayer.InvalidMedia:
              # Aquí cargamos el audio (el original o el nuevo grabado)
-             if os.path.exists(ruta):
-                url = QUrl.fromLocalFile(os.path.abspath(ruta))
+             if os.path.exists(ruta_a_reproducir):
+                url = QUrl.fromLocalFile(os.path.abspath(ruta_a_reproducir))
                 self.player.setMedia(QMediaContent(url))
 
         if self.player.state() == QMediaPlayer.PlayingState:
@@ -334,6 +358,16 @@ class VentanaDetallePreguntaEdit(QDialog):
         minutos = segundos // 60
         segundos = segundos % 60
         return f"{minutos:02}:{segundos:02}"
+    
+    def get_datos(self):
+        """
+        Devuelve la información necesaria para el controlador.
+        """
+        return {
+            "texto": self.txt_respuesta.toPlainText(),
+            "ruta_temporal": self.ruta_audio_temp,
+            "hay_nuevo_audio": self.tiene_nuevo_audio
+        }
     
     def mostrar_confirmacion_cerrar(self):
         dialogo = QDialog(self)
@@ -430,6 +464,29 @@ class VentanaDetallePreguntaEdit(QDialog):
 
     def cerrar_ventana(self):
         if self.mostrar_confirmacion_cerrar() is True:
-            self.close()
-        else:
-            return
+            self.reject()
+
+    def closeEvent(self, event):
+        """
+        Gestiona la limpieza de archivos temporales al cerrar.
+        Se ejecuta tanto con la X de la ventana como con self.reject().
+        NO se ejecuta limpieza si es self.accept() (Guardar).
+        """
+        # Si NO estamos aceptando (es decir, estamos cancelando o cerrando)
+        if self.result() != QDialog.Accepted:
+            
+            # Detener procesos
+            if self.hilo_grabacion:
+                self.detener_grabacion()
+            self.player.stop()
+            self.player.setMedia(QMediaContent()) # Liberar archivo
+
+            # Borrar basura temporal
+            if os.path.exists(self.ruta_audio_temp):
+                try:
+                    os.remove(self.ruta_audio_temp)
+                    print("Limpieza: Audio temporal eliminado.")
+                except Exception as e:
+                    print(f"Error borrando temp: {e}")
+        
+        event.accept()

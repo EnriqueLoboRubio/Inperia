@@ -1,4 +1,6 @@
+import os, shutil
 from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtWidgets import QDialog
 from datetime import date
 
 from controllers.solicitud_controller import SolicitudController
@@ -16,6 +18,8 @@ from models.entrevista import Entrevista
 from models.pregunta import Pregunta
 
 from utils.enums import Tipo_estado_solicitud
+
+from gui.mensajes import Mensajes
 
 class InternoController(QObject):
 
@@ -235,6 +239,10 @@ class InternoController(QObject):
     def mostrar_detalle_pregunta(self, id_pregunta):
 
         self.pregunta_mostrar = None
+
+        entrevista_actual = self.solicitud_pedendiente_iniciada.entrevista
+        id_entrevista = entrevista_actual.id_entrevista
+        id_interno = entrevista_actual.id_interno
         
         #Buscar pregunta en el objeto Entrevista por id
         for pregunta in self.solicitud_pedendiente_iniciada.entrevista.respuestas:
@@ -243,9 +251,44 @@ class InternoController(QObject):
                 break                        
 
         if self.pregunta_mostrar:
-            ventana_detalle = VentanaDetallePreguntaEdit(self.pregunta_mostrar, id_pregunta)
-            #ventana_detalle.boton_guardar.clicked.connect(ventana)
-            ventana_detalle.exec_()
+            ventana_detalle = VentanaDetallePreguntaEdit(self.pregunta_mostrar, id_pregunta, id_interno, id_entrevista)            
+            resultado = ventana_detalle.exec_()
+
+            if resultado == QDialog.Accepted:
+                datos = ventana_detalle.get_datos()
+                nuevo_texto = datos["texto"]
+                ruta_temp = datos["ruta_temporal"]
+                hay_nuevo_audio = datos["hay_nuevo_audio"]
+
+                self.pregunta_mostrar.respuesta = nuevo_texto
+
+                if hay_nuevo_audio and os.path.exists(ruta_temp):
+                    carpeta_grabaciones = os.path.dirname(ruta_temp)
+                    nombre_final = f"{id_interno}_{id_entrevista}_{id_pregunta}.wav"
+                    ruta_final = os.path.join(carpeta_grabaciones, nombre_final)
+
+                    try:
+                        # Borrar anterior si existe
+                        if os.path.exists(ruta_final):
+                            os.remove(ruta_final)
+                        
+                        # Mover temporal a definitivo
+                        shutil.move(ruta_temp, ruta_final)
+                        
+                        # Actualizar objeto
+                        self.pregunta_mostrar.archivo_audio = ruta_final
+                        
+                    except Exception as e:
+                        print(f"Error moviendo audio: {e}")
+                        Mensajes.mostrar_error("Error", "No se pudo guardar el audio correctamente.")
+
+                self.ventana_interno.pantalla_resumen_edit.cargar_datos_respuestas(entrevista_actual)
+
+                Mensajes.mostrar_mensaje(
+                    "Guardado", 
+                    f"La pregunta {id_pregunta} se ha actualizado correctamente.",
+                    self.ventana_interno # Usamos la ventana principal como padre
+                )
 
     def finalizar_entrevista(self, lista_respuestas, lista_audios):
         """
