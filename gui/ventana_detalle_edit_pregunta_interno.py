@@ -23,11 +23,10 @@ def cargar_datos_preguntas():
         return {"1": {"titulo": "Error", "texto": "Error al leer el archivo 'preguntas.json'."}}
 
 class VentanaDetallePreguntaEdit(QDialog):
-    def __init__(self, pregunta, numero, id_interno, id_entrevista ,parent=None):
+    def __init__(self, pregunta, numero, id_entrevista ,parent=None):
         super().__init__(parent)
 
-        self.pregunta_actual = pregunta
-        self.id_interno = id_interno
+        self.pregunta_actual = pregunta        
         self.id_entrevista = id_entrevista
         self.num_pregunta = numero
 
@@ -46,7 +45,7 @@ class VentanaDetallePreguntaEdit(QDialog):
             os.makedirs(self.carpeta_audios)
 
         # Ruta temporal
-        nombre_temp = f"{id_interno}_{id_entrevista}_{numero}_e.wav"
+        nombre_temp = f"ent_{id_entrevista}_pre_{numero}_e.wav"
         self.ruta_audio_temp = os.path.join(self.carpeta_audios, nombre_temp)
 
         #Ruta original
@@ -128,6 +127,7 @@ class VentanaDetallePreguntaEdit(QDialog):
 
         # Botón Play / Pause
         self.boton_play = QPushButton()
+        self.boton_play.setFocusPolicy(Qt.NoFocus)
         self.boton_play.setIcon(QIcon("assets/play.png")) 
         self.boton_play.setIconSize(QSize(20, 20))
         self.boton_play.setFixedSize(50, 50)
@@ -139,6 +139,7 @@ class VentanaDetallePreguntaEdit(QDialog):
 
         # Botón Grabar
         self.boton_grabar = QPushButton()
+        self.boton_grabar.setFocusPolicy(Qt.NoFocus)
         self.boton_grabar.setIcon(QIcon("assets/micro.png"))
         self.boton_grabar.setIconSize(QSize(25, 25))
         self.boton_grabar.setFixedSize(50, 50)
@@ -238,6 +239,7 @@ class VentanaDetallePreguntaEdit(QDialog):
             # Detener hilo
             if self.hilo_grabacion:
                 self.hilo_grabacion.detener()
+                self.hilo_grabacion.wait()
                 self.hilo_grabacion = None
             
             # Visuales
@@ -245,6 +247,7 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.boton_grabar.style().unpolish(self.boton_grabar)
             self.boton_grabar.style().polish(self.boton_grabar)
             self.boton_grabar.setIcon(QIcon("assets/micro.png"))
+            
             
             # Desbloquear botones
             self.boton_play.setEnabled(True)
@@ -300,12 +303,11 @@ class VentanaDetallePreguntaEdit(QDialog):
 
     # --- LÓGICA DE REPRODUCCIÓN ---
     def toggle_audio(self):
-
         if self.grabando:
             return
 
+        # 1. Determinar la ruta del archivo
         ruta = None
-
         if self.tiene_nuevo_audio and os.path.exists(self.ruta_audio_temp):
             ruta = self.ruta_audio_temp
         elif self.ruta_audio_original and os.path.exists(self.ruta_audio_original):
@@ -315,29 +317,36 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.lbl_estado_grabacion.setText("⚠️ No hay audio disponible")
             return
 
-        url = QUrl.fromLocalFile(os.path.abspath(ruta))
-        self.player.setMedia(QMediaContent(url))
+        # 2. Lógica de Control: Play / Pause
+        # Solo cargamos el medio si es un archivo distinto o si el reproductor está vacío
+        actual_url = QUrl.fromLocalFile(os.path.abspath(ruta))
+        
+        if self.player.media().canonicalUrl() != actual_url:
+            self.player.setMedia(QMediaContent(actual_url))
 
+        # Alternar estado sin reiniciar la posición
         if self.player.state() == QMediaPlayer.PlayingState:
-            self.player.pause()
+            self.player.pause()  # Se detiene en el punto actual
         else:
-            self.player.play()
+            self.player.play()   # Reanuda desde donde se quedó
 
 
     def cambio_estado_reproductor(self, estado):
-        # Bloquear grabación si se está reproduciendo
         if estado == QMediaPlayer.PlayingState:
             self.boton_play.setIcon(QIcon("assets/pausa.png"))
             self.lbl_estado_grabacion.setText("Reproduciendo...")
             self.lbl_estado_grabacion.setStyleSheet("color: green;")
-            self.boton_grabar.setEnabled(False) # No grabar mientras reproduce
-            self.boton_grabar.setToolTip("Pausa el audio para grabar")
-        else:
+            self.boton_grabar.setEnabled(False)
+        elif estado == QMediaPlayer.PausedState:
+            self.boton_play.setIcon(QIcon("assets/play.png"))
+            self.lbl_estado_grabacion.setText("Pausado")
+            self.lbl_estado_grabacion.setStyleSheet("color: orange;")
+            self.boton_grabar.setEnabled(True)
+        else: # StoppedState
             self.boton_play.setIcon(QIcon("assets/play.png"))
             if not self.grabando:
-                self.lbl_estado_grabacion.setText("Pausado / Listo")
-                self.boton_grabar.setEnabled(True) # Permitir grabar de nuevo
-                self.boton_grabar.setToolTip("Grabar nueva respuesta")
+                self.lbl_estado_grabacion.setText("Listo")
+                self.boton_grabar.setEnabled(True)
 
     def actualizar_posicion(self, posicion):
         self.slider_audio.setValue(posicion)
@@ -491,3 +500,10 @@ class VentanaDetallePreguntaEdit(QDialog):
                     os.remove(self.ruta_audio_temp)
                 except:
                     pass
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Space:
+            if self.grabando:
+                self.toggle_grabacion() # Si está grabando, lo para
+            return # Evita que el evento se propague y haga otras cosas
+        super().keyPressEvent(event)

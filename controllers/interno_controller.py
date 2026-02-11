@@ -251,7 +251,7 @@ class InternoController(QObject):
                 break                        
 
         if self.pregunta_mostrar:
-            ventana_detalle = VentanaDetallePreguntaEdit(self.pregunta_mostrar, id_pregunta, id_interno, id_entrevista)            
+            ventana_detalle = VentanaDetallePreguntaEdit(self.pregunta_mostrar, id_pregunta, id_entrevista)            
             resultado = ventana_detalle.exec_()
 
             if resultado == QDialog.Accepted:

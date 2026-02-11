@@ -36,7 +36,7 @@ class PantallaPreguntas(QWidget):
         ruta_base = os.path.dirname(os.path.dirname(__file__))
         self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small")      
 
-        self.id_entrevista = 0
+        self.id_entrevista = 0       
         self.carpeta_audios = os.path.join(ruta_base, "data", "grabaciones")
         if not os.path.exists(self.carpeta_audios):
             os.makedirs(self.carpeta_audios)     
@@ -128,6 +128,7 @@ class PantallaPreguntas(QWidget):
 
         # Botón Micrófono
         self.boton_grabar = QPushButton()
+        self.boton_grabar.setFocusPolicy(Qt.NoFocus)
         self.boton_grabar.setToolTip("Responder por voz")
         self.boton_grabar.setFixedSize(60, 60)
         self.boton_grabar.setIcon(QIcon("assets/micro.png"))
@@ -239,6 +240,7 @@ class PantallaPreguntas(QWidget):
             # Detener hilo
             if self.hilo_grabacion:
                 self.hilo_grabacion.detener()
+                self.hilo_grabacion.wait()
                 self.hilo_grabacion = None
             
             # Cambios visuales
@@ -309,9 +311,8 @@ class PantallaPreguntas(QWidget):
         self.boton_grabar.setIcon(QIcon("assets/micro.png"))
         self.boton_grabar.setIconSize(QSize(30, 30))
         self.lbl_estado_grabacion.setText("Pulse para grabar")
-        self.lbl_estado_grabacion.setStyleSheet("color: #666;")
+        self.lbl_estado_grabacion.setStyleSheet("color: #666;")    
         
-
         # Cargar datos JSON
         datos = self.PREGUNTAS_DATA.get(str(numero), {
             "titulo": "Error",
@@ -325,6 +326,13 @@ class PantallaPreguntas(QWidget):
         texto_ayuda = datos.get("ayuda", "Sin información adicional.")       
         self.popup_ayuda.setText(texto_ayuda)
         self.popup_ayuda.adjustSize() # Ajustar alto al contenido
+
+        #Cargar respuesta si la hay
+        if self.lista_respuestas[numero -1] != "":
+            self.txt_respuesta.setText(self.lista_respuestas[numero -1])
+        else:
+            self.txt_respuesta.setText("")
+            
 
         # Lógica de botones (Siguiente/Atrás)
         if self.numero_pregunta > 1:
@@ -463,3 +471,10 @@ class PantallaPreguntas(QWidget):
 
     def cargar_id_entrevista(self, id):
         self.id_entrevista = id
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Space:
+            if self.grabando:
+                self.toggle_grabacion() # Si está grabando, lo para
+            return # Evita que el evento se propague y haga otras cosas
+        super().keyPressEvent(event)
