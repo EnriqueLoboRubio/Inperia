@@ -340,7 +340,7 @@ class InternoController(QObject):
             self.solicitud_pedendiente_iniciada.estado = Tipo_estado_solicitud.PENDIENTE
 
             #Actualizar estado de solicitud
-            actualizacion = actualizar_estado_solicitud(self.solicitud_pedendiente_iniciada.id_solicitud, Tipo_estado_solicitud.PENDIENTE)
+            actualizacion = actualizar_estado_solicitud(self.solicitud_pedendiente_iniciada.id_solicitud, Tipo_estado_solicitud.PENDIENTE.value)
             if actualizacion is False:
                 self.msg.mostrar_advertencia("Error BD", "Error en la actualización del estado de la solicitud.")
 

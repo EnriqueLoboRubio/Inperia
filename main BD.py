@@ -128,7 +128,7 @@ def reiniciar_y_generar():
 
 if __name__ == "__main__":
     
-    reiniciar_y_generar()
+    #reiniciar_y_generar()
     
-    #ver_info_completa_por_solicitud("1")                 
+    ver_info_completa_por_solicitud("1")                 
     

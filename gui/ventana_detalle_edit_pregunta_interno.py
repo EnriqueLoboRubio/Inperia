@@ -27,7 +27,8 @@ class VentanaDetallePreguntaEdit(QDialog):
     def __init__(self, pregunta, numero, id_entrevista ,parent=None):
         super().__init__(parent)
 
-        self.setWindowFlags(Qt.FramelessWindowHint)  #Quitar menu de pantalla, no se puede mover
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.pregunta_actual = pregunta        
         self.id_entrevista = id_entrevista
@@ -62,9 +63,18 @@ class VentanaDetallePreguntaEdit(QDialog):
         
 
         self.setWindowTitle(f"Detalle Pregunta {self.num_pregunta}")
-        self.setFixedSize(1000, 650)        
+        self.setFixedSize(1000, 650)      
 
-        principal_layout = QVBoxLayout(self)
+        layout_contenedor = QVBoxLayout(self)
+        layout_contenedor.setContentsMargins(0, 0, 0, 0)
+
+        self.frame_fondo = QFrame()
+        self.frame_fondo.setObjectName("FondoDetalle")
+        self.frame_fondo.setStyleSheet(ESTILO_VENTANA_DETALLE)
+
+        layout_contenedor.addWidget(self.frame_fondo)
+
+        principal_layout = QVBoxLayout(self.frame_fondo)
         principal_layout.setSpacing(20)
         principal_layout.setContentsMargins(10,10,10,10)
 

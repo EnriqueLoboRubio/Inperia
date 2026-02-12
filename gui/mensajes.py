@@ -181,7 +181,7 @@ class Mensajes:
         layout_cabecera = QHBoxLayout()
 
         lbl_icono = QLabel()
-        pixmap = QPixmap("assets/warning.png").scaled(
+        pixmap = QPixmap("assets/error.png").scaled(
             30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         lbl_icono.setPixmap(pixmap)

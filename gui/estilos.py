@@ -554,6 +554,14 @@ ESTILO_SLIDER = """
         }
         """
 
+ESTILO_VENTANA_DETALLE ="""
+    QFrame#FondoDetalle {
+        background-color: #E0E0E0;
+        border: 2px solid #444444;
+        border-radius: 15px;
+    }
+"""
+
 ESTILO_DIALOGO_ERROR = """
     QDialog {
         background-color: transparent;

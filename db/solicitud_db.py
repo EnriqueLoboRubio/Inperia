@@ -121,7 +121,8 @@ def actualizar_estado_solicitud(id_solicitud, estado):
         
         conexion.commit()
         return True
-    except Exception as e:        
+    except Exception as e: 
+        print(f"Error: No se ha podido crear la solicitud. {e}")       
         return False
     finally:
         conexion.close()
