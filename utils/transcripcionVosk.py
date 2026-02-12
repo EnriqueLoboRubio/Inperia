@@ -34,10 +34,15 @@ class HiloTranscripcion(QThread):
             self.p = pyaudio.PyAudio()
 
             if self.archivo_salida:
-                self.wf = wave.open(self.archivo_salida, "wb")
-                self.wf.setnchannels(1)
-                self.wf.setsampwidth(self.p.get_sample_size(pyaudio.paInt16))
-                self.wf.setframerate(16000)
+                # Aseguramos que se crea correctamente
+                try:
+                    self.wf = wave.open(self.archivo_salida, "wb")
+                    self.wf.setnchannels(1)
+                    self.wf.setsampwidth(self.p.get_sample_size(pyaudio.paInt16))
+                    self.wf.setframerate(16000)
+                except Exception as e:
+                    self.error_signal.emit(f"Error al crear archivo de audio: {e}")
+                    return
 
             self.corriendo = True
 
@@ -46,8 +51,11 @@ class HiloTranscripcion(QThread):
                 if not self.corriendo:
                     return (None, pyaudio.paComplete)
 
-                if self.wf:
-                    self.wf.writeframes(in_data)
+                if self.wf is not None:
+                    try:
+                        self.wf.writeframes(in_data)
+                    except Exception:                  
+                        pass
 
                 if self.reconocedor.AcceptWaveform(in_data):
                     resultado = json.loads(self.reconocedor.Result())
@@ -73,8 +81,14 @@ class HiloTranscripcion(QThread):
 
             self.stream.start_stream()
 
-            while self.stream.is_active():
+            while self.corriendo and self.stream.is_active():
                 self.msleep(100)
+
+            if self.reconocedor:
+                final_json = json.loads(self.reconocedor.FinalResult())
+                texto_final = final_json.get("text", "")
+                if texto_final:                  
+                    self.texto_signal.emit(texto_final)
 
         except Exception as e:
             self.error_signal.emit(f"Error crítico: {str(e)}")
@@ -88,11 +102,24 @@ class HiloTranscripcion(QThread):
     def limpiar(self):
 
         if self.stream:
-            self.stream.stop_stream()
-            self.stream.close()
+            try:
+                if self.stream.is_active():
+                    self.stream.stop_stream()
+                self.stream.close()
+            except Exception:
+                pass
+            self.stream = None
 
         if self.wf:
-            self.wf.close()
+            try:
+                self.wf.close()
+            except Exception:
+                pass
+            self.wf = None
 
         if self.p:
-            self.p.terminate()
+            try:
+                self.p.terminate()
+            except Exception:
+                pass
+            self.p = None

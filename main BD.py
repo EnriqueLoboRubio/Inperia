@@ -3,6 +3,10 @@ from db.interno_db import *
 from db.solicitud_db import *
 from db.entrevista_db import *
 from db.respuesta_db import *
+import sqlite3
+import json
+import os
+from models.entrevista import Entrevista
 
 from models.pregunta import Pregunta
 
@@ -66,17 +70,65 @@ def reiniciar_base_de_datos():
     crear_entrevista()    #
     #crear_comentario()    #
     
-    print("Base de datos reconstruida completamente.")    
-    
+    print("Base de datos reconstruida completamente.")  
 
-if __name__ == "__main__":
+def ver_info_completa_por_solicitud(id_solicitud):
+
+    #Ver estado de soliciud
+    estado= obtener_estado_solicitud(id_solicitud)
+    print(f"Estado solicitud {estado}")
     
+    #Buscar entrevista con id asociada
+    entrevista = None
+    datos_entrevista = encontrar_entrevista_por_solicitud(id_solicitud)
+    if datos_entrevista:
+        entrevista = Entrevista(
+                id_entrevista=datos_entrevista[0],
+                id_interno=datos_entrevista[2],
+                id_profesional=datos_entrevista[1],
+                fecha=datos_entrevista[4]
+            )
+
+        entrevista.puntuacion = datos_entrevista[5]
+
+    #Cargar respuestas de entrevista
+    datos_respuestas = obtener_respuestas_por_entrevista(entrevista.id_entrevista)
+
+    for dato in datos_respuestas:
+    # A. Instanciamos la Pregunta con los datos obligatorios del __init__
+    # __init__(self, id_pregunta, respuesta)
+        nueva_pregunta = Pregunta(
+            id_pregunta=dato["id_pregunta"], 
+            respuesta=dato["texto_respuesta"]
+        )
+        
+        # B. Rellenamos los atributos opcionales que no están en el __init__
+        # pero que sí están en tu clase Pregunta y en la BD
+        if dato["nivel"] is not None:
+            nueva_pregunta.nivel = dato["nivel"]
+            
+        if dato["puntuacion_ia"] is not None:
+            nueva_pregunta.valoracion_ia = str(dato["puntuacion_ia"]) # Lo convierto a string si tu modelo lo espera así
+            
+        if dato["ruta_audio"] is not None:
+            nueva_pregunta.archivo_audio = dato["ruta_audio"]
+
+        # C. Añadimos el objeto Pregunta a la lista de respuestas de la Entrevista
+        entrevista.add_respuestas(nueva_pregunta)
+
+    print(entrevista.to_json())
+
+def reiniciar_y_generar():
     reiniciar_base_de_datos()
 
     generar_usuario()
     generar_internos()
     generar_solicitud()    
     generar_entrevista()
+
+if __name__ == "__main__":
     
-    #buscar_y_mostrar_solicitud("3")                 
+    reiniciar_y_generar()
+    
+    #ver_info_completa_por_solicitud("1")                 
     

@@ -116,13 +116,34 @@ def actualizar_estado_solicitud(id_solicitud, estado):
         cursor.execute('''
             UPDATE solicitudes 
             SET estado = ?
-            WHERE id_solicitud = ?
-        ''', (id_solicitud, estado))
+            WHERE id = ?
+        ''', (estado, id_solicitud))
         
         conexion.commit()
         return True
     except Exception as e:        
         return False
+    finally:
+        conexion.close()
+
+
+def obtener_estado_solicitud(id_solicitud):   
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    
+    try:
+        cursor.execute('''
+            SELECT estado           
+            FROM solicitudes 
+            WHERE id = ?
+        ''', (id_solicitud))
+
+        estado = cursor.fetchone()
+        
+        conexion.commit()
+        return estado
+    except Exception as e:        
+        return None
     finally:
         conexion.close()
 

@@ -24,6 +24,7 @@ class Pregunta():
         "Devuelve un diccionario con el formato JSON de la pregunta, para mandar a LLM"
         return {
             "id_pregunta": self.id_pregunta,
-            "respuesta": self.respuesta
+            "respuesta": self.respuesta,
+            "archivo_audio": self.archivo_audio
         }
     

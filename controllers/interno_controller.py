@@ -126,12 +126,12 @@ class InternoController(QObject):
         if datos_entrevista:
             entrevista = Entrevista(
                 id_entrevista=datos_entrevista[0],
-                id_interno=datos_entrevista[1],
-                id_profesional=datos_entrevista[2],
-                fecha=datos_entrevista[3]
+                id_interno=datos_entrevista[2],
+                id_profesional=datos_entrevista[1],
+                fecha=datos_entrevista[4]
             )
 
-            entrevista.puntuacion = datos_entrevista[4]
+            entrevista.puntuacion = datos_entrevista[5]
 
             return entrevista
         else:
@@ -321,6 +321,7 @@ class InternoController(QObject):
     def almacenar_entrevista(self):
         """
         Recibe la confirmación después de editar la entrevista y la almacena en la base de datos
+        Actualiza el estado de la solicitud de iniciada a pendiente
         """
 
         #Mensaje de confirmación para guardar
@@ -330,18 +331,25 @@ class InternoController(QObject):
         )
 
         if confirmacion:
-            #Almacenar entrevista con pregunta en bd
-            self.tiene_entrevista = True
+            #Almacenar entrevista con pregunta en bd            
             id_entrevista = agregar_entrevista_y_respuestas(self.interno.num_RC, self.solicitud_pedendiente_iniciada.id_solicitud, 
                                                             self.solicitud_pedendiente_iniciada.entrevista.fecha,
                                                             self.solicitud_pedendiente_iniciada.entrevista.respuestas)
             
             self.solicitud_pedendiente_iniciada.entrevista.id_entrevista = id_entrevista
+            self.solicitud_pedendiente_iniciada.estado = Tipo_estado_solicitud.PENDIENTE
+
+            #Actualizar estado de solicitud
+            actualizacion = actualizar_estado_solicitud(self.solicitud_pedendiente_iniciada.id_solicitud, Tipo_estado_solicitud.PENDIENTE)
+            if actualizacion is False:
+                self.msg.mostrar_advertencia("Error BD", "Error en la actualización del estado de la solicitud.")
+
 
             # Mensaje + ir a progreso
             if id_entrevista:
                 self.msg.mostrar_mensaje("Entrevista enviada", "La entrevista ha sido enviada correctamente")
                 self.iniciar_progreso()
+                self.tiene_entrevista = True
             else:
                 self.msg.mostrar_mensaje("Error en entrevista", "No ha podido realizarse el envío de la entrevista.\n\nContacte con un administrador.")
             
