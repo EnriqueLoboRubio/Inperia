@@ -213,12 +213,24 @@ class PantallaPreguntas(QWidget):
             self.boton_grabar.setIconSize((QSize(20, 20))) 
 
             #Archivo de salida
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            nombre_audio = f"audio_{timestamp}.wav"
-            ruta_audio_salida = os.path.join(self.carpeta_audios, nombre_audio)
 
-            if self.lista_audios[self.numero_pregunta - 1] == "":
+           # si existe
+            ruta_existente = self.lista_audios[self.numero_pregunta - 1].strip()
+
+            if ruta_existente == "":
+                # Si no hay audio previo, crear un nombre nuevo
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                nombre_audio = f"audio_{timestamp}.wav"
+                ruta_audio_salida = os.path.join(self.carpeta_audios, nombre_audio)
+                
+                # Guardar nueva ruta 
                 self.lista_audios[self.numero_pregunta - 1] = ruta_audio_salida
+            else:
+                # Si ya existe, reutilizarsobrescribir
+                ruta_audio_salida = ruta_existente
+
+          
+            self.lista_audios[self.numero_pregunta - 1] = ruta_audio_salida # almacenar nueva ruta
             
             #Hilo
             self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk, ruta_audio_salida)

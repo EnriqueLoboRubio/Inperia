@@ -331,6 +331,7 @@ class InternoController(QObject):
 
         if confirmacion:
             #Almacenar entrevista con pregunta en bd
+            self.tiene_entrevista = True
             id_entrevista = agregar_entrevista_y_respuestas(self.interno.num_RC, self.solicitud_pedendiente_iniciada.id_solicitud, 
                                                             self.solicitud_pedendiente_iniciada.entrevista.fecha,
                                                             self.solicitud_pedendiente_iniciada.entrevista.respuestas)

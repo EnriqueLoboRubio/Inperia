@@ -6,6 +6,7 @@ import json, os
 from gui.mensajes import Mensajes
 from gui.estilos import *
 from utils.transcripcionVosk import HiloTranscripcion
+from datetime import datetime
 
 def cargar_datos_preguntas():
     ruta_base = os.path.dirname(os.path.dirname(__file__))
@@ -49,10 +50,15 @@ class VentanaDetallePreguntaEdit(QDialog):
         #Ruta original
         self.ruta_audio_original = pregunta.archivo_audio
 
+        if self.ruta_audio_original is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre_audio = f"audio_{timestamp}.wav"
+            self.carpeta_audios = os.path.join(ruta_base, "data", "grabaciones")
+            self.ruta_audio_original = os.path.join(self.carpeta_audios, nombre_audio)
+
         # Ruta temporal
         base, extension = os.path.splitext(self.ruta_audio_original)
         self.ruta_audio_temp = f"{base}_temp{extension}"
-
         
 
         self.setWindowTitle(f"Detalle Pregunta {self.num_pregunta}")
@@ -213,13 +219,12 @@ class VentanaDetallePreguntaEdit(QDialog):
                     os.remove(self.ruta_audio_original)
                 
                 # Renombramos el temporal -> original
-                os.rename(self.ruta_audio_temp, self.ruta_audio_original)
-                
-                print(f"Audio actualizado: {self.ruta_audio_original}")
+                os.rename(self.ruta_audio_temp, self.ruta_audio_original)                            
                 
             except Exception as e:
-                print(f"Error al guardar/renombrar audio: {e}")                
-                self.mostrar_validacion_error("Error", f"No se pudo guardar el audio: {e}")
+                print(f"Error al guardar/renombrar audio: {e}")     
+                msg = Mensajes(self)           
+                msg.mostrar_advertencia("Error", f"No se pudo guardar el audio: {e}")
                 return
 
         # 3. Cerramos el diálogo con éxito
@@ -267,7 +272,6 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.grabando = False
 
             self.tiene_nuevo_audio = True
-
 
             # Detener hilo
             if self.hilo_grabacion:
@@ -332,7 +336,8 @@ class VentanaDetallePreguntaEdit(QDialog):
 
     def mostrar_error_transcripcion(self, error):
         self.detener_grabacion() # Detener grabación visualmente
-        self.mostrar_validacion_error(f"Error de audio: {error}\n\nVerifique la carpeta del modelo: {self.ruta_modelo_vosk}")
+        msg = Mensajes(self)           
+        msg.mostrar_advertencia(f"Error de audio", f"Error: {error}\n\nVerifique la carpeta del modelo: {self.ruta_modelo_vosk}")
 
     # --- LÓGICA DE REPRODUCCIÓN ---
     def toggle_audio(self):
