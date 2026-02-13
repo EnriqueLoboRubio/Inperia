@@ -1,12 +1,12 @@
 import sys
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
     QLineEdit, QTextEdit, QCheckBox, QDateEdit, QTimeEdit, 
-    QComboBox, QStackedWidget, QFrame, QScrollArea, QButtonGroup, QMessageBox,
+    QComboBox, QStackedWidget, QFrame, QScrollArea, QButtonGroup,
     QSizePolicy, QGridLayout, QDialog
 )
 from PyQt5.QtCore import Qt, QDate, QTime, pyqtSignal
-from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtGui import QPixmap
 
 from gui.estilos import *
 
@@ -726,15 +726,8 @@ class PantallaSolicitudInterno(QWidget):
 
         # Frame para el contenido con borde
         self.contenido_frame = QFrame()
-        self.contenido_frame.setObjectName("contenido_frame")
-        self.contenido_frame.setStyleSheet("""
-            #contenido_frame {
-                background-color: #f0f0f0;
-                border: 2px solid #E0E0E0;
-                border-radius: 12px;
-                padding: 10px;
-            }
-        """)
+        self.contenido_frame.setObjectName("apartado")
+        self.contenido_frame.setStyleSheet(ESTILO_APARTADO_FRAME)
 
         frame_layout = QVBoxLayout(self.contenido_frame)
         frame_layout.setContentsMargins(0, 5, 0, 5)

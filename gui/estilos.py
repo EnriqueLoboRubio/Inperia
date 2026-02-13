@@ -587,3 +587,13 @@ ESTILO_DIALOGO_ERROR = """
         background-color: white;
     }
 """
+
+# APARTADOS
+ESTILO_APARTADO_FRAME = """
+    #apartado {
+        background-color: #f0f0f0;
+        border: 2px solid #E0E0E0;
+        border-radius: 12px;
+        padding: 10px;
+    }
+"""

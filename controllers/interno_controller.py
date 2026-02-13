@@ -45,7 +45,7 @@ class InternoController(QObject):
         self.tiene_pendiente_iniciada = self.solicitud_pedendiente_iniciada is not None
         self.tiene_entrevista = False
         if self.tiene_pendiente_iniciada is True:         
-            self.tiene_entrevista = self.solicitud_pedendiente_iniciada.estado == Tipo_estado_solicitud.PENDIENTE  
+            self.tiene_entrevista = self.solicitud_pedendiente_iniciada.estado == Tipo_estado_solicitud.PENDIENTE.value 
         self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(self.tiene_pendiente_iniciada, self.tiene_entrevista)
         
         self.msg = Mensajes(self.ventana_interno)
@@ -337,7 +337,7 @@ class InternoController(QObject):
                                                             self.solicitud_pedendiente_iniciada.entrevista.respuestas)
             
             self.solicitud_pedendiente_iniciada.entrevista.id_entrevista = id_entrevista
-            self.solicitud_pedendiente_iniciada.estado = Tipo_estado_solicitud.PENDIENTE
+            self.solicitud_pedendiente_iniciada.estado = Tipo_estado_solicitud.PENDIENTE.value
 
             #Actualizar estado de solicitud
             actualizacion = actualizar_estado_solicitud(self.solicitud_pedendiente_iniciada.id_solicitud, Tipo_estado_solicitud.PENDIENTE.value)
