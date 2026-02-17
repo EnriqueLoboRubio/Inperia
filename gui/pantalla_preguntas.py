@@ -6,7 +6,9 @@ from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from datetime import datetime
 import json, os
 
-from utils.transcripcionVosk import HiloTranscripcion
+# MIGRACIÓN A WHISPER - Línea anterior comentada:
+# from utils.transcripcionVosk import HiloTranscripcion
+from utils.transcripcionWhisper import HiloTranscripcion
 
 from gui.estilos import *
 
@@ -35,7 +37,8 @@ class PantallaPreguntas(QWidget):
         self.hilo_grabacion = None
 
         ruta_base = os.path.dirname(os.path.dirname(__file__))
-        self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small")      
+        # MIGRACIÓN A WHISPER - Líneas anteriores comentadas (Whisper no necesita ruta de modelo local):
+        # self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small")      
 
         self.id_entrevista = 0       
         self.carpeta_audios = os.path.join(ruta_base, "data", "grabaciones")
@@ -232,8 +235,13 @@ class PantallaPreguntas(QWidget):
           
             self.lista_audios[self.numero_pregunta - 1] = ruta_audio_salida # almacenar nueva ruta
             
-            #Hilo
-            self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk, ruta_audio_salida)
+            #Hilo - MIGRACIÓN A WHISPER - Línea anterior comentada:
+            # self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk, ruta_audio_salida)
+            self.hilo_grabacion = HiloTranscripcion(
+                modelo_nombre="medium",  # Opciones: tiny, base, small, medium, large
+                archivo_salida=ruta_audio_salida,
+                idioma="es"
+            )
             
             #Señales
             self.hilo_grabacion.texto_signal.connect(self.actualizar_texto_final)
@@ -311,7 +319,9 @@ class PantallaPreguntas(QWidget):
 
     def mostrar_error_transcripcion(self, error):
         self.detener_grabacion() # Detener grabación visualmente
-        self.mostrar_validacion_error(f"Error de audio: {error}\n\nVerifique la carpeta del modelo: {self.ruta_modelo_vosk}")
+        # MIGRACIÓN A WHISPER - Línea anterior comentada:
+        # self.mostrar_validacion_error(f"Error de audio: {error}\n\nVerifique la carpeta del modelo: {self.ruta_modelo_vosk}")
+        self.mostrar_validacion_error(f"Error de audio: {error}")
 
     def cargar_pregunta(self, numero):
         self.numero_pregunta = numero

@@ -5,7 +5,9 @@ from PyQt5.QtGui import QFont, QIcon, QPixmap, QTextCursor
 import json, os
 from gui.mensajes import Mensajes
 from gui.estilos import *
-from utils.transcripcionVosk import HiloTranscripcion
+# MIGRACIÓN A WHISPER - Línea anterior comentada:
+# from utils.transcripcionVosk import HiloTranscripcion
+from utils.transcripcionWhisper import HiloTranscripcion
 from datetime import datetime
 
 def cargar_datos_preguntas():
@@ -42,7 +44,8 @@ class VentanaDetallePreguntaEdit(QDialog):
          
         # Gestion ruta de audios
         ruta_base = os.path.dirname(os.path.dirname(__file__))
-        self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small")  
+        # MIGRACIÓN A WHISPER - Línea anterior comentada (Whisper no necesita ruta de modelo local):
+        # self.ruta_modelo_vosk = os.path.join(ruta_base, "utils", "vosk-es", "small")  
 
         self.carpeta_audios = os.path.join(ruta_base, "data", "grabaciones")
         if not os.path.exists(self.carpeta_audios):
@@ -262,8 +265,13 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.boton_grabar.setIcon(QIcon("assets/pausa.png")) # Icono de stop
             self.boton_grabar.setIconSize((QSize(20, 20)))        
 
-            # Hilo
-            self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk, self.ruta_audio_temp)
+            # Hilo - MIGRACIÓN A WHISPER - Línea anterior comentada:
+            # self.hilo_grabacion = HiloTranscripcion(self.ruta_modelo_vosk, self.ruta_audio_temp)
+            self.hilo_grabacion = HiloTranscripcion(
+                modelo_nombre="medium",  # Opciones: tiny, base, small, medium, large
+                archivo_salida=self.ruta_audio_temp,
+                idioma="es"
+            )
 
             #Señales
             self.hilo_grabacion.texto_signal.connect(self.actualizar_texto_final)
@@ -347,7 +355,9 @@ class VentanaDetallePreguntaEdit(QDialog):
     def mostrar_error_transcripcion(self, error):
         self.detener_grabacion() # Detener grabación visualmente
         msg = Mensajes(self)           
-        msg.mostrar_advertencia(f"Error de audio", f"Error: {error}\n\nVerifique la carpeta del modelo: {self.ruta_modelo_vosk}")
+        # MIGRACIÓN A WHISPER - Línea anterior comentada:
+        # msg.mostrar_advertencia(f"Error de audio", f"Error: {error}\n\nVerifique la carpeta del modelo: {self.ruta_modelo_vosk}")
+        msg.mostrar_advertencia(f"Error de audio", f"Error: {error}")
 
     # --- LÓGICA DE REPRODUCCIÓN ---
     def toggle_audio(self):
