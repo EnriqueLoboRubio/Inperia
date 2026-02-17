@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QFrame
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFont
 
 from gui.estilos import *
 
@@ -261,10 +261,7 @@ class Mensajes:
             if "existe" in mensaje:
                 self.input_correo.clear()
                 self.input_contraseña.clear()
-
-        """
-        Crea un diálogo personalizado para tener control total del espaciado
-        """
+        
         dialogo = QDialog(self.parent)
         dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
         dialogo.setAttribute(Qt.WA_TranslucentBackground)
@@ -326,3 +323,131 @@ class Mensajes:
         layout_main.addWidget(fondo)
         
         dialogo.exec_() 
+
+    # MENSAJES DE SOLICITUD
+    def mostrar_confirmacion_solicitud(self, datos):
+        """
+        Muestra un diálogo de confirmación personalizado.
+        Devuelve True si el usuario acepta, False si cancela.
+        """
+        dialogo = QDialog(self.parent)
+        dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
+        dialogo.setAttribute(Qt.WA_TranslucentBackground)
+        dialogo.setFixedSize(520, 420)
+        
+        # --- LAYOUT PRINCIPAL (Contenedor invisible) ---
+        layout_main = QVBoxLayout(dialogo)
+        layout_main.setContentsMargins(0, 0, 0, 0)
+        
+        # --- MARCO DE FONDO (La "tarjeta" visible) ---
+        fondo = QFrame()
+        fondo.setObjectName("FondoDetalle")
+        fondo.setStyleSheet(ESTILO_VENTANA_DETALLE)
+        
+        layout_interno = QVBoxLayout(fondo)
+        layout_interno.setContentsMargins(30, 30, 30, 30)
+        
+        # ---CABECERA ---
+        cabecera = QHBoxLayout()
+        
+        # Icono
+        icono = QLabel()
+        try:
+            pixmap = QPixmap("assets/info.png").scaled(48, 48, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            icono.setPixmap(pixmap)
+        except:
+            icono.setText("ℹ️")
+        
+        cabecera.addWidget(icono, alignment=Qt.AlignTop)
+        
+        # Títulos
+        textos_cabecera = QVBoxLayout()
+        titulo = QLabel("¿Desea enviar esta solicitud?")
+        titulo.setFont(QFont("Arial", 14, QFont.Bold))
+        titulo.setStyleSheet("color: black;")
+        
+        textos_cabecera.addWidget(titulo)
+        cabecera.addLayout(textos_cabecera)
+        cabecera.addStretch()
+        
+        layout_interno.addLayout(cabecera)
+        layout_interno.addSpacing(15)
+        
+        # --- 2. CUERPO (Datos) ---
+        cuerpo = QVBoxLayout()
+
+        def crear_fila(label_text, valor):
+            fila = QHBoxLayout()
+            l1 = QLabel(f"{label_text}:")
+            l1.setFont(QFont("Arial", 10, QFont.Bold))
+            l1.setStyleSheet("color: #333;")
+            
+            l2 = QLabel(str(valor))
+            l2.setStyleSheet("color: #555;")
+            
+            fila.addWidget(l1)
+            fila.addWidget(l2)
+            fila.addStretch()
+            cuerpo.addLayout(fila)
+
+        # Insertamos los datos usando .get() para seguridad
+        crear_fila("Tipo de Permiso", datos.get("tipo", "-"))
+        crear_fila("Urgencia", datos.get("urgencia", "-"))
+        crear_fila("Fecha Inicio", datos.get("fecha_inicio", "-"))
+        crear_fila("Fecha Fin", datos.get("fecha_fin", "-"))
+        crear_fila("Destino", datos.get("destino", "-"))
+        crear_fila("Contacto Emergencia", datos.get("contacto", "-"))
+        crear_fila("Teléfono", datos.get("telefono", "-"))
+        
+        layout_interno.addLayout(cuerpo)
+        layout_interno.addStretch()
+        
+        # --- 3. BOTONES ---
+        botones = QHBoxLayout()
+        botones.addStretch()
+        
+        # Estilo común para botones
+        estilo_btn = """
+            QPushButton {
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: bold;
+                padding: 5px;
+            }
+        """
+
+        btn_no = QPushButton("No")
+        btn_no.setFixedSize(90, 35)
+        btn_no.setCursor(Qt.PointingHandCursor)
+        btn_no.setStyleSheet(estilo_btn + """
+            QPushButton { background-color: #333; }
+            QPushButton:hover { background-color: #555; }
+        """)
+        btn_no.clicked.connect(dialogo.reject) # Devuelve False (0)
+
+        btn_si = QPushButton("Sí, enviar")
+        btn_si.setFixedSize(120, 35)
+        btn_si.setCursor(Qt.PointingHandCursor)
+        btn_si.setStyleSheet(estilo_btn + """
+            QPushButton { background-color: #000; }
+            QPushButton:hover { background-color: #333; }
+        """)
+        btn_si.clicked.connect(dialogo.accept) # Devuelve True (1)
+
+        botones.addWidget(btn_no)
+        botones.addSpacing(10)
+        botones.addWidget(btn_si)
+        
+        layout_interno.addLayout(botones)
+        
+        # Añadir el fondo al diálogo
+        layout_main.addWidget(fondo)
+        
+        # --- EJECUCIÓN ---
+        # exec_() bloquea la ventana hasta que se cierre.
+        # Devuelve QDialog.Accepted (1) si pulsaron "Sí" o QDialog.Rejected (0) si "No"
+        resultado = dialogo.exec_()
+        
+        return resultado == QDialog.Accepted

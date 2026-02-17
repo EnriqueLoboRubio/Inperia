@@ -3,11 +3,11 @@ from db.conexion import obtener_conexion
 # -------------------------------- COMENTARIO ------------------------------- #
 
 # Función para crear la tabla de comentarios
-def crear_comentario():
+def crear_comentario_pre():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     cursor.execute('''
-        CREATE TABLE comentarios (
+        CREATE TABLE comentarios_pre (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             id_respuesta INTEGER NOT NULL,
             id_profesional INTEGER NOT NULL,

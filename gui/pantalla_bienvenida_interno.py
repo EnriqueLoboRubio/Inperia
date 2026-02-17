@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QPushButton, QLabel, QHBoxLayout
+    QWidget, QVBoxLayout, QPushButton, QLabel
 )
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt
 
 from gui.estilos import *
 

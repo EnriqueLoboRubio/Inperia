@@ -827,10 +827,7 @@ class PantallaSolicitudInterno(QWidget):
         self.subtitulo_paso.setText(subtitulos[paso-1])
 
 
-    def mostrar_validacion_error(self, mensaje):
-        """
-        Crea un diálogo personalizado para tener control total del espaciado
-        """
+    def mostrar_validacion_error(self, mensaje):        
         dialogo = QDialog(self)
         dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog) 
         dialogo.setAttribute(Qt.WA_TranslucentBackground)

@@ -2,13 +2,13 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from db.solicitud_db import agregar_solicitud
 from models.solicitud import Solicitud
-from gui.dialog_solicitud_enviada import DialogSolicitudEnviada
+from gui.mensajes import Mensajes
 
 class SolicitudController(QObject):
 
     #Señales
     solicitud_finalizada = pyqtSignal() # Señal para avisar al InternoController
-    paso_cambiado = pyqtSignal(int)   
+    paso_cambiado = pyqtSignal(int)
 
     def __init__(self, vista_solicitud, num_RC):
         super().__init__()
@@ -17,6 +17,7 @@ class SolicitudController(QObject):
         self.solicitud = Solicitud()
         self.paso_actual = 1
         self.total_pasos = 4
+        self.msg = Mensajes(self.vista)  
         self.conectar_senales()
 
     def conectar_senales(self):
@@ -36,7 +37,8 @@ class SolicitudController(QObject):
         es_valido, error_mensaje = self.validar_paso_actual()
 
         if not es_valido:
-            self.vista.mostrar_validacion_error(error_mensaje)
+            self.msg.mostrar_advertencia("Atención", error_mensaje)
+            #self.vista.mostrar_validacion_error(error_mensaje)
             return False
         
         #Avanzar al siguiente paso
@@ -49,8 +51,8 @@ class SolicitudController(QObject):
             datos = self.solicitud.get_resumen()
 
             # Mostrar diálogo de confirmación
-            dialogo = DialogSolicitudEnviada(datos, parent=self.vista)
-            confirmado = dialogo.exec_()
+            #dialogo = DialogSolicitudEnviada(datos, parent=self.vista)
+            confirmado = self.msg.mostrar_confirmacion_solicitud(datos)
 
             # Decisión del usuario
             if confirmado == QDialog.Accepted:
@@ -229,15 +231,16 @@ class SolicitudController(QObject):
         
         if nuevo_id:  # Si tiene un ID, se guardó correctamente
             # 1. Mostrar mensaje de confirmación
-            QMessageBox.information(
-                self.vista, 
+
+            self.msg.mostrar_mensaje(        
                 "Solicitud Creada", 
                 "La solicitud se ha guardado correctamente y está lista para ser procesada."
-            )
+            )          
 
             # 2. Emitir señal para cambiar de pantalla
             self.solicitud_finalizada.emit()
             
         else:
             # Manejo de error si falla la base de datos
-            self.vista.mostrar_validacion_error("No se pudo guardar la solicitud en la base de datos.")
+            #self.vista.mostrar_validacion_error("No se pudo guardar la solicitud en la base de datos.")
+            self.msg.mostrar_advertencia("Atención", "No se pudo guardar la solicitud en la base de datos.")

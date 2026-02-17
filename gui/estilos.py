@@ -369,7 +369,7 @@ ESTILO_CIRCULO_INACTIVO = """
 ESTILO_TITULO_PASO_ENCA = """
     QLabel {
     font-family: 'Arial';
-    font-size: 30px; 
+    font-size: 18pt; 
     font-weight: bold; 
     border: none; 
     background-color: transparent;
@@ -392,6 +392,17 @@ ESTILO_SUBTITULO_PASO_ENCA = """
     font-family: 'Arial';
     color: #666;
     font-size: 16px;
+    font-weight: bold; 
+    border: none; 
+    background-color: transparent;
+    }
+"""
+
+ESTILO_SUBTITULO_SOLICITUD = """
+    QLabel {
+    font-family: 'Arial';
+    color: #666;
+    font-size: 13pt;
     font-weight: bold; 
     border: none; 
     background-color: transparent;
@@ -440,6 +451,16 @@ ESTILO_TITULO_APARTADO = """
     }
 """
 
+ESTILO_TITULO_APARTADO_SOLICITUD = """
+    QLabel {
+    font-family: 'Arial';
+    font-size: 14pt; 
+    font-weight: bold; 
+    border: none; 
+    background-color: transparent;
+    }
+"""
+
 ESTILO_TITULO_PERMISO = """
     QLabel {
     font-family: 'Arial';
@@ -459,6 +480,17 @@ ESTILO_SUBTITULO_PERMISO = """
     background-color: transparent;
     }
 """
+
+# Estilo para la etiqueta pequeña de arriba (ej: "Solicitante", "Destino")
+ESTILO_TITULO_DETALLE_SOLICITUD = "color: #9E9E9E; font-size: 12pt; font-weight: 500;"
+
+# Estilo para el dato principal (ej: Nombre, Fechas, Dirección)
+ESTILO_DATO_PRINCIPAL_SOLICITUD = "color: black; font-size: 11pt; font-weight: bold;"
+
+# Estilo para el dato secundario (ej: Nº RC)
+ESTILO_DATO_SECUNDARIO_SOLICITUD = "color: #757575; font-size: 10pt; font-weight: 500;"
+
+ESTILO_TEXTO = "color: black; font-size: 20px;"
 
 
 # ---  TARJETAS ---
@@ -482,6 +514,18 @@ ESTILO_NIVEL = """
             border-radius: 10px; 
             padding: 2px 12px;
         """
+
+ESTILO_ESTADO = """
+    QLabel {
+        background-color: #D3D3D3;
+        color: #1A1A1A;          
+        border-radius: 15px;       
+        padding: 4px 12px;         
+        border: none;         
+        font-weight: 500;        
+        font-size: 8pt;
+    }
+"""
 
 ESTILO_TARJETA_PERMISO_SEL = """
                 QWidget {
@@ -560,6 +604,11 @@ ESTILO_VENTANA_DETALLE ="""
         border: 2px solid #444444;
         border-radius: 15px;
     }
+    QLabel {
+        border: none;
+        background: transparent;
+        color: #333;
+    }
 """
 
 ESTILO_DIALOGO_ERROR = """
@@ -568,7 +617,7 @@ ESTILO_DIALOGO_ERROR = """
     }
     QFrame#FondoDialogo {
         background-color: white;
-        border: 2px solid #E0E0E0;
+        border: 2px solid #333;
         border-radius: 15px;
     }
     QLabel#TituloError {
@@ -597,3 +646,4 @@ ESTILO_APARTADO_FRAME = """
         padding: 10px;
     }
 """
+
