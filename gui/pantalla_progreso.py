@@ -15,19 +15,74 @@ class IndicadorProgreso(QWidget):
         super().__init__(parent)
         self.fech_ent = fech_ent
         self.estado = estado 
+
+        #Iconos para pasos
+        self.icono_realizado = QPixmap("assets/realizado.png").scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)     
+        self.icono_pendiente = QPixmap("assets/pendiente.png").scaled(105, 105, Qt.KeepAspectRatio, Qt.SmoothTransformation)   
+        self.icono_rechazado = QPixmap("assets/rechazado.png").scaled(97, 97, Qt.KeepAspectRatio, Qt.SmoothTransformation)  
+        self.icono_circulo = QPixmap("assets/circulo.png").scaled(90, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation) 
+
         self.iniciar_ui()
+
+    def actualizar_datos_indicador(self, fech_ent, estado):
+        self.fech_ent = fech_ent
+        self.estado = estado
+
+        # -------- PASO 2 ICONO --------
+        if self.fech_ent != "":
+            self.icono_2_lbl.setPixmap(self.icono_realizado)
+        else:
+            self.icono_2_lbl.setPixmap(self.icono_pendiente)
+
+        # -------- PASO 3 ICONO --------
+        if self.estado == "pendiente":
+            self.icono_3_lbl.setPixmap(self.icono_pendiente)
+        elif self.estado == "iniciada":
+            self.icono_3_lbl.setPixmap(self.icono_circulo)
+        elif self.estado == "rechazada":
+            self.icono_3_lbl.setPixmap(self.icono_rechazado)
+        else:
+            self.icono_3_lbl.setPixmap(self.icono_realizado)
+
+        # -------- PASO 4 ICONO --------
+        if self.estado in ["cancelada", "rechazada"]:
+            self.icono_4_lbl.setPixmap(self.icono_rechazado)
+        elif self.estado == "aceptada":
+            self.icono_4_lbl.setPixmap(self.icono_realizado)
+        else:
+            self.icono_4_lbl.setPixmap(self.icono_circulo)
+
+        # -------- LINEAS --------
+        self.actualizar_linea(self.linea_2, self.estado in ["aceptada", "rechazada", "cancelada", "pendiente"])
+        self.actualizar_linea(self.linea_3, self.estado in ["aceptada", "rechazada", "cancelada"])
+
+        # -------- TEXTOS --------
+        if self.estado == "aceptada":
+            self.subtitulo_4_lbl.setText("La solicitud ha sido aceptada")
+        elif self.estado == "rechazada":
+            self.subtitulo_4_lbl.setText("La solicitud ha sido rechazada")
+        elif self.estado == "cancelada":
+            self.subtitulo_4_lbl.setText("La solicitud ha sido cancelada")
+        else:
+            self.subtitulo_4_lbl.setText("")
+
+        if self.estado != "iniciada":
+            self.subtitulo_3_lbl.setText("Análisis inteligente y valoración personal en curso")
+        else:
+            self.subtitulo_3_lbl.setText("")
+
+    def actualizar_linea(self, linea, activa):
+        if activa:
+            linea.setStyleSheet("background-color: black;")
+        else:
+            linea.setStyleSheet("background-color: #B7B6B6;")
+
 
 
     def iniciar_ui(self):
         layout_principal = QVBoxLayout(self)
         layout_principal.setContentsMargins(0, 15, 0, 0)
-        layout_principal.setSpacing(0)
-
-        #Iconos para pasos
-        icono_realizado = QPixmap("assets/realizado.png").scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)     
-        icono_pendiente = QPixmap("assets/pendiente.png").scaled(105, 105, Qt.KeepAspectRatio, Qt.SmoothTransformation)   
-        icono_rechazado = QPixmap("assets/rechazado.png").scaled(97, 97, Qt.KeepAspectRatio, Qt.SmoothTransformation)  
-        icono_circulo = QPixmap("assets/circulo.png").scaled(90, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation)  
+        layout_principal.setSpacing(0)    
 
         # Paso 1: Solicitud iniciada
         paso_1 = QHBoxLayout() 
@@ -43,15 +98,15 @@ class IndicadorProgreso(QWidget):
         columna_1.setSpacing(0)
         columna_1.setAlignment(Qt.AlignTop)
         
-        icono_1_lbl = QLabel()
-        icono_1_lbl.setFixedSize(100, 100)    
-        icono_1_lbl.setPixmap(icono_realizado)        
+        self.icono_1_lbl = QLabel()
+        self.icono_1_lbl.setFixedSize(100, 100)    
+        self.icono_1_lbl.setPixmap(self.icono_realizado)        
 
-        columna_1.addWidget(icono_1_lbl)
+        columna_1.addWidget(self.icono_1_lbl)
 
-        linea_1 = self.crear_linea(True)  
-        linea_1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        columna_1.addWidget(linea_1, alignment=Qt.AlignHCenter)
+        self.linea_1 = self.crear_linea(True)  
+        self.linea_1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        columna_1.addWidget(self.linea_1, alignment=Qt.AlignHCenter)
 
         # Texto paso 1
         texto_1 = QVBoxLayout()
@@ -85,20 +140,20 @@ class IndicadorProgreso(QWidget):
         columna_2.setSpacing(0)
         columna_2.setAlignment(Qt.AlignTop)
 
-        icono_2_lbl = QLabel()
-        icono_2_lbl.setFixedSize(100, 100)      
+        self.icono_2_lbl = QLabel()
+        self.icono_2_lbl.setFixedSize(100, 100)      
         # Icono segun si hay o no entrevista
         if self.fech_ent != "":
-            icono = icono_realizado
+            icono = self.icono_realizado
         else:
-            icono = icono_pendiente
+            icono = self.icono_pendiente
 
-        icono_2_lbl.setPixmap(icono)      
-        columna_2.addWidget(icono_2_lbl)
+        self.icono_2_lbl.setPixmap(icono)      
+        columna_2.addWidget(self.icono_2_lbl)
 
-        linea_2 = self.crear_linea(self.estado == "aceptada" or self.estado == "rechazada" or self.estado == "cancelada" or self.estado == "pendiente")  
-        linea_2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        columna_2.addWidget(linea_2, 0, Qt.AlignHCenter)
+        self.linea_2 = self.crear_linea(self.estado == "aceptada" or self.estado == "rechazada" or self.estado == "cancelada" or self.estado == "pendiente")  
+        self.linea_2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        columna_2.addWidget(self.linea_2, 0, Qt.AlignHCenter)
 
         # Texto paso 2
         texto_2 = QVBoxLayout()
@@ -114,9 +169,9 @@ class IndicadorProgreso(QWidget):
         texto_2.addWidget(titulo_2_lbl)
         texto_2.addWidget(subtitulo_2_lbl)
         if self.fech_ent != "":
-             fecha_2_lbl = QLabel(self.fech_ent) 
-             fecha_2_lbl.setStyleSheet(ESTILO_SUBTITULO_PASO)
-             texto_2.addWidget(fecha_2_lbl)
+             self.fecha_2_lbl = QLabel(self.fech_ent) 
+             self.fecha_2_lbl.setStyleSheet(ESTILO_SUBTITULO_PASO)
+             texto_2.addWidget(self.fecha_2_lbl)
         texto_2.addStretch()
 
         paso_2.addWidget(widget_2)
@@ -138,25 +193,23 @@ class IndicadorProgreso(QWidget):
         columna_3.setAlignment(Qt.AlignTop)
         
         if self.estado == "pendiente":
-            icono = icono_pendiente
+            icono = self.icono_pendiente
         elif self.estado == "iniciada":
-            icono = icono_circulo
+            icono = self.icono_circulo
         elif self.estado == "rechazada":
-            icono = icono_rechazado
+            icono = self.icono_rechazado
         else:
-            icono = icono_realizado
-
+            icono = self.icono_realizado
         
-        icono_3_lbl = QLabel()
-        icono_3_lbl.setFixedSize(100, 100)  
-        icono_3_lbl.setPixmap(icono)      
+        self.icono_3_lbl = QLabel()
+        self.icono_3_lbl.setFixedSize(100, 100)  
+        self.icono_3_lbl.setPixmap(icono)      
          
+        columna_3.addWidget(self.icono_3_lbl)
 
-        columna_3.addWidget(icono_3_lbl)
-
-        linea_3 = self.crear_linea(self.estado == "aceptada" or self.estado == "rechazada" or self.estado == "cancelada")
-        linea_3.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-        columna_3.addWidget(linea_3, 0, Qt.AlignHCenter)
+        self.linea_3 = self.crear_linea(self.estado == "aceptada" or self.estado == "rechazada" or self.estado == "cancelada")
+        self.linea_3.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        columna_3.addWidget(self.linea_3, 0, Qt.AlignHCenter)
 
         # Texto paso 3
         texto_3 = QVBoxLayout()
@@ -170,11 +223,11 @@ class IndicadorProgreso(QWidget):
             sub = "Análisis inteligente y valoración personal en curso"
         else:
             sub = ""         
-        subtitulo_3_lbl = QLabel(sub)
-        subtitulo_3_lbl.setStyleSheet(ESTILO_TEXTO)
+        self.subtitulo_3_lbl = QLabel(sub)
+        self.subtitulo_3_lbl.setStyleSheet(ESTILO_TEXTO)
 
         texto_3.addWidget(titulo_3_lbl)
-        texto_3.addWidget(subtitulo_3_lbl)
+        texto_3.addWidget(self.subtitulo_3_lbl)
         texto_3.addStretch()
 
         paso_3.addWidget(widget_3)
@@ -196,17 +249,17 @@ class IndicadorProgreso(QWidget):
         columna_4.setAlignment(Qt.AlignTop)
 
         if self.estado == "cancelada" or self.estado == "rechazada":
-            icono = icono_rechazado
+            icono = self.icono_rechazado
         elif self.estado == "aceptada":
-            icono = icono_realizado
+            icono = self.icono_realizado
         else:
-            icono = icono_circulo
+            icono = self.icono_circulo
         
-        icono_4_lbl = QLabel()
-        icono_4_lbl.setFixedSize(100, 100)    
-        icono_4_lbl.setPixmap(icono)        
+        self.icono_4_lbl = QLabel()
+        self.icono_4_lbl.setFixedSize(100, 100)    
+        self.icono_4_lbl.setPixmap(icono)        
 
-        columna_4.addWidget(icono_4_lbl)
+        columna_4.addWidget(self.icono_4_lbl)
 
         # Texto paso 4
         texto_4 = QVBoxLayout()
@@ -224,11 +277,11 @@ class IndicadorProgreso(QWidget):
             resolucion = "La solicitud ha sido cancelada"    
         else:
             resolucion = "" 
-        subtitulo_4_lbl = QLabel(resolucion)
-        subtitulo_4_lbl.setStyleSheet(ESTILO_TEXTO)
+        self.subtitulo_4_lbl = QLabel(resolucion)
+        self.subtitulo_4_lbl.setStyleSheet(ESTILO_TEXTO)
 
         texto_4.addWidget(titulo_4_lbl)
-        texto_4.addWidget(subtitulo_4_lbl)
+        texto_4.addWidget(self.subtitulo_4_lbl)
         texto_4.addStretch()
 
         paso_4.addWidget(widget_4)
@@ -251,6 +304,30 @@ class IndicadorProgreso(QWidget):
         linea.setFixedHeight(130) 
         
         return linea   
+    
+    def limpiar_layout(self):
+        layout = self.layout()
+        if layout is not None:
+            while layout.count():
+                item = layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+                else:
+                    sublayout = item.layout()
+                    if sublayout is not None:
+                        self.limpiar_sublayout(sublayout)
+
+def limpiar_sublayout(self, layout):
+    while layout.count():
+        item = layout.takeAt(0)
+        widget = item.widget()
+        if widget is not None:
+            widget.deleteLater()
+        else:
+            sublayout = item.layout()
+            if sublayout is not None:
+                self.limpiar_sublayout(sublayout)
 
 class PantallaProgresoInterno(QWidget):
 
@@ -412,29 +489,26 @@ class PantallaProgresoInterno(QWidget):
         info_layout.addLayout(motivo_layout)
         info_layout.addSpacing(40)
 
-        # Comentarios
-        comentario_layout = QVBoxLayout()
+        # Observación
+        observaciones_layout = QVBoxLayout()
 
-        com_tit_label = QLabel("Comentarios de Profesional")
-        com_tit_label.setStyleSheet(ESTILO_DATO_PRINCIPAL_SOLICITUD)
-        comentario_layout.addWidget(com_tit_label)
+        obs_tit_label = QLabel("Observaciones")
+        obs_tit_label.setStyleSheet(ESTILO_DATO_PRINCIPAL_SOLICITUD)
+        observaciones_layout.addWidget(obs_tit_label)       
 
-        # Si hay comentarios se muestran si no: sin comentarios. Solo se ven los comentarios generales de la entrevista, no de cada respuesta
-        # Pueden exitir varios comentarios
+        self.obs_label = QLabel("El solicitante ha mostrado buen comportamiento durante los últimos 6 meses. Se requiere verificación adicional de la documentación médica presentada.") # Cargar de objeto: observaciones, cambiar texto
+        self.obs_label.setStyleSheet(ESTILO_TEXTO)
+        self.obs_label.setWordWrap(True)
+        self.obs_label.setAlignment(Qt.AlignJustify)
+        observaciones_layout.addWidget(self.obs_label)
 
-        self.com_label = QLabel("El solicitante ha mostrado buen comportamiento durante los últimos 6 meses. Se requiere verificación adicional de la documentación médica presentada.") # Cargar de objeto: comenario, cambiar texto
-        self.com_label.setStyleSheet(ESTILO_TEXTO)
-        self.com_label.setWordWrap(True)
-        self.com_label.setAlignment(Qt.AlignJustify)
-        comentario_layout.addWidget(self.com_label)
-
-        self.prof_label = QLabel("Enrique Lobo - Profesional")  # Cargar de objeto, nombre y tipo de profesional en comentario
+        self.prof_label = QLabel("Enrique Lobo - Profesional") 
         self.prof_label.setWordWrap(True)
         self.prof_label.setAlignment(Qt.AlignJustify)
         self.prof_label.setStyleSheet(ESTILO_SUBTITULO_PASO)
-        comentario_layout.addWidget(self.prof_label)
+        observaciones_layout.addWidget(self.prof_label)
 
-        info_layout.addLayout(comentario_layout)     
+        info_layout.addLayout(observaciones_layout)     
         info_layout.addStretch()
 
         resumen_layout.addWidget(scroll_resumen)   
@@ -601,8 +675,28 @@ class PantallaProgresoInterno(QWidget):
         self.widget_fechas.lbl_l1.setText(f"{solicitud.fecha_inicio} - {solicitud.fecha_fin}")
 
         # Actualizar destino
-        self.widget_destino.lbl_l1.setText()
-        self
+        self.widget_destino.lbl_l1.setText(f"{solicitud.direccion}, {solicitud.destino}")
+        self.widget_destino.lbl_l2.setText(f"{solicitud.ciudad} - {solicitud.cod_pos}")
+
+        # Motivo
+        self.mot_label.setText(f"{solicitud.motivo}")
+
+        # Observaciones
+        if solicitud.observaciones == "":
+            obs = "SIN OBSERVACIONES"
+        else:
+            obs = solicitud.observaciones
+
+        self.obs_label.setText(obs)
+        self.prof_label.setText("")
+
+        # Actualizar progreso
+        if solicitud.entrevista.fecha is None:
+            fecha = ""
+        else:
+            fecha = solicitud.entrevista.fecha
+
+        self.indicador.actualizar_datos_indicador(fecha, solicitud.estado)
 
     def actualizar_estado(self, estado):
         """
@@ -619,6 +713,8 @@ class PantallaProgresoInterno(QWidget):
         texto, color = estados_config.get(estado, ("En revisión", "#DB9334C8"))        
         self.estado_label.setText(texto)
         self.estado_label.setStyleSheet(ESTILO_ESTADO.replace("#D3D3D3", color))
+
+
 
         
 

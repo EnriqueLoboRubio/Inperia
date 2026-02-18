@@ -1,6 +1,7 @@
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 from models.solicitud import Solicitud
+from gui.mensajes import Mensajes
 
 class ProresoController(QObject):
     """
@@ -18,6 +19,8 @@ class ProresoController(QObject):
         self.vista = vista_progreso
         self.solicitud = solicitud
         self.interno = interno
+
+        self.msg = Mensajes(vista_progreso)
 
         self.conectar_senales()
         self.cargar_datos()
@@ -41,8 +44,6 @@ class ProresoController(QObject):
             self.interno.num_RC
         )
 
-        # Verificar si hay comentarios del evaluador, si no hay no poner y si hay obtener nombre
-
         # Habilitar / deshabilitar botón de entrevista si hay o no
         if self.solicitud.entrevista:
             self.vista.boton_entrevista.setEnabled(True)
@@ -60,16 +61,45 @@ class ProresoController(QObject):
             if hasattr(self.solicitud.entrevista, 'id_entrevista') and self.solicitud.entrevista.id_entrevista:
                 self.ver_entrevista_solicitada.emit(self.solicitud.entrevista.id_entrevista)
             else:
-                QMessageBox.warning(
-                    self.vista,
+                self.msg.mostrar_advertencia(
                     "Entrevista no disponible",
                     "La entrevista aún no está disponible para visualización."
-                )
+                )                
         else:
-            QMessageBox.information(
-                self.vista,
+
+            self.msg.mostrar_mensaje(
                 "Sin entrevista",
                 "Esta solicitud aún no tiene una entrevista asociada."
+            )
+
+    def descargar_solicitud(self):
+        """
+        Maneja la descarga de la solicitud en formato PDF
+        """
+        try:
+            # Solicitar ubicación de guardado
+            ruta_guardado, _ = QFileDialog.getSaveFileName(
+                self.vista,
+                "Guardar Solicitud",
+                f"Solicitud_{self.solicitud.id_solicitud}.pdf",
+                "PDF Files (*.pdf)"
+            )
+            
+            if ruta_guardado:
+                # Aquí iría la lógica para generar el PDF
+                # Por ahora mostramos un mensaje de éxito
+                self.generar_pdf_solicitud(ruta_guardado)
+                
+                QMessageBox.information(
+                    self.vista,
+                    "Descarga exitosa",
+                    f"La solicitud se ha guardado en:\n{ruta_guardado}"
+                )
+        except Exception as e:
+            QMessageBox.critical(
+                self.vista,
+                "Error al descargar",
+                f"No se pudo guardar la solicitud:\n{str(e)}"
             )
 
     
