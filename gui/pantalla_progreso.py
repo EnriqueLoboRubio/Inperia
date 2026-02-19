@@ -651,7 +651,7 @@ class PantallaProgresoInterno(QWidget):
         """          
 
         # Actualizar titulo y subtitulo
-        self.titulo_resumen.setText(f"Solicitud #{self.solicitud.id_solicitud}")
+        self.titulo_resumen.setText(f"Solicitud #{solicitud.id_solicitud}")
 
         tipo_traduccion = {
             "familiar": "Solicitud de permiso de salida familiar",

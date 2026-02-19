@@ -99,6 +99,15 @@ def encontrar_solicitud_pendiente_por_interno(id_interno):
     
     return solicitud
 
+def encontrar_ultima_solicitud_por_interno(num_rc):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT * FROM solicitudes WHERE num_rc = ? ORDER BY id_solicitud DESC LIMIT 1;")
+    solicitud = cursor.fetchone()
+    conexion.close()
+    
+    return solicitud
+
 # Función para borrar la tabla de solicitudes (para pruebas)
 def borrar_solicitudes():
     conexion = obtener_conexion()

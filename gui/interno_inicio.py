@@ -428,7 +428,7 @@ class VentanaInterno(QMainWindow):
         self.pantalla_preguntas.numero_pregunta = numero
         self.pantalla_preguntas.cargar_pregunta(numero)       
 
-    def mostrar_pantalla_resumen(self):
+    def mostrar_pantalla_resumen_edit(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_resumen_edit)
 
     def mostrar_pantalla_progreso(self):

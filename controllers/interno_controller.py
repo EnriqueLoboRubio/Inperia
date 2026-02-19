@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QDialog
 from datetime import date
 
 from controllers.solicitud_controller import SolicitudController
+from controllers.progreso_controller import ProgresoController
 
 from gui.interno_inicio import VentanaInterno
 from gui.ventana_detalle_edit_pregunta_interno import VentanaDetallePreguntaEdit
@@ -32,21 +33,24 @@ class InternoController(QObject):
         self.ventana_interno = VentanaInterno()            
 
         self.interno = self.cargar_interno()
-        self.solicitud_pedendiente_iniciada = self.cargar_solicitud_pendiente_iniciada()         
+        self.solicitud_actual = self.cargar_ultima_solicitud()         
               
         if self.interno:                       
             self.ventana_interno.cargar_datos_interno(self.interno)
-            if self.solicitud_pedendiente_iniciada is not None:
-                self.interno.add_solicitud(self.solicitud_pedendiente_iniciada)
+            if self.solicitud_actual is not None:
+                self.interno.add_solicitud(self.solicitud_actual)
 
         self.solicitud_controller = SolicitudController(self.ventana_interno.pantalla_solicitud, self.interno.num_RC)
+        self.progreso_controller = ProgresoController(self.ventana_interno.pantalla_progreso, self.solicitud_actual, self.interno)
 
         # ACTUALIZAR PANTALLA INICIO
-        self.tiene_pendiente_iniciada = self.solicitud_pedendiente_iniciada is not None
+        self.tiene_solicitud = self.solicitud_actual is not None
         self.tiene_entrevista = False
-        if self.tiene_pendiente_iniciada is True:         
-            self.tiene_entrevista = self.solicitud_pedendiente_iniciada.estado == Tipo_estado_solicitud.PENDIENTE.value 
-        self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(self.tiene_pendiente_iniciada, self.tiene_entrevista)
+        self.tiene_entrevista = (
+            self.tiene_solicitud and 
+            self.solicitud_actual.estado == Tipo_estado_solicitud.PENDIENTE.value
+        )
+        self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(self.tiene_solicitud, self.tiene_entrevista)
         
         self.msg = Mensajes(self.ventana_interno)
 
@@ -79,6 +83,48 @@ class InternoController(QObject):
     #Buscar solicitud pendiente o iniciada del interno
     def cargar_solicitud_pendiente_iniciada(self):
         datos_solicitud = encontrar_solicitud_pendiente_por_interno(self.interno.num_RC)
+        if datos_solicitud:
+            solicitud = Solicitud()
+            solicitud.id_solicitud=datos_solicitud[0]               
+            solicitud.tipo=datos_solicitud[2]
+            solicitud.motivo=datos_solicitud[3]
+            solicitud.descripcion=datos_solicitud[4]
+            solicitud.urgencia=datos_solicitud[5]
+
+            solicitud.fecha_inicio = datos_solicitud[6]
+            solicitud.fecha_fin = datos_solicitud[7]
+            solicitud.hora_salida = datos_solicitud[8]
+            solicitud.hora_llegada = datos_solicitud[9]
+            solicitud.destino = datos_solicitud[10]
+            solicitud.cuidad = datos_solicitud[11]
+            solicitud.direccion = datos_solicitud[12]
+            solicitud.cod_pos = datos_solicitud[13]
+
+            # Contacto Principal (CP)
+            solicitud.nombre_cp = datos_solicitud[14]
+            solicitud.telf_cp = datos_solicitud[15]
+            solicitud.relacion_cp = datos_solicitud[16]
+            solicitud.direccion_cp = datos_solicitud[17]
+
+            # Contacto Secundario (CS)
+            solicitud.nombre_cs = datos_solicitud[18]
+            solicitud.telf_cs = datos_solicitud[19]
+            solicitud.relacion_cs = datos_solicitud[20]
+
+            #solicitud.docs = datos_solicitud[21]
+            #solicitud.compromisos = datos_solicitud[22]
+            
+            # Otros campos
+            solicitud.observaciones = datos_solicitud[23]
+            solicitud.estado = datos_solicitud[24]
+            solicitud.entrevista = encontrar_entrevista_por_solicitud(solicitud.id_solicitud)                                                   
+
+            return solicitud
+        else:
+            return None
+        
+    def cargar_ultima_solicitud(self):
+        datos_solicitud = encontrar_ultima_solicitud_por_interno(self.interno.num_RC)
         if datos_solicitud:
             solicitud = Solicitud()
             solicitud.id_solicitud=datos_solicitud[0]               
@@ -177,7 +223,7 @@ class InternoController(QObject):
         try: boton_inicio.clicked.disconnect()
         except: pass
 
-        if self.tiene_pendiente_iniciada is False:
+        if self.tiene_solicitud is False:
             boton_inicio.clicked.connect(self.iniciar_nueva_solicitud)                       
         elif self.tiene_entrevista is False:          
             boton_inicio.clicked.connect(self.iniciar_entrevista)
@@ -218,6 +264,11 @@ class InternoController(QObject):
         #PANTALLA SOLICITUD
         self.solicitud_controller.solicitud_finalizada.connect(
             self.on_solicitud_finalizada
+        )
+
+        #PANTALLA PROGRESO
+        self.progreso_controller.ver_entrevista_solicitud.connect(
+            self.mostrar_entrevista
         )
 
     # -------- FUNCIONES DE NAVEGACIÓN --------
@@ -268,17 +319,24 @@ class InternoController(QObject):
         
         
         # 2. Asociar a la solicitud actual
-        if self.solicitud_pedendiente_iniciada:
-            self.solicitud_pedendiente_iniciada.entrevista = nueva_entrevista                       
+        if self.solicitud_actual:
+            self.solicitud_actual.entrevista = nueva_entrevista                       
 
         # 3. Cambiar UI                        
         #self.tiene_entrevista = True
         
         # Ir a la pantalla de resumen
-        self.ventana_interno.mostrar_pantalla_resumen()
+        self.ventana_interno.mostrar_pantalla_resumen_edit()
         
         # Recargar resumen en la vista
         self.ventana_interno.pantalla_resumen_edit.cargar_datos_respuestas(nueva_entrevista)
+
+    def mostrar_entrevista(self, id_entrevista):
+        entrevista = self.cargar_entrevista_solicitud(self.solicitud_actual.id_solicitud)
+
+        if entrevista:
+            self.ventana_interno.pantalla_resumen_edit.cargar_datos_respuestas(entrevista)
+            self.ventana_interno.mostrar_pantalla_resumen_edit()
 
     def mostrar_detalle_pregunta(self, id_pregunta):
         """
@@ -288,11 +346,11 @@ class InternoController(QObject):
         """
         self.pregunta_mostrar = None
 
-        entrevista_actual = self.solicitud_pedendiente_iniciada.entrevista
+        entrevista_actual = self.solicitud_actual.entrevista
         id_entrevista = entrevista_actual.id_entrevista
         
         #Buscar pregunta en el objeto Entrevista por id
-        for pregunta in self.solicitud_pedendiente_iniciada.entrevista.respuestas:
+        for pregunta in self.solicitud_actual.entrevista.respuestas:
             if pregunta.id_pregunta == id_pregunta:
                 self.pregunta_mostrar = pregunta
                 break                        
@@ -316,7 +374,7 @@ class InternoController(QObject):
                     f"La pregunta {id_pregunta} se ha actualizado correctamente."                   
                 )  
 
-            self.solicitud_pedendiente_iniciada.entrevista = entrevista_actual      
+            self.solicitud_actual.entrevista = entrevista_actual      
 
     def almacenar_entrevista(self):
         """
@@ -332,15 +390,18 @@ class InternoController(QObject):
 
         if confirmacion:
             #Almacenar entrevista con pregunta en bd            
-            id_entrevista = agregar_entrevista_y_respuestas(self.interno.num_RC, self.solicitud_pedendiente_iniciada.id_solicitud, 
-                                                            self.solicitud_pedendiente_iniciada.entrevista.fecha,
-                                                            self.solicitud_pedendiente_iniciada.entrevista.respuestas)
+            id_entrevista = agregar_entrevista_y_respuestas(self.interno.num_RC, self.solicitud_actual.id_solicitud, 
+                                                            self.solicitud_actual.entrevista.fecha,
+                                                            self.solicitud_actual.entrevista.respuestas)
             
-            self.solicitud_pedendiente_iniciada.entrevista.id_entrevista = id_entrevista
-            self.solicitud_pedendiente_iniciada.estado = Tipo_estado_solicitud.PENDIENTE.value
+            self.solicitud_actual.entrevista.id_entrevista = id_entrevista
+            self.solicitud_actual.estado = Tipo_estado_solicitud.PENDIENTE.value
+            self.progreso_controller.solicitud = self.solicitud_actual
+            self.progreso_controller.cargar_datos()
+
 
             #Actualizar estado de solicitud
-            actualizacion = actualizar_estado_solicitud(self.solicitud_pedendiente_iniciada.id_solicitud, Tipo_estado_solicitud.PENDIENTE.value)
+            actualizacion = actualizar_estado_solicitud(self.solicitud_actual.id_solicitud, Tipo_estado_solicitud.PENDIENTE.value)
             if actualizacion is False:
                 self.msg.mostrar_advertencia("Error BD", "Error en la actualización del estado de la solicitud.")
 
@@ -363,14 +424,14 @@ class InternoController(QObject):
         """
         Lógica para controlar si se despliega el menú de preguntas.
         """
-        if self.tiene_pendiente_iniciada is False:
+        if self.tiene_solicitud is False:
             self.ventana_interno.mostrar_advertencia(
                 "Sin Solicitud", 
                 "No tiene una solicitud de evaluación iniciada o pendiente."
             )
             return
         
-        if self.tiene_pendiente_iniciada is True and self.tiene_entrevista is True:
+        if self.tiene_solicitud is True and self.tiene_entrevista is True:
             self.ventana_interno.mostrar_advertencia(
                 "Entrevista ya realizada", 
                 "Ya ha completado la entrevista para esta solicitud."
@@ -383,7 +444,7 @@ class InternoController(QObject):
         """
         Logica: ver progreso solo si tene solicitud pendiente o iniciada
         """
-        if self.tiene_pendiente_iniciada is False:
+        if self.solicitud_actual is False:
             self.ventana_interno.mostrar_advertencia(
                 "Sin solicitud",
                 "No tiene una solicitud de evaluación iniciada o pendiente."
@@ -398,7 +459,7 @@ class InternoController(QObject):
         """        
 
         # tiene solicitud pendiente o iniciada
-        if self.tiene_pendiente_iniciada is True:
+        if self.solicitud_actual and self.solicitud_actual.estado in ["iniciada", "pendiente"]:
             self.ventana_interno.mostrar_advertencia(
                 "Solicitud iniciada o pendiente",
                 "Tiene una solicitud iniciada o pendiente, no puede crear otra"
@@ -420,7 +481,7 @@ class InternoController(QObject):
 
     def on_solicitud_finalizada(self):
         # Actualizar estado interno
-        self.tiene_pendiente_iniciada = True
+        self.tiene_solicitud = True
         self.tiene_entrevista = False
 
         # Cambiar de pantalla
