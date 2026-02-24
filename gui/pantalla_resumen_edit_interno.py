@@ -108,7 +108,7 @@ class PantallaResumen(QWidget):
 
     # ------------------- Funciones Auxiliares -------------------
     
-    def crear_tarjeta_pregunta(self, numero, titulo, texto): #Cambiar a  objeto pregunta
+    def crear_tarjeta_pregunta(self, numero, titulo, texto):
         
         tarjeta_frame = QFrame()        
 
@@ -183,7 +183,6 @@ class PantallaResumen(QWidget):
             datos_json = self.PREGUNTAS_DATA.get(clave, {})
             titulo = datos_json.get("titulo", f"Pregunta {i}")
             
-            # Obtener respuesta segura (evitar error de índice)
             if i <= len(respuestas):
                 texto_respuesta = respuestas[i-1].respuesta
             else:

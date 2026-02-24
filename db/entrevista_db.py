@@ -11,13 +11,11 @@ def crear_entrevista():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS entrevistas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            id_profesional INTEGER,
             id_interno INTEGER NOT NULL, 
             id_solicitud INTEGER NOT NULL,           
             fecha TEXT NOT NULL,
             puntuacion_global REAL,          
             FOREIGN KEY (id_interno) REFERENCES internos(num_RC),
-            FOREIGN KEY (id_profesional) REFERENCES usuarios(id),
             FOREIGN KEY (id_solicitud) REFERENCES solicitudes(id)                     
         )
     ''')
@@ -32,7 +30,7 @@ def agregar_entrevista(id_interno, id_solicitud, fecha):
     try:        
         cursor.execute('''
             INSERT INTO entrevistas (id_interno, id_solicitud, fecha)
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?)
         ''', (id_interno, id_solicitud, fecha))
 
         id_entrevista = cursor.lastrowid       
@@ -107,7 +105,7 @@ def actualizar_puntuacion_entrevista(id, puntuacion_global):
     
     try:
         cursor.execute('''
-            UPDATE entrevista 
+            UPDATE entrevistas 
             SET puntuacion_global = ?,                 
             WHERE id = ?
         ''', (puntuacion_global, id))

@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
 from gui.pantalla_bienvenida_interno import PantallaBienvenidaInterno
 from gui.pantalla_preguntas import PantallaPreguntas
 from gui.pantalla_resumen_edit_interno import PantallaResumen as PantallaResumenEdit
+from gui.pantalla_resumen_interno import PantallaResumen
 from gui.pantalla_progreso import PantallaProgresoInterno as PantallaProgreso
 from gui.pantalla_solicitud import PantallaSolicitudInterno as PantallaSolicitud
 from gui.pantalla_perfil import PantallaPerfil
@@ -237,6 +238,7 @@ class VentanaInterno(QMainWindow):
         self.pantalla_bienvenida = PantallaBienvenidaInterno()
         self.pantalla_preguntas = PantallaPreguntas()
         self.pantalla_resumen_edit = PantallaResumenEdit()
+        self.pantalla_resumen = PantallaResumen()
         self.pantalla_progreso = PantallaProgreso()
         self.pantalla_solicitud = PantallaSolicitud()
         self.pantalla_perfil = PantallaPerfil()
@@ -244,6 +246,7 @@ class VentanaInterno(QMainWindow):
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                          
         self.stacked_widget.addWidget(self.pantalla_preguntas)
         self.stacked_widget.addWidget(self.pantalla_resumen_edit)
+        self.stacked_widget.addWidget(self.pantalla_resumen)
         self.stacked_widget.addWidget(self.pantalla_progreso)
         self.stacked_widget.addWidget(self.pantalla_solicitud)
         self.stacked_widget.addWidget(self.pantalla_perfil)
@@ -430,6 +433,9 @@ class VentanaInterno(QMainWindow):
 
     def mostrar_pantalla_resumen_edit(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_resumen_edit)
+
+    def mostrar_pantalla_resumen(self):
+        self.stacked_widget.setCurrentWidget(self.pantalla_resumen)
 
     def mostrar_pantalla_progreso(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_progreso)

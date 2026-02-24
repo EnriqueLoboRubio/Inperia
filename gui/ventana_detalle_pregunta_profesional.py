@@ -243,7 +243,7 @@ class VentanaDetallePregunta(QDialog):
         tarjeta_layout.setSpacing(10)        
 
         # profesional
-        lbl_profesional = QLabel(comentario.id_profesional + " - Nombre Apellidos")
+        lbl_profesional = QLabel(f"{comentario.nombre_prof} - {comentario.tipo_prof}")
         lbl_profesional.setFont(QFont("Arial", 9))
         lbl_profesional.setStyleSheet("border: none; color: grey;")
         lbl_profesional.setAlignment(Qt.AlignLeft)

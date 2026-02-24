@@ -14,11 +14,10 @@ class Pregunta():
         self.comentarios.append(nuevo_comentario)   
     
     def set_archivo_audio(self, nuevo_audio):
-        if os.path.exists(nuevo_audio):
-            self.archivo_audio = nuevo_audio
-            return True
-        else:
-            return False       
+
+        self.archivo_audio = nuevo_audio
+        return True
+           
     
     def to_json(self):
         "Devuelve un diccionario con el formato JSON de la pregunta, para mandar a LLM"

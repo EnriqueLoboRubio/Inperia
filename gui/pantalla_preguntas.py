@@ -400,7 +400,6 @@ class PantallaPreguntas(QWidget):
             mensaje = f"Aún faltan por contestar las siguientes preguntas: {', '.join(preguntas_sin_contestar)}.\n\nPor favor, complete todas las respuestas antes de finalizar."
             self.mostrar_validacion_error(mensaje)
         else:
-            # Todo correcto
             self.entrevista_finalizada.emit(self.lista_respuestas, self.lista_audios)
 
     def eventFilter(self, obj, event):

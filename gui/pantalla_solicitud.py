@@ -390,17 +390,17 @@ class Paso2Widget(QWidget):
         destino_principal_layout.addWidget(destino_label)
         destino_principal_layout.addWidget(self.destino_texto)
 
-        ciudad_layout = QVBoxLayout() # Sin self
-        ciudad_label = QLabel("Ciudad *")
-        ciudad_label.setStyleSheet(ESTILO_TITULO_APARTADO)
-        self.ciudad_texto = QLineEdit()
-        self.ciudad_texto.setPlaceholderText("Ciudad...")
-        self.ciudad_texto.setStyleSheet(ESTILO_INPUT)
-        ciudad_layout.addWidget(ciudad_label)
-        ciudad_layout.addWidget(self.ciudad_texto)
+        provincia_layout = QVBoxLayout() # Sin self
+        provincia_label = QLabel("Provincia *")
+        provincia_label.setStyleSheet(ESTILO_TITULO_APARTADO)
+        self.provincia_texto = QLineEdit()
+        self.provincia_texto.setPlaceholderText("Provincia...")
+        self.provincia_texto.setStyleSheet(ESTILO_INPUT)
+        provincia_layout.addWidget(provincia_label)
+        provincia_layout.addWidget(self.provincia_texto)
 
         destino_layout.addLayout(destino_principal_layout, 2)
-        destino_layout.addLayout(ciudad_layout, 1)
+        destino_layout.addLayout(provincia_layout, 1)
 
         principal_layout.addLayout(destino_layout)
 

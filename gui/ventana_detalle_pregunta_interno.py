@@ -25,21 +25,36 @@ class VentanaDetallePregunta(QDialog):
     def __init__(self, pregunta, numero, parent=None):
         super().__init__(parent)
 
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+        self.pregunta_actual = pregunta        
+        self.num_pregunta = numero
+
         self.PREGUNTAS_DATA = cargar_datos_preguntas()
+     
+        self.setWindowTitle(f"Detalle Pregunta {self.num_pregunta}")
+        self.setFixedSize(1000, 600)    
 
-        self.setWindowTitle(f"Detalle Pregunta {numero}")
-        self.setFixedSize(1000, 600)         
+        layout_contenedor = QVBoxLayout(self)
+        layout_contenedor.setContentsMargins(0, 0, 0, 0)
 
-        principal_layout = QVBoxLayout(self)
+        self.frame_fondo = QFrame()
+        self.frame_fondo.setObjectName("FondoDetalle")
+        self.frame_fondo.setStyleSheet(ESTILO_VENTANA_DETALLE)
+
+        layout_contenedor.addWidget(self.frame_fondo)     
+
+        principal_layout = QVBoxLayout(self.frame_fondo)
         principal_layout.setSpacing(20)
         principal_layout.setContentsMargins(10,10,10,10)
 
         # --- Título y Nivel ---
         top_layout = QHBoxLayout()
-        datos = self.PREGUNTAS_DATA.get(str(numero), {})
-        titulo_json = datos.get("titulo", f"Pregunta {numero}")
+        datos = self.PREGUNTAS_DATA.get(str(self.num_pregunta), {})
+        titulo_json = datos.get("titulo", f"Pregunta {self.num_pregunta}")
         
-        titulo_texto = f"Pregunta {numero}: {titulo_json}"
+        titulo_texto = f"Pregunta {self.num_pregunta}: {titulo_json}"
         lbl_titulo = QLabel(titulo_texto)
         lbl_titulo.setFont(QFont("Arial", 16, QFont.Bold))
         lbl_titulo.setStyleSheet("border: none; color: black;")

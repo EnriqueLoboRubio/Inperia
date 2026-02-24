@@ -60,31 +60,21 @@ class PantallaResumen(QWidget):
 
         # ------------------- 2. Área de Scroll -------------------
         
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True) # contenido se ajuste al ancho
-        scroll_area.setFrameShape(QFrame.NoFrame) # Sin borde
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff) # Sin scroll horizontal
-        scroll_area.setStyleSheet(ESTILO_SCROLL)
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True) # contenido se ajuste al ancho
+        self.scroll_area.setFrameShape(QFrame.NoFrame) # Sin borde
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff) # Sin scroll horizontal
+        self.scroll_area.setStyleSheet(ESTILO_SCROLL)
         
-        scroll_content_widget = QWidget()
-        scroll_content_layout = QVBoxLayout(scroll_content_widget)       
-        scroll_content_layout.setAlignment(Qt.AlignTop)
-        scroll_content_layout.setSpacing(20) # Espacio entre tarjetas
-        scroll_content_layout.setContentsMargins(50, 20, 50, 0)
+        self.scroll_content_widget = QWidget()
+        self.scroll_content_layout = QVBoxLayout(self.scroll_content_widget)       
+        self.scroll_content_layout.setAlignment(Qt.AlignTop)
+        self.scroll_content_layout.setSpacing(20) # Espacio entre tarjetas
+        self.scroll_content_layout.setContentsMargins(50, 20, 50, 0)
 
-        # --- crear 10 tarjetas ---
-        for i in range(1, 11):
-            clave = str(i)
-            datos = self.PREGUNTAS_DATA.get(clave, {})
-            titulo_json = datos.get("titulo", f"Pregunta {i}")
-
-            # crear la tarjeta
-            tarjeta = self.crear_tarjeta_pregunta(i, titulo_json)
-            scroll_content_layout.addWidget(tarjeta) 
-
-        scroll_area.setWidget(scroll_content_widget)                
+        self.scroll_area.setWidget(self.scroll_content_widget)                
         
-        principal_layout.addWidget(scroll_area, 1) # máximo espacio posible 
+        principal_layout.addWidget(self.scroll_area, 1) # máximo espacio posible 
 
         # ------------------- 3. Botón Atrás Inferior -------------------
         boton_layout = QHBoxLayout()
@@ -104,7 +94,7 @@ class PantallaResumen(QWidget):
 
     # ------------------- Funciones Auxiliares -------------------
     
-    def crear_tarjeta_pregunta(self, numero, titulo): #Cambiar a  objeto pregunta
+    def crear_tarjeta_pregunta(self, numero, titulo, texto):
         
         tarjeta_frame = QFrame()        
 
@@ -129,8 +119,7 @@ class PantallaResumen(QWidget):
         tarjeta_layout.addLayout(top_tarjeta_layout)
                 
         # Contenido (Respuesta, Nivel, Análisis)        
-        lbl_respuesta = QLabel("<b>Respuesta:</b> Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
-        # lbl_respuesta.setText(f"<b>Respuesta:</b> {datos.get('respuesta', 'Sin datos')}")
+        lbl_respuesta = QLabel(f"<b>Respuesta:</b> {texto}")
         lbl_respuesta.setFont(QFont("Arial", 11))
         lbl_respuesta.setWordWrap(True) # texto salta de línea si es muy largo
         lbl_respuesta.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
@@ -159,3 +148,29 @@ class PantallaResumen(QWidget):
         tarjeta_layout.addLayout(boton_layout)
 
         return tarjeta_frame
+    
+    def cargar_datos_respuestas(self, entrevista):
+        """
+        Genera un contenedor NUEVO con las tarjetas.
+        """
+        while self.scroll_content_layout.count():
+            item = self.scroll_content_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        respuestas = entrevista.respuestas
+
+        for i in range(1, 11):
+            clave = str(i)
+            datos_json = self.PREGUNTAS_DATA.get(clave, {})
+            titulo = datos_json.get("titulo", f"Pregunta {i}")
+                
+            if i <= len(respuestas):
+                texto_respuesta = respuestas[i-1].respuesta
+            else:
+                texto_respuesta = "Sin respuesta"
+            
+            tarjeta = self.crear_tarjeta_pregunta(i, titulo, texto_respuesta)
+
+            self.scroll_content_layout.addWidget(tarjeta)

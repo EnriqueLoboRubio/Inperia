@@ -98,6 +98,12 @@ class HiloTranscripcion(QThread):
 
     def detener(self):
         self.corriendo = False
+        if self.stream:
+            try:
+                if self.stream.is_active():
+                    self.stream.stop_stream()
+            except Exception:
+                pass
 
     def limpiar(self):
 

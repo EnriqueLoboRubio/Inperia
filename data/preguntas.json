@@ -1,8 +1,8 @@
 {
     "1": {
         "titulo": "Extranjería",
-        "texto": "¿Usted reside en España? ¿Es usted tiene residencia legal o no?\n¿Tiene determinada la expulsión judicial de España?\n¿Tiene usted algún vínculo personal, familiar o profesional con personas españolas o residentes en España?\n¿Puede detallarlo?",
-        "ayuda": "Aclare su situación administrativa (NIE, DNI, irregular). Es fundamental detallar el arraigo familiar o laboral en España para descartar riesgo de fuga."
+        "texto": "¿Usted reside en España? ¿Tiene residencia legal?\n¿Tiene determinada la expulsión judicial de España?\n¿Tiene usted algún vínculo personal, familiar o profesional con personas españolas o residentes en España?\n¿Puede detallarlo?",
+        "ayuda": "Aclare su situación administrativa (NIE, DNI, irregular). Es fundamental detallar el arraigo familiar o laboral en España"
     },
     "2": {
         "titulo": "Drogodependencias",
@@ -12,41 +12,41 @@
     "3": {
         "titulo": "Profesionalidad",
         "texto": "¿Por qué cometió los delitos que figuran en su expediente? ¿Fue algo puntual o ha reincidido en su vida?",
-        "ayuda": "Explique si el delito fue un error aislado o parte de un estilo de vida anterior. Se valora la capacidad de autocrítica y el deseo de cambio."
+        "ayuda": "Explique si el delito fue un error aislado o parte de un estilo de vida anterior."
     },
     "4": {
         "titulo": "Reincidencia",
-        "texto": "¿Este es tu primer ingreso en prisión o has tenido otras condenas anteriormente?\n¿El cumplimiento de la condena actual es por delitos cometidos recientemente o\npor delitos cometidos hace tiempo y que estaban recurridos judicialmente?",
+        "texto": "¿Este es su primer ingreso en prisión o ha tenido otras condenas anteriormente?\n¿El cumplimiento de la condena actual es por delitos cometidos recientemente o\npor delitos cometidos hace tiempo y que estaban recurridos judicialmente?",
         "ayuda": "Especifique si tiene antecedentes penales o policiales previos. Diferencie entre hechos recientes y condenas antiguas que acaban de ejecutarse."
     },
     "5": {
         "titulo": "Quebrantamiento",
-        "texto": "¿En algún momento has intentado evitar el cumplimiento de una condena o fugarte? ¿Por qué?",
+        "texto": "¿En algún momento ha intentado evitar el cumplimiento de una condena o fugarte? ¿Por qué?",
         "ayuda": "Si hubo intentos de fuga o no regresó de un permiso, explique las circunstancias. Asumir la responsabilidad ayuda a valorar su fiabilidad actual."
     },
     "6": {
         "titulo": "Artículo 10 LOGP",
-        "texto": "¿Alguna vez has estado clasificado en primer grado o se te ha aplicado el artículo 10 de la LOGP?\n¿Qué recuerdas de esa etapa?",
+        "texto": "¿Alguna vez ha estado clasificado en primer grado o se le ha aplicado el artículo 10 de la LOGP?\n¿Qué recuerda de esa etapa?",
         "ayuda": "Mencione si ha estado en régimen cerrado o aislamiento y cómo ha evolucionado su comportamiento desde entonces para pasar a régimen ordinario."
     },
     "7": {
         "titulo": "Ausencia de permisos",
-        "texto": "¿Has tenido acceso a permisos penitenciarios?\n¿Qué impacto han tenido o crees que tendrían en ti? ¿Has quebrantado algún permiso? ¿por qué?",
+        "texto": "¿Ha tenido acceso a permisos penitenciarios?\n¿Qué impacto han tenido o cree que tendrían en usted? ¿Ha quebrantado algún permiso? ¿Por qué?",
         "ayuda": "Indique si ha disfrutado de salidas sin incidentes. Si no ha tenido permisos, explique por qué cree que se le denegaron y qué haría diferente ahora."
     },
     "8": {
         "titulo": "Deficiencia convivencial",
-        "texto": "¿Cómo describirías la relación con tu familia u otras personas cercanas desde que estás en prisión?\n¿Qué rol tienes en tu familia? ¿Recibes visitas o apoyo externo?\n¿Tu familia o amigos te ingresan dinero en tu cuenta de peculio?",
+        "texto": "¿Cómo describiría la relación con su familia u otras personas cercanas desde que está en prisión?\n¿Qué rol tiene en su familia? ¿Recibe visitas o apoyo externo?\n¿Su familia o amigos le ingresan dinero en su cuenta de peculio?",
         "ayuda": "Detalle su red de apoyo exterior (visitas, llamadas, peculio). Es vital saber quién le apoyará en su reinserción o durante los permisos."
     },
     "9": {
         "titulo": "Lejanía",
-        "texto": "¿Dónde te gustaría disfrutar del permiso en caso de ser concedido? ¿Por qué has elegido ese lugar?\nEn caso de no tener familiares o amigos que los acojan:\n¿tiene acogida por alguna ONG? ¿Cuál y dónde? ¿Te has comprometido al cumplimiento de las normas de acogida de dicha ONG?",
+        "texto": "¿Dónde le gustaría disfrutar del permiso en caso de ser concedido? ¿Por qué ha elegido ese lugar?\nEn caso de no tener familiares o amigos que los acojan:\n¿Tiene acogida por alguna ONG? ¿Cuál y dónde? ¿Se ha comprometido al cumplimiento de las normas de acogida de dicha ONG?",
         "ayuda": "Debe aportar una dirección concreta y verificable. Si es una ONG o recurso externo, confirme que ha sido aceptado y conoce sus normas."
     },
     "10": {
         "titulo": "Presiones internas",
-        "texto": "¿Cómo es tu relación con otros internos y con el personal del centro? ¿Has vivido situaciones conflictivas? ¿Cuáles?\n¿Cómo es su cumplimiento de las normas de convivencia de su módulo?\n¿En qué actividades participas y qué destinos desempeñas en el módulo?",
+        "texto": "¿Cómo es su relación con otros internos y con el personal del centro? ¿Ha vivido situaciones conflictivas? ¿Cuáles?\n¿Cómo es su cumplimiento de las normas de convivencia de su módulo?\n¿En qué actividades participa y qué destinos desempeña en el módulo?",
         "ayuda": "Describa su conducta en el módulo, si tiene partes disciplinarios y si participa en actividades (escuela, talleres, destinos) que demuestren buena actitud."
     }
 }

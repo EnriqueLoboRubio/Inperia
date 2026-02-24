@@ -20,7 +20,7 @@ def crear_solicitud():
             hora_salida TEXT NOT NULL, 
             hora_llegada TEXT NOT NULL,
             destino TEXT NOT NULL,
-            ciudad TEXT NOT NULL,
+            provincia TEXT NOT NULL,
             direccion TEXT NOT NULL,
             cod_pos TEXT NOT NULL,
             nombre_cp TEXT NOT NULL,
@@ -33,8 +33,11 @@ def crear_solicitud():
             docs INTEGER NOT NULL,
             compromiso INTEGER NOT NULL,
             observaciones TEXT NOT NULL,
+            conclusiones_profesional TEXT,
+            id_profesional INTEGER,
             estado TEXT NOT NULL CHECK(estado IN ('iniciada', 'pendiente', 'aceptada', 'rechazada', 'cancelada')),
-            FOREIGN KEY (id_interno) REFERENCES internos(num_RC)                          
+            FOREIGN KEY (id_interno) REFERENCES internos(num_RC),
+            FOREIGN KEY (id_profesional) REFERENCES usuarios(id)                          
         )
     ''')
 
@@ -43,22 +46,22 @@ def crear_solicitud():
 
 # Función para agregar una nueva solicitud a la base de datos
 def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
-                      destino, ciudad, direccion, cod_pos, 
+                      destino, provincia, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
-                      docs, compromiso, observaciones, estado):
+                      docs, compromiso, observaciones, estado, id_profesional=None, conclusiones_profesional=None):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:        
         cursor.execute('''
             INSERT INTO solicitudes (id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
-                                    destino, ciudad, direccion, cod_pos, 
+                                    destino, provincia, direccion, cod_pos, 
                                     nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
-                                    docs, compromiso, observaciones, estado)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
-                      destino, ciudad, direccion, cod_pos, 
+                      destino, provincia, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
-                      docs, compromiso, observaciones, estado))
+                      docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional))
         conexion.commit()
 
         nuevo_id = cursor.lastrowid
@@ -99,10 +102,11 @@ def encontrar_solicitud_pendiente_por_interno(id_interno):
     
     return solicitud
 
-def encontrar_ultima_solicitud_por_interno(num_rc):
+def encontrar_ultima_solicitud_por_interno(id_interno):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
-    cursor.execute("SELECT * FROM solicitudes WHERE num_rc = ? ORDER BY id_solicitud DESC LIMIT 1;")
+    cursor.execute("SELECT * FROM solicitudes WHERE id_interno = ? ORDER BY id DESC LIMIT 1;",
+                   (id_interno,))
     solicitud = cursor.fetchone()
     conexion.close()
     

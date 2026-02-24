@@ -28,24 +28,39 @@ class IndicadorProgreso(QWidget):
         self.fech_ent = fech_ent
         self.estado = estado
 
+        # -------- PASO 1 ICONO --------
+        if self.estado == "sin_solicitud":
+            self.icono_1_lbl.setPixmap(self.icono_circulo)
+        else:
+            self.icono_1_lbl.setPixmap(self.icono_realizado)
+
         # -------- PASO 2 ICONO --------
-        if self.fech_ent != "":
+        if self.estado == "sin_solicitud":
+            self.icono_2_lbl.setPixmap(self.icono_circulo)
+        elif self.fech_ent != "":
             self.icono_2_lbl.setPixmap(self.icono_realizado)
         else:
             self.icono_2_lbl.setPixmap(self.icono_pendiente)
 
+        if self.estado == "sin_solicitud":
+            self.fecha_2_lbl.setText("")
+        else:
+            self.fecha_2_lbl.setText(self.fech_ent or "")
+
         # -------- PASO 3 ICONO --------
-        if self.estado == "pendiente":
+        if self.estado == "sin_solicitud":
+            self.icono_3_lbl.setPixmap(self.icono_circulo)
+        elif self.estado == "pendiente":
             self.icono_3_lbl.setPixmap(self.icono_pendiente)
         elif self.estado == "iniciada":
-            self.icono_3_lbl.setPixmap(self.icono_circulo)
-        elif self.estado == "rechazada":
-            self.icono_3_lbl.setPixmap(self.icono_rechazado)
+            self.icono_3_lbl.setPixmap(self.icono_circulo)       
         else:
             self.icono_3_lbl.setPixmap(self.icono_realizado)
 
         # -------- PASO 4 ICONO --------
-        if self.estado in ["cancelada", "rechazada"]:
+        if self.estado == "sin_solicitud":
+            self.icono_4_lbl.setPixmap(self.icono_circulo)
+        elif self.estado in ["cancelada", "rechazada"]:
             self.icono_4_lbl.setPixmap(self.icono_rechazado)
         elif self.estado == "aceptada":
             self.icono_4_lbl.setPixmap(self.icono_realizado)
@@ -53,6 +68,7 @@ class IndicadorProgreso(QWidget):
             self.icono_4_lbl.setPixmap(self.icono_circulo)
 
         # -------- LINEAS --------
+        self.actualizar_linea(self.linea_1, self.estado != "sin_solicitud")
         self.actualizar_linea(self.linea_2, self.estado in ["aceptada", "rechazada", "cancelada", "pendiente"])
         self.actualizar_linea(self.linea_3, self.estado in ["aceptada", "rechazada", "cancelada"])
 
@@ -66,9 +82,14 @@ class IndicadorProgreso(QWidget):
         else:
             self.subtitulo_4_lbl.setText("")
 
-        if self.estado != "iniciada":
+        if self.estado == "pendiente":
+            self.titulo_3_lbl.setText("Evaluación en curso")
             self.subtitulo_3_lbl.setText("Análisis inteligente y valoración personal en curso")
+        elif self.estado in ["aceptada", "rechazada", "cancelada"]:
+            self.titulo_3_lbl.setText("Evaluación finalizada")
+            self.subtitulo_3_lbl.setText("Evaluación completada por el equipo profesional")
         else:
+            self.titulo_3_lbl.setText("Evaluación pendiente")
             self.subtitulo_3_lbl.setText("")
 
     def actualizar_linea(self, linea, activa):
@@ -76,8 +97,6 @@ class IndicadorProgreso(QWidget):
             linea.setStyleSheet("background-color: black;")
         else:
             linea.setStyleSheet("background-color: #B7B6B6;")
-
-
 
     def iniciar_ui(self):
         layout_principal = QVBoxLayout(self)
@@ -100,11 +119,14 @@ class IndicadorProgreso(QWidget):
         
         self.icono_1_lbl = QLabel()
         self.icono_1_lbl.setFixedSize(100, 100)    
-        self.icono_1_lbl.setPixmap(self.icono_realizado)        
+        if self.estado == "sin_solicitud":
+            self.icono_1_lbl.setPixmap(self.icono_circulo)
+        else:
+            self.icono_1_lbl.setPixmap(self.icono_realizado)        
 
         columna_1.addWidget(self.icono_1_lbl)
 
-        self.linea_1 = self.crear_linea(True)  
+        self.linea_1 = self.crear_linea(self.estado != "sin_solicitud")  
         self.linea_1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         columna_1.addWidget(self.linea_1, alignment=Qt.AlignHCenter)
 
@@ -116,7 +138,7 @@ class IndicadorProgreso(QWidget):
         # Titulo 1
         titulo_1_lbl = QLabel("Solicitud enviada")
         titulo_1_lbl.setStyleSheet(ESTILO_DATO_PRINCIPAL_SOLICITUD)        
-        subtitulo_1_lbl = QLabel("Datos del permiso registrado por el usuario")
+        subtitulo_1_lbl = QLabel("Datos de la solicitud registrados")
         subtitulo_1_lbl.setStyleSheet(ESTILO_TEXTO)
 
         texto_1.addWidget(titulo_1_lbl)
@@ -168,10 +190,9 @@ class IndicadorProgreso(QWidget):
 
         texto_2.addWidget(titulo_2_lbl)
         texto_2.addWidget(subtitulo_2_lbl)
-        if self.fech_ent != "":
-             self.fecha_2_lbl = QLabel(self.fech_ent) 
-             self.fecha_2_lbl.setStyleSheet(ESTILO_SUBTITULO_PASO)
-             texto_2.addWidget(self.fecha_2_lbl)
+        self.fecha_2_lbl = QLabel(self.fech_ent or "")
+        self.fecha_2_lbl.setStyleSheet(ESTILO_SUBTITULO_PASO)
+        texto_2.addWidget(self.fecha_2_lbl)
         texto_2.addStretch()
 
         paso_2.addWidget(widget_2)
@@ -192,7 +213,9 @@ class IndicadorProgreso(QWidget):
         columna_3.setSpacing(0)
         columna_3.setAlignment(Qt.AlignTop)
         
-        if self.estado == "pendiente":
+        if self.estado == "sin_solicitud":
+            icono = self.icono_circulo
+        elif self.estado == "pendiente":
             icono = self.icono_pendiente
         elif self.estado == "iniciada":
             icono = self.icono_circulo
@@ -217,8 +240,8 @@ class IndicadorProgreso(QWidget):
         texto_3.setSpacing(5)        
 
         # Titulo 1
-        titulo_3_lbl = QLabel("Evaluación en curso")
-        titulo_3_lbl.setStyleSheet(ESTILO_DATO_PRINCIPAL_SOLICITUD)
+        self.titulo_3_lbl = QLabel("Evaluación en curso")
+        self.titulo_3_lbl.setStyleSheet(ESTILO_DATO_PRINCIPAL_SOLICITUD)
         if self.estado != "iniciada":
             sub = "Análisis inteligente y valoración personal en curso"
         else:
@@ -226,7 +249,7 @@ class IndicadorProgreso(QWidget):
         self.subtitulo_3_lbl = QLabel(sub)
         self.subtitulo_3_lbl.setStyleSheet(ESTILO_TEXTO)
 
-        texto_3.addWidget(titulo_3_lbl)
+        texto_3.addWidget(self.titulo_3_lbl)
         texto_3.addWidget(self.subtitulo_3_lbl)
         texto_3.addStretch()
 
@@ -272,7 +295,7 @@ class IndicadorProgreso(QWidget):
         if self.estado == "aceptada":
             resolucion = "La solicitud ha sido aceptada"
         elif self.estado == "rechazada":
-            resolucion = "La soliciud ha sido rechazada"
+            resolucion = "La solicitud ha sido rechazada"
         elif self.estado == "cancelada":
             resolucion = "La solicitud ha sido cancelada"    
         else:
@@ -318,22 +341,18 @@ class IndicadorProgreso(QWidget):
                     if sublayout is not None:
                         self.limpiar_sublayout(sublayout)
 
-def limpiar_sublayout(self, layout):
-    while layout.count():
-        item = layout.takeAt(0)
-        widget = item.widget()
-        if widget is not None:
-            widget.deleteLater()
-        else:
-            sublayout = item.layout()
-            if sublayout is not None:
-                self.limpiar_sublayout(sublayout)
+    def limpiar_sublayout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+            else:
+                sublayout = item.layout()
+                if sublayout is not None:
+                    self.limpiar_sublayout(sublayout)
 
 class PantallaProgresoInterno(QWidget):
-
-    # Señales para botones
-    ver_entrevista_signal = pyqtSignal()
-    descargar_solicitud_signal = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)        
@@ -465,7 +484,8 @@ class PantallaProgresoInterno(QWidget):
         self.widget_destino = self.crear_dato_detalle(
             "assets/destino.png",
             "Destino",
-            "Domicilio familiar - Calle Principal 123, Ciudad"
+            "Domicilio familiar - Calle Principal 123, Pueblo",
+            "Provincia, 0000"
         )
   
         info_grid.addWidget(self.widget_destino, 1, 0, 1, 2) 
@@ -507,6 +527,16 @@ class PantallaProgresoInterno(QWidget):
         self.prof_label.setAlignment(Qt.AlignJustify)
         self.prof_label.setStyleSheet(ESTILO_SUBTITULO_PASO)
         observaciones_layout.addWidget(self.prof_label)
+
+        self.conc_tit_label = QLabel("Conclusiones del profesional")
+        self.conc_tit_label.setStyleSheet(ESTILO_DATO_PRINCIPAL_SOLICITUD)
+        observaciones_layout.addWidget(self.conc_tit_label)
+
+        self.conc_label = QLabel("No hay comentarios")
+        self.conc_label.setStyleSheet(ESTILO_TEXTO)
+        self.conc_label.setWordWrap(True)
+        self.conc_label.setAlignment(Qt.AlignJustify)
+        observaciones_layout.addWidget(self.conc_label)
 
         info_layout.addLayout(observaciones_layout)     
         info_layout.addStretch()
@@ -619,20 +649,20 @@ class PantallaProgresoInterno(QWidget):
             columna_texto.setContentsMargins(0, 0, 0, 0)
 
             # Título pequeño
-            self.lbl_titulo = QLabel(titulo)
-            self.lbl_titulo.setStyleSheet(ESTILO_TITULO_DETALLE_SOLICITUD)
-            columna_texto.addWidget(self.lbl_titulo)
+            widget.lbl_titulo = QLabel(titulo)
+            widget.lbl_titulo.setStyleSheet(ESTILO_TITULO_DETALLE_SOLICITUD)
+            columna_texto.addWidget(widget.lbl_titulo)
 
             # Dato Principal
-            self.lbl_l1 = QLabel(linea1)
-            self.lbl_l1.setStyleSheet(ESTILO_DATO_PRINCIPAL_SOLICITUD)
-            columna_texto.addWidget(self.lbl_l1)
+            widget.lbl_l1 = QLabel(linea1)
+            widget.lbl_l1.setStyleSheet(ESTILO_DATO_PRINCIPAL_SOLICITUD)
+            columna_texto.addWidget(widget.lbl_l1)
 
             # Dato Secundario
             if linea2:
-                self.lbl_l2 = QLabel(linea2)
-                self.lbl_l2.setStyleSheet(ESTILO_DATO_SECUNDARIO_SOLICITUD)
-                columna_texto.addWidget(self.lbl_l2)
+                widget.lbl_l2 = QLabel(linea2)
+                widget.lbl_l2.setStyleSheet(ESTILO_DATO_SECUNDARIO_SOLICITUD)
+                columna_texto.addWidget(widget.lbl_l2)
             
             columna_texto.addStretch()
             
@@ -648,7 +678,26 @@ class PantallaProgresoInterno(QWidget):
     def cargar_datos_solicitud(self, solicitud, nombre_interno, num_RC):
         """
         Carga los datos de la solicitud en la interfaz
-        """          
+        """
+        if not solicitud:
+            self.titulo_resumen.setText("Sin solicitud activa")
+            self.subtitulo_resumen.setText("No tiene una solicitud iniciada o pendiente")
+
+            self.estado_label.setText("N/A")
+            self.estado_label.setStyleSheet(ESTILO_ESTADO)
+
+            self.widget_solicitante.lbl_l1.setText("N/A")
+            self.widget_solicitante.lbl_l2.setText("N/A")
+            self.widget_fechas.lbl_l1.setText("N/A")
+            self.widget_destino.lbl_l1.setText("N/A")
+            self.widget_destino.lbl_l2.setText("N/A")
+            self.mot_label.setText("N/A")
+            self.obs_label.setText("N/A")
+            self.prof_label.setText("N/A")
+            self.conc_label.setText("No hay comentarios")
+            self.indicador.actualizar_datos_indicador("", "sin_solicitud")
+            self.boton_entrevista.setText("Ver entrevista")
+            return
 
         # Actualizar titulo y subtitulo
         self.titulo_resumen.setText(f"Solicitud #{solicitud.id_solicitud}")
@@ -668,18 +717,18 @@ class PantallaProgresoInterno(QWidget):
         self.actualizar_estado(solicitud.estado)
 
         # Actualizar info solicitante
-        self.widget_solicitante.lbl_l1.setText(nombre_interno)
-        self.widget_solicitante.lbl_l2.setText(num_RC)
+        self.widget_solicitante.lbl_l1.setText(str(nombre_interno or ""))
+        self.widget_solicitante.lbl_l2.setText(str(num_RC or ""))
 
         # Actualizar fechas
-        self.widget_fechas.lbl_l1.setText(f"{solicitud.fecha_inicio} - {solicitud.fecha_fin}")
+        self.widget_fechas.lbl_l1.setText(f"{solicitud.fecha_inicio or ''} - {solicitud.fecha_fin or ''}")
 
         # Actualizar destino
-        self.widget_destino.lbl_l1.setText(f"{solicitud.direccion}, {solicitud.destino}")
-        self.widget_destino.lbl_l2.setText(f"{solicitud.ciudad} - {solicitud.cod_pos}")
+        self.widget_destino.lbl_l1.setText(f"{solicitud.direccion or ''}, {solicitud.destino or ''}")
+        self.widget_destino.lbl_l2.setText(f"{solicitud.provincia or ''} - {str(solicitud.cod_pos or '')}")
 
         # Motivo
-        self.mot_label.setText(f"{solicitud.motivo}")
+        self.mot_label.setText(str(solicitud.motivo or ""))
 
         # Observaciones
         if solicitud.observaciones == "":
@@ -690,27 +739,40 @@ class PantallaProgresoInterno(QWidget):
         self.obs_label.setText(obs)
         self.prof_label.setText("")
 
-        # Actualizar progreso
-        if solicitud.entrevista.fecha is None:
-            fecha = ""
+        conclusiones = (solicitud.conclusiones_profesional or "").strip()
+        if conclusiones == "":
+            self.conc_label.setText("No hay comentarios")
         else:
-            fecha = solicitud.entrevista.fecha
+            self.conc_label.setText(conclusiones)
 
+        # Actualizar progreso
+        if solicitud.entrevista and solicitud.entrevista.fecha:
+            fecha = solicitud.entrevista.fecha
+        else:
+            fecha = ""
+
+        # Actualizar indicador
         self.indicador.actualizar_datos_indicador(fecha, solicitud.estado)
+
+        # Actualizar boton entrevista
+        if solicitud.estado == "iniciada":
+            self.boton_entrevista.setText("Realizar entrevista")
+        else:
+            self.boton_entrevista.setText("Ver entrevista")
 
     def actualizar_estado(self, estado):
         """
         Actualiza el badge de estado según el estado de la solicitud
         """
         estados_config = {
-            "iniciada": ("Iniciada", "#3498DBAE"),
-            "pendiente": ("En revisión", "#DB9334C8"),           
-            "aceptada": ("Aceptada", "#27AE5FA6"),
-            "rechazada": ("Rechazada", "#E74D3CAB"),
-            "cancelada": ("Cancelada", "#95A5A6BA")
+            "iniciada": ("Iniciada", "#3498DB"),
+            "pendiente": ("En revisión", "#DB9334"),           
+            "aceptada": ("Aceptada", "#27AE5F"),
+            "rechazada": ("Rechazada", "#E74D3C"),
+            "cancelada": ("Cancelada", "#A5C0C2")
         }
 
-        texto, color = estados_config.get(estado, ("En revisión", "#DB9334C8"))        
+        texto, color = estados_config.get(estado, ("En revisión", "#DB9334"))        
         self.estado_label.setText(texto)
         self.estado_label.setStyleSheet(ESTILO_ESTADO.replace("#D3D3D3", color))
 

@@ -14,7 +14,7 @@ class Solicitud:
         self.hora_salida = ""
         self.hora_llegada = ""
         self.destino = ""
-        self.ciudad = ""
+        self.provincia = ""
         self.direccion = ""
         self.cod_pos = ""
 
@@ -29,6 +29,8 @@ class Solicitud:
         self.docs = 0
         self.compromisos = 0
         self.observaciones = ""
+        self.conclusiones_profesional = ""
+        self.id_profesional = None
 
         self.estado = Tipo_estado_solicitud.INICIADA
         
@@ -62,8 +64,8 @@ class Solicitud:
             return False, "Debe seleccionar las horas de salida y llegada"
         if not self.destino.strip():
             return False, "Debe ingresar el destino"
-        if not self.ciudad.strip():
-            return False, "Debe ingresar la ciudad"
+        if not self.provincia.strip():
+            return False, "Debe ingresar la provincia"
         if not self.direccion.strip():
             return False, "Debe ingresar la dirección"           
         try:
@@ -145,7 +147,7 @@ class Solicitud:
         self.hora_salida = None
         self.hora_llegada = None
         self.destino = ""
-        self.ciudad = ""
+        self.provincia = ""
         self.direccion = ""
         self.cod_pos = ""
         
@@ -162,6 +164,8 @@ class Solicitud:
         self.docs = []
         self.compromisos = []
         self.observaciones = ""
+        self.conclusiones_profesional = ""
+        self.id_profesional = None
 
     def get_resumen(self):
         """Devuelve un resumen de la solicitud"""
@@ -170,7 +174,7 @@ class Solicitud:
             "urgencia": self.urgencia,
             "fecha_inicio": self.fecha_inicio,
             "fecha_fin": self.fecha_fin,
-            "destino": f"{self.destino}, {self.ciudad}",
+            "destino": f"{self.destino}, {self.provincia}",
             "contacto": self.nombre_cp,
             "telefono": self.telf_cp,            
         }

@@ -3,6 +3,7 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl, Qt, QSize, QTimer
 from PyQt5.QtGui import QFont, QIcon, QPixmap, QTextCursor
 import json, os
+import glob
 from gui.mensajes import Mensajes
 from gui.estilos import *
 from utils.transcripcionVosk import HiloTranscripcion
@@ -25,14 +26,13 @@ def cargar_datos_preguntas():
         return {"1": {"titulo": "Error", "texto": "Error al leer el archivo 'preguntas.json'."}}
 
 class VentanaDetallePreguntaEdit(QDialog):
-    def __init__(self, pregunta, numero, id_entrevista ,parent=None):
+    def __init__(self, pregunta, numero ,parent=None):
         super().__init__(parent)
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.pregunta_actual = pregunta        
-        self.id_entrevista = id_entrevista
         self.num_pregunta = numero
 
         self.PREGUNTAS_DATA = cargar_datos_preguntas()        
@@ -59,8 +59,7 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.ruta_audio_original = os.path.join(self.carpeta_audios, nombre_audio)
 
         # Ruta temporal
-        base, extension = os.path.splitext(self.ruta_audio_original)
-        self.ruta_audio_temp = f"{base}_temp{extension}"
+        self.ruta_audio_temp = self.generar_ruta_audio_temp()
         
 
         self.setWindowTitle(f"Detalle Pregunta {self.num_pregunta}")
@@ -216,21 +215,18 @@ class VentanaDetallePreguntaEdit(QDialog):
     def guardar_datos(self):
         """
         Si hay audio nuevo, borra el original y renombra el temporal.
-        Luego acepta el diálogo.
         """
-        # 1. Detener cualquier reproducción para liberar el archivo
+        # Detener cualquier reproducción para liberar el archivo
         self.player.stop()
         self.player.setMedia(QMediaContent())
+
+        self.detener_hilo_grabacion()
+        self.grabando = False        
 
         # Si se grabó un nuevo audio
         if self.tiene_nuevo_audio and os.path.exists(self.ruta_audio_temp):
             try:
-                # Si existe el original, lo borramos
-                if os.path.exists(self.ruta_audio_original):
-                    os.remove(self.ruta_audio_original)
-                
-                # Renombramos el temporal -> original
-                os.rename(self.ruta_audio_temp, self.ruta_audio_original)                            
+                os.replace(self.ruta_audio_temp, self.ruta_audio_original)
                 
             except Exception as e:
                 print(f"Error al guardar/renombrar audio: {e}")     
@@ -238,12 +234,15 @@ class VentanaDetallePreguntaEdit(QDialog):
                 msg.mostrar_advertencia("Error", f"No se pudo guardar el audio: {e}")
                 return
 
-        # 3. Cerramos el diálogo con éxito
+        # Cerramos el diálogo con éxito
         self.accept()
 
     # --- LÓGICA DE GRABACIÓN ---
     def toggle_grabacion(self):
         if not self.grabando:
+            if self.hilo_grabacion and self.hilo_grabacion.isRunning():
+                return
+
             # INICIAR GRABACIÓN
             self.grabando = True
 
@@ -252,9 +251,15 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.boton_guardar.setEnabled(False)  
 
             # Bloquear reproducción
-            if self.player.state() == QMediaPlayer.PlayingState:
-                self.player.stop()
+            self.player.stop()
+            self.player.setMedia(QMediaContent())
             self.boton_play.setEnabled(False) # No reproducir mientras grabas      
+
+            # Si habia un temporal sin guardar, eliminarlo antes de grabar de nuevo
+            self.eliminar_audio_temporal()
+
+            # Usar archivo temporal nuevo en cada grabación para evitar bloqueos de archivo
+            self.ruta_audio_temp = self.generar_ruta_audio_temp()
             
             # Visuales
             self.boton_grabar.setProperty("grabando", True)
@@ -289,10 +294,7 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.tiene_nuevo_audio = True
 
             # Detener hilo
-            if self.hilo_grabacion:
-                self.hilo_grabacion.detener()
-                self.hilo_grabacion.wait()
-                self.hilo_grabacion = None
+            self.detener_hilo_grabacion()
             
             # Visuales
             self.boton_grabar.setProperty("grabando", False)
@@ -330,9 +332,7 @@ class VentanaDetallePreguntaEdit(QDialog):
     def detener_grabacion(self):
         self.grabando = False
 
-        if self.hilo_grabacion:
-            self.hilo_grabacion.detener()
-            self.hilo_grabacion = None
+        self.detener_hilo_grabacion()
 
         self.boton_grabar.setProperty("grabando", False)
         self.boton_grabar.style().polish(self.boton_grabar)
@@ -353,6 +353,40 @@ class VentanaDetallePreguntaEdit(QDialog):
         self.detener_grabacion() # Detener grabación visualmente
         msg = Mensajes(self)           
         msg.mostrar_advertencia(f"Error de audio", f"Error: {error}")
+
+    def detener_hilo_grabacion(self):
+        if not self.hilo_grabacion:
+            return
+
+        try:
+            self.hilo_grabacion.detener()
+            if self.hilo_grabacion.isRunning():
+                self.hilo_grabacion.wait()
+        except Exception:
+            pass
+        finally:
+            self.hilo_grabacion = None
+
+    def generar_ruta_audio_temp(self):
+        base, extension = os.path.splitext(self.ruta_audio_original)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        return f"{base}_{timestamp}_temp{extension}"
+
+    def eliminar_audio_temporal(self):
+        if self.ruta_audio_temp and os.path.exists(self.ruta_audio_temp):
+            try:
+                os.remove(self.ruta_audio_temp)
+            except Exception:
+                pass
+
+    def eliminar_temporales_huerfanos(self):
+        base, extension = os.path.splitext(self.ruta_audio_original)
+        patron = f"{base}_*_temp{extension}"
+        for ruta in glob.glob(patron):
+            try:
+                os.remove(ruta)
+            except Exception:
+                pass
 
     # --- LÓGICA DE REPRODUCCIÓN ---
     def toggle_audio(self):
@@ -520,6 +554,8 @@ class VentanaDetallePreguntaEdit(QDialog):
 
     def cerrar_ventana(self):
         if self.mostrar_confirmacion_cerrar() is True:
+            #Borramos temporal si existe
+            self.eliminar_audio_temporal()
             self.reject()
 
     def closeEvent(self, event):
@@ -529,20 +565,15 @@ class VentanaDetallePreguntaEdit(QDialog):
         así que no hay nada que borrar en esa ruta.
         """
         # Detener procesos siempre
-        if self.hilo_grabacion:
-            self.detener_grabacion()
+        self.detener_grabacion()
         
         self.player.stop()
         self.player.setMedia(QMediaContent()) # Liberar archivo
 
         # Si el resultado NO es aceptado (es decir, es cancelar/cerrar)
         if self.result() != QDialog.Accepted:
-            if os.path.exists(self.ruta_audio_temp):
-                try:
-                    os.remove(self.ruta_audio_temp)
-                    print("Cancelado: Audio temporal eliminado.")
-                except Exception as e:
-                    print(f"Error borrando temp: {e}")
+            self.eliminar_audio_temporal()
+            self.eliminar_temporales_huerfanos()
         
         event.accept()
 

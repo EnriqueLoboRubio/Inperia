@@ -13,11 +13,8 @@ class Interno(Usuario):
         self.condena = condena
         self.fecha_ingreso = fecha_ingreso
         self.modulo = modulo
-        self.solicitudes = []
-        self.entrevistas = []        
+        self.solicitudes = []     
     
     def add_solicitud(self, solicitud):
         self.solicitudes.append(solicitud)   
     
-    def add_entrevista(self, entrevista):
-        self.entrevistas.append(entrevista)

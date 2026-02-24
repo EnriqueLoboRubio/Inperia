@@ -2,6 +2,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QFileDialog
 from models.solicitud import Solicitud
 from gui.mensajes import Mensajes
+from utils.documentoPDF import DocumentoPDF
 
 from db.solicitud_db import *
 
@@ -13,6 +14,7 @@ class ProgresoController(QObject):
 
     #Señales
     ver_entrevista_solicitud = pyqtSignal(int) # ID de la entrevista   
+    realizar_entrevista_nueva = pyqtSignal()
 
     def __init__(self, vista_progreso, solicitud, interno):
         super().__init__()
@@ -22,21 +24,45 @@ class ProgresoController(QObject):
 
         self.msg = Mensajes(vista_progreso)
 
-        self.conectar_senales()
         self.cargar_datos()
+        self.conectar_senales()
+        
 
     def conectar_senales(self):
         """
         conecta las señales de los botones con sus acciones
         """
         self.vista.boton_solicitud.clicked.connect(self.descargar_solicitud)
-        self.vista.boton_entrevista.clicked.connect(self.ver_entrevista)
+        self.vista.boton_entrevista.clicked.connect(self.accion_boton_entrevista)
         self.vista.boton_cancelar.clicked.connect(self.cancelar_solicitud)
+
+    def accion_boton_entrevista(self):
+        """
+        Decide la acción del botón de entrevista según el estado actual.
+        """
+        if not self.solicitud:
+            return
+
+        if self.solicitud.estado == "iniciada":
+            self.realizar_entrevista()
+        else:
+            self.ver_entrevista()
 
     def cargar_datos(self):
         """
         Carga los datos de la solicitud en la vista
         """
+
+        if not self.solicitud:
+            self.vista.cargar_datos_solicitud(
+                self.solicitud,
+                self.interno.nombre,
+                self.interno.num_RC
+            )
+            self.vista.boton_solicitud.setEnabled(False)
+            self.vista.boton_entrevista.setEnabled(False)
+            self.vista.boton_cancelar.setEnabled(False)
+            return
 
         self.vista.cargar_datos_solicitud(
             self.solicitud,
@@ -44,38 +70,51 @@ class ProgresoController(QObject):
             self.interno.num_RC
         )
 
-        # Habilitar / deshabilitar botón de entrevista si hay o no
-        if self.solicitud.entrevista:
+        self.vista.boton_solicitud.setEnabled(True)
+        self.vista.boton_cancelar.setEnabled(
+            self.solicitud.estado not in ["aceptada", "rechazada", "cancelada"]
+        )
+
+        # Habilitar / deshabilitar botón de entrevista si hay o la solicitud está iniciada
+        if self.solicitud.entrevista or self.solicitud.estado == "iniciada":
             self.vista.boton_entrevista.setEnabled(True)
         else:
-            self.vista.boton_entrevista.setEnable(False)
+            self.vista.boton_entrevista.setEnabled(False)
 
     def ver_entrevista(self):
         """
         Maneja la acción de ver la entrevista
         Emite una señal para que el InternoController maneje la navegación
         """
+        if not self.solicitud:
+            return
 
-        if self.solicitud.entrevista:
-            # Verificar que la entrevista tiene ID
-            if hasattr(self.solicitud.entrevista, 'id_entrevista') and self.solicitud.entrevista.id_entrevista:
-                self.ver_entrevista_solicitud.emit(self.solicitud.entrevista.id_entrevista)
-            else:
-                self.msg.mostrar_advertencia(
-                    "Entrevista no disponible",
-                    "La entrevista aún no está disponible para visualización."
-                )                
+        if self.solicitud.entrevista and self.solicitud.entrevista.id_entrevista:
+            self.ver_entrevista_solicitud.emit(self.solicitud.entrevista.id_entrevista)
         else:
+            self.msg.mostrar_advertencia(
+                "Entrevista no disponible",
+                "La entrevista aún no está disponible para visualización."
+        )                
+       
+    def realizar_entrevista(self):
+        """
+        Maneja la acción de realizar la entrevista
+        Emite una señal para que el InternoController maneje la navegación
+        """
+        if not self.solicitud:
+            return
 
-            self.msg.mostrar_mensaje(
-                "Sin entrevista",
-                "Esta solicitud aún no tiene una entrevista asociada."
-            )
+        self.realizar_entrevista_nueva.emit()
+    
 
     def descargar_solicitud(self):
         """
         Maneja la descarga de la solicitud en formato PDF
         """
+        if not self.solicitud:
+            return
+
         try:
             # Solicitar ubicación de guardado
             ruta_guardado, _ = QFileDialog.getSaveFileName(
@@ -86,8 +125,8 @@ class ProgresoController(QObject):
             )
             
             if ruta_guardado:
-                # lógica para generar el PDF                
-                self.generar_pdf_solicitud(ruta_guardado)
+                # Generar el PDF                
+                DocumentoPDF.generar_pdf_solicitud(self.solicitud, ruta_guardado, self.interno)
                 
                 self.msg.mostrar_mensaje(                    
                     "Descarga exitosa",
@@ -110,6 +149,8 @@ class ProgresoController(QObject):
         Cambia el estado de la solicitud a cancelada y se actulizada la interfaz
         Guarda el cambio en la BD
         """
+        if not self.solicitud:
+            return
 
         self.solicitud.estado = "cancelada"
         self.cargar_datos()
@@ -117,11 +158,15 @@ class ProgresoController(QObject):
         # Guarda solicitud en BD
         actualizar_estado_solicitud(self.solicitud.id_solicitud, "cancelada")
 
-
         self.msg.mostrar_mensaje(
             "Actualización existosa",
             "La solicitud se ha cancelado correctamente"
         )
+
+        # Deshabilitar botón de entrevista al cancelar
+        self.vista.boton_entrevista.setEnabled(False)
+
+
 
     
     

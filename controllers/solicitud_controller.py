@@ -142,7 +142,7 @@ class SolicitudController(QObject):
         self.solicitud.hora_salida = paso_widget.hora_salida.time().toString("HH:mm")
         self.solicitud.hora_llegada = paso_widget.hora_llegada.time().toString("HH:mm")
         self.solicitud.destino = paso_widget.destino_texto.text().strip()
-        self.solicitud.ciudad = paso_widget.ciudad_texto.text()
+        self.solicitud.provincia = paso_widget.provincia_texto.text()
         self.solicitud.direccion = paso_widget.direccion_texto.text()
         self.solicitud.cod_pos = paso_widget.codigo_texto.text()
 
@@ -213,7 +213,7 @@ class SolicitudController(QObject):
             hora_salida=self.solicitud.hora_salida,
             hora_llegada=self.solicitud.hora_llegada,
             destino=self.solicitud.destino,
-            ciudad=self.solicitud.ciudad,
+            provincia=self.solicitud.provincia,
             direccion=self.solicitud.direccion,
             cod_pos=self.solicitud.cod_pos,
             nombre_cp=self.solicitud.nombre_cp,
