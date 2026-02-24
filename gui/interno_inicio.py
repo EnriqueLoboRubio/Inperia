@@ -157,12 +157,6 @@ class VentanaInterno(QMainWindow):
         self.boton_progreso.setFont(QFont("Arial", 10))
         self.boton_progreso.hide()
         
-        self.boton_mensajes = QPushButton("Mensajes")
-        self.boton_mensajes.setToolTip("Ver mensajes")
-        self.boton_mensajes.setStyleSheet(self.boton_estilo)
-        self.boton_mensajes.setFont(QFont("Arial", 10))
-        self.boton_mensajes.hide()
-
         self.boton_solicitud = QPushButton("Solicitar evaluación")
         self.boton_solicitud.setToolTip("Solicitar evaluación profesional")
         self.boton_solicitud.setStyleSheet(self.boton_estilo)
@@ -170,12 +164,11 @@ class VentanaInterno(QMainWindow):
         self.boton_solicitud.hide()        
         
         # Lista de todos los elementos del menú principal (para mostrar/ocultar)
-        self.main_menu_widgets = [self.boton_preguntas, self.submenu_preguntas_widget, self.boton_progreso, self.boton_mensajes, self.boton_solicitud]
+        self.main_menu_widgets = [self.boton_preguntas, self.submenu_preguntas_widget, self.boton_progreso, self.boton_solicitud]
         
         menu_layout.addWidget(self.boton_preguntas)
         menu_layout.addWidget(self.submenu_preguntas_widget) 
         menu_layout.addWidget(self.boton_progreso)
-        menu_layout.addWidget(self.boton_mensajes)
         menu_layout.addWidget(self.boton_solicitud)
         
         # Separador para empujar los botones hacia arriba
@@ -283,16 +276,6 @@ class VentanaInterno(QMainWindow):
         self.boton_perfil_menu.setFont(QFont("Arial", 10))
         self.boton_perfil_menu.setStyleSheet(self.boton_estilo)  
 
-        self.boton_cambiar_idioma = QPushButton("Cambiar Idioma")    
-        self.boton_cambiar_idioma.setToolTip("Cambiar el idioma de la aplicación")
-        self.boton_cambiar_idioma.setFont(QFont("Arial", 10))    
-        self.boton_cambiar_idioma.setStyleSheet(self.boton_estilo)
-
-        self.boton_cambiar_tema = QPushButton("Cambiar Tema")
-        self.boton_cambiar_tema.setToolTip("Cambiar el tema de la aplicación")
-        self.boton_cambiar_tema.setFont(QFont("Arial", 10))    
-        self.boton_cambiar_tema.setStyleSheet(self.boton_estilo)
-
         self.boton_cerrar_sesion = QPushButton("Cerrar Sesión")
         self.boton_cerrar_sesion.setToolTip("Cerrar sesión y volver a la pantalla de inicio")
         self.boton_cerrar_sesion.setFont(QFont("Arial", 10))
@@ -311,8 +294,6 @@ class VentanaInterno(QMainWindow):
 
         # Añadir botones al layout de ajustes
         self.ajustes_menu_layout.addWidget(self.boton_perfil_menu)
-        self.ajustes_menu_layout.addWidget(self.boton_cambiar_idioma)
-        self.ajustes_menu_layout.addWidget(self.boton_cambiar_tema)
         self.ajustes_menu_layout.addWidget(self.boton_cerrar_sesion)
 
         # --- Añadir widgets al layout principal ---

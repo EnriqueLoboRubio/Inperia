@@ -51,7 +51,12 @@ class InternoController(QObject):
             self.tiene_solicitud and 
             self.solicitud_actual.estado == Tipo_estado_solicitud.PENDIENTE.value
         )
-        self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(self.tiene_solicitud, self.tiene_entrevista)
+        estado_solicitud = self.solicitud_actual.estado if self.solicitud_actual else None
+        self.ventana_interno.pantalla_bienvenida.actualizar_interfaz(
+            self.tiene_solicitud,
+            self.tiene_entrevista,
+            estado_solicitud
+        )
         
         self.msg = Mensajes(self.ventana_interno)
 
@@ -230,6 +235,7 @@ class InternoController(QObject):
         self.ventana_interno.boton_perfil_menu.clicked.connect(
             self.iniciar_perfil
         )
+
         #Boton Cerrar Sesion
         self.ventana_interno.boton_cerrar_sesion.clicked.connect(
             self.cerrar_sesion
@@ -241,10 +247,14 @@ class InternoController(QObject):
         try: boton_inicio.clicked.disconnect()
         except: pass
 
+        estado_solicitud = self.solicitud_actual.estado if self.solicitud_actual else None
+
         if self.tiene_solicitud is False:
             boton_inicio.clicked.connect(self.iniciar_nueva_solicitud)                       
-        elif self.tiene_entrevista is False:          
+        elif estado_solicitud in [Tipo_estado_solicitud.INICIADA.value]:
             boton_inicio.clicked.connect(self.iniciar_entrevista)
+        elif estado_solicitud in [Tipo_estado_solicitud.CANCELADA.value]:
+            boton_inicio.clicked.connect(self.iniciar_nueva_solicitud)
         else:
             boton_inicio.clicked.connect(self.iniciar_progreso)    
 
@@ -475,25 +485,31 @@ class InternoController(QObject):
                 "No tiene una solicitud de evaluación iniciada o pendiente."
             )
             return
+
+        if self.tiene_solicitud is True and self.solicitud_actual.estado != Tipo_estado_solicitud.INICIADA.value:
+            self.ventana_interno.mostrar_advertencia(
+                "Entrevista en proceso", 
+                "Ya ha realizado la entrevista para esta solicitud, espere a finalizar."
+            )
+            return
         
         if self.tiene_solicitud is True and self.tiene_entrevista is True:
             self.ventana_interno.mostrar_advertencia(
                 "Entrevista ya realizada", 
                 "Ya ha completado la entrevista para esta solicitud."
             )
-            return
+            return            
         
         self.ventana_interno.movimiento_submenu_preguntas()
 
     def verificar_ver_progreso(self):
-        """
-        Logica: ver progreso solo si tene solicitud pendiente o iniciada
-        """
+        
         if self.solicitud_actual is None:
             self.ventana_interno.mostrar_advertencia(
                 "Sin solicitud",
                 "No tiene una solicitud de evaluación iniciada o pendiente."
-            ) 
+            )
+            return 
         
         self.progreso_controller.solicitud = self.solicitud_actual
         self.progreso_controller.cargar_datos()
@@ -537,4 +553,6 @@ class InternoController(QObject):
         self.solicitud_actual = self.cargar_ultima_solicitud()
         self.progreso_controller.solicitud = self.solicitud_actual
         self.progreso_controller.cargar_datos()
+    
+
 

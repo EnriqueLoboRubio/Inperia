@@ -238,16 +238,6 @@ class VentanaProfesional(QMainWindow):
         self.boton_perfil.setFont(QFont("Arial", 10))
         self.boton_perfil.setStyleSheet(self.boton_estilo)  
 
-        self.boton_cambiar_idioma = QPushButton("Cambiar Idioma")
-        self.boton_cambiar_idioma.setToolTip("Cambiar el idioma de la aplicación")
-        self.boton_cambiar_idioma.setFont(QFont("Arial", 10))        
-        self.boton_cambiar_idioma.setStyleSheet(self.boton_estilo)
-
-        self.boton_cambiar_tema = QPushButton("Cambiar Tema")
-        self.boton_cambiar_tema.setToolTip("Cambiar el tema de la aplicación")
-        self.boton_cambiar_tema.setFont(QFont("Arial", 10))     
-        self.boton_cambiar_tema.setStyleSheet(self.boton_estilo)
-
         self.boton_cerrar_sesion = QPushButton("Cerrar Sesión")
         self.boton_cerrar_sesion.setToolTip("Cerrar sesión y volver a la pantalla de inicio")
         self.boton_cerrar_sesion.setFont(QFont("Arial", 10))
@@ -266,8 +256,6 @@ class VentanaProfesional(QMainWindow):
 
         # Añadir botones al layout de ajustes
         self.ajustes_menu_layout.addWidget(self.boton_perfil)
-        self.ajustes_menu_layout.addWidget(self.boton_cambiar_idioma)
-        self.ajustes_menu_layout.addWidget(self.boton_cambiar_tema)
         self.ajustes_menu_layout.addWidget(self.boton_cerrar_sesion)
 
         # --- Añadir widgets al layout principal ---

@@ -44,7 +44,7 @@ class PantallaBienvenidaInterno(QWidget):
         else:
             print("ERROR")
 
-    def actualizar_interfaz(self, tiene_pendiente_iniciada, tiene_entrevista):
+    def actualizar_interfaz(self, tiene_pendiente_iniciada, tiene_entrevista, estado_solicitud=None):
         """
         Cambia los texto dependiendo de si hay entrevista pendiente o no
         """
@@ -53,11 +53,23 @@ class PantallaBienvenidaInterno(QWidget):
             self.contenido.setText("No tiene solicitudes pendientes o iniciadas")
             self.boton_iniciar.setText("Nueva solicitud")
             self.boton_iniciar.setToolTip("Crear una nueva solicitud")
-        elif not tiene_entrevista:    
+        elif estado_solicitud == "aceptada":
+            self.contenido.setText("Su solicitud ha sido aprobada")
+            self.boton_iniciar.setText("Ver Progreso")
+            self.boton_iniciar.setToolTip("Ver progreso de la última solicitud")
+        elif estado_solicitud == "rechazada":
+            self.contenido.setText("Su solicitud ha sido rechazada")
+            self.boton_iniciar.setText("Ver Progreso")
+            self.boton_iniciar.setToolTip("Ver progreso de la última solicitud")
+        elif estado_solicitud == "cancelada":
+            self.contenido.setText("Su solicitud ha sido cancelada")
+            self.boton_iniciar.setText("Nueva solicitud")
+            self.boton_iniciar.setToolTip("Crear una nueva solicitud")
+        elif not tiene_entrevista and estado_solicitud == "iniciada":
             self.contenido.setText("Tiene una entrevista pendiente")
             self.boton_iniciar.setText("Iniciar entrevista")
             self.boton_iniciar.setToolTip("Realizar entrevista completa")
         else:                    
-            self.contenido.setText("No tiene nada pendiente")
+            self.contenido.setText("Su solicitud está en proceso")
             self.boton_iniciar.setText("Ver Progreso")
             self.boton_iniciar.setToolTip("Ver progreso de la última solicitud")
