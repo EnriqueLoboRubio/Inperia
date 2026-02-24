@@ -2,9 +2,10 @@ import os
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.utils import ImageReader, simpleSplit
-from reportlab.pdfgen import canvas
-
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY
 
 COMP_LABELS = [
     "Cumplir estrictamente con los horarios establecidos",
@@ -28,15 +29,30 @@ def decodificar(valor, etiquetas):
     return [texto for i, texto in enumerate(etiquetas) if valor_int & (1 << i)]
 
 
+class RoundedTable(Table):
+    """Tabla con fondo y borde redondeado para simular la caja del modelo."""
+
+    def __init__(self, *args, radius=10, fill_color=colors.white, stroke_color=colors.black, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.radius = radius
+        self.fill_color = fill_color
+        self.stroke_color = stroke_color
+
+    def draw(self):
+        self.canv.saveState()
+        self.canv.setFillColor(self.fill_color)
+        self.canv.setStrokeColor(self.stroke_color)
+        self.canv.setLineWidth(1)
+        self.canv.roundRect(0, 0, self._width, self._height, self.radius, fill=1, stroke=1)
+        self.canv.restoreState()
+        super().draw()
+
+
 class DocumentoPDF:
-    color_pag = colors.HexColor("#EFEFEF")
+    color_pag = colors.white
     color_caja = colors.HexColor("#DEDEDE")
     color_borde = colors.HexColor("#B9B9B9")
     color_titulo_caja = colors.HexColor("#CFCFCF")
-    margen_x = 30
-    contenido_w = A4[0] - (margen_x * 2)
-    espacio_fila = 25
-    espacio_fila = 24
 
     @staticmethod
     def texto(valor, vacio="  __________"):
@@ -51,11 +67,6 @@ class DocumentoPDF:
         return os.path.join(base, "assets", "inperiaPDF.png")
 
     @staticmethod
-    def dibujar_pag(c, ancho, alto):
-        c.setFillColor(DocumentoPDF.color_pag)
-        c.rect(0, 0, ancho, alto, stroke=0, fill=1)
-
-    @staticmethod
     def dibujar_logo(c, x, y, tam=42):
         path = DocumentoPDF.logo_inperia()
         if os.path.exists(path):
@@ -66,219 +77,250 @@ class DocumentoPDF:
             c.drawString(x + 6, y + 2, "I")
 
     @staticmethod
-    def dibujar_encabezado(c, ancho, alto):
-        DocumentoPDF.dibujar_logo(c, 15, alto - 90, tam=92)
-        c.setFillColor(colors.black)
-      
-        c.setFont("Helvetica", 16)
-        c.drawString(74, alto - 42, "NPERIA")
-        c.setFont("Helvetica-Bold", 31)
-        c.drawString(74, alto - 67, "Comprobante de la solicitud")
-
-    @staticmethod
-    def dibujar_titulo_caja(c, x, y, texto, w=210, h=24):
-        c.setFillColor(DocumentoPDF.color_titulo_caja)
-        c.roundRect(x, y - h, w, h, 12, stroke=0, fill=1)
-        c.setFillColor(colors.black)
-        c.setFont("Helvetica", 16)
-        c.drawString(x + 26, y - 17, texto)
-
-    @staticmethod
-    def dibujar_caja(c, x, y_top, w, h):
-        c.setFillColor(DocumentoPDF.color_caja)
-        c.setStrokeColor(DocumentoPDF.color_borde)
-        c.roundRect(x, y_top - h, w, h, 14, stroke=1, fill=1)
-        c.setFillColor(colors.black)
-
-    @staticmethod
-    def anadir_apartado(c, x, y, label, value):
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(x, y, label)
-        dx = c.stringWidth(label, "Helvetica-Bold", 10) + 3
-        c.setFont("Helvetica", 10)
-        c.drawString(x + dx, y, DocumentoPDF.texto(value))
-
-    @staticmethod
-    def texto_linea(c, x, y_top, text, width, max_lines=2):
-        lines = simpleSplit(DocumentoPDF.texto(text, ""), "Helvetica", 10, width)[:max_lines]
-        if not lines:
-            lines = ["  __________"]
-        y = y_top
-        c.setFont("Helvetica", 10)
-        for ln in lines:
-            c.drawString(x, y, ln)
-            y -= 13
+    def _on_page(canvas, doc):
+        """Callback para dibujar el fondo gris general y el encabezado en cada página."""
+        canvas.saveState()
+        
+        # Fondo de la página
+        canvas.setFillColor(DocumentoPDF.color_pag)
+        canvas.rect(0, 0, A4[0], A4[1], stroke=0, fill=1)
+        
+        alto = A4[1]
+        
+        # Encabezado dinámico dependiendo de si es la página 1 u otra
+        if doc.page == 1:
+            DocumentoPDF.dibujar_logo(canvas, 10, alto - 95, tam=92)
+            canvas.setFillColor(colors.black)
+            canvas.setFont("Helvetica", 16)
+            canvas.drawString(74, alto - 42, "NPERIA")
+            canvas.setFont("Helvetica-Bold", 31)
+            canvas.drawString(74, alto - 67, "Comprobante de la solicitud")
+        else:
+            DocumentoPDF.dibujar_logo(canvas, 10, alto - 60, tam=42)
+            
+        canvas.restoreState()
 
     @staticmethod
     def generar_pdf_solicitud(solicitud, ruta_archivo, interno=None):
-        canv = canvas.Canvas(ruta_archivo, pagesize=A4)
-        ancho, alto = A4
+        # Configuramos el documento (los márgenes superiores e inferiores empujan el contenido)
+        doc = SimpleDocTemplate(
+            ruta_archivo, 
+            pagesize=A4, 
+            rightMargin=30, 
+            leftMargin=30, 
+            topMargin=110, 
+            bottomMargin=40
+        )
 
-        # Pagina 1
-        DocumentoPDF.dibujar_pag(canv, ancho, alto)
-        DocumentoPDF.dibujar_encabezado(canv, ancho, alto)
+        # Hojas de estilo
+        styles = getSampleStyleSheet()
+        style_normal = styles["Normal"]
+        style_normal.fontName = "Helvetica"
+        style_normal.fontSize = 10
+        style_normal.leading = 14
 
-        x0 = DocumentoPDF.margen_x
-        w = DocumentoPDF.contenido_w
-        x_izq = x0 + 36
-        x_der = x0 + (w / 2) + 10
-
-        # Caja de datos del interno
-        y = alto - 96
-        DocumentoPDF.dibujar_titulo_caja(canv, x0 + 24, y, "Datos del interno")
-        caja_top = y - 22
-        caja_altura = 122
+        style_bold = ParagraphStyle('Bold', parent=style_normal, fontName='Helvetica-Bold')
+        style_justified = ParagraphStyle('Justify', parent=style_normal, alignment=TA_JUSTIFY)
+        style_subtitle = ParagraphStyle('Sub', parent=style_bold, spaceBefore=10, spaceAfter=5)
         
-        DocumentoPDF.dibujar_caja(canv, x0, caja_top, w, caja_altura)
+        def p_field(label, value, justified=False):
+            """Genera un párrafo con formato 'Negrita: Valor'."""
+            val_str = DocumentoPDF.texto(value, " __________")
+            st = style_justified if justified else style_normal
+            return Paragraph(f"<b>{label}</b> {val_str}", st)
 
-        
-        fila = caja_top - 30
-        DocumentoPDF.anadir_apartado(canv, x_izq, fila, "Número RC:", getattr(interno, "num_RC", None))
-        DocumentoPDF.anadir_apartado(canv, x_der, fila, "Nombre:", getattr(interno, "nombre", None))
-        fila -= DocumentoPDF.espacio_fila
-        DocumentoPDF.anadir_apartado(canv, x_izq, fila, "Fecha Nacimiento:", getattr(interno, "fecha_nac", None))
-        DocumentoPDF.anadir_apartado(canv, x_der, fila, "Situación:", getattr(interno , "situacion_legal", None))
-        fila -= DocumentoPDF.espacio_fila
-        DocumentoPDF.anadir_apartado(canv, x_izq, fila, "Delito de última condena:", getattr(interno, "delito", None))
-        DocumentoPDF.anadir_apartado(canv, x_der, fila, "Fecha ingreso:", getattr(interno, "fecha_ingreso", None))
-        fila -= DocumentoPDF.espacio_fila
-        DocumentoPDF.anadir_apartado(canv, x_izq, fila, "Módulo:", getattr(interno, "modulo", None))
-        DocumentoPDF.anadir_apartado(canv, x_der, fila, "Duración condena (años):", getattr(interno, "condena", None))
+        def create_box(title, content_flowables):
+            """Genera las cajas grises dinámicamente usando tablas y el renderizador redondeado."""
+            title_p = Paragraph(f"<b>{title}</b>", ParagraphStyle('Title', parent=style_normal, fontSize=14, textColor=colors.black))
+            
+            # Pestaña superior redondeada (como en el modelo)
+            t_title = RoundedTable(
+                [[title_p]],
+                colWidths=[220],
+                rowHeights=[24],
+                hAlign='LEFT',
+                radius=11,
+                fill_color=DocumentoPDF.color_titulo_caja,
+                stroke_color=DocumentoPDF.color_titulo_caja,
+            )
+            t_title.setStyle(TableStyle([
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('LEFTPADDING', (0,0), (-1,-1), 28),
+                ('RIGHTPADDING', (0,0), (-1,-1), 12),
+                ('TOPPADDING', (0,0), (-1,-1), 2),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+            ]))
+            
+            # Tabla para el contenido principal
+            table_data = [[f] for f in content_flowables]
+            t_content = RoundedTable(
+                table_data,
+                colWidths=[A4[0] - 60],
+                hAlign='LEFT',
+                radius=14,
+                fill_color=DocumentoPDF.color_caja,
+                stroke_color=DocumentoPDF.color_borde,
+            )
+            t_content.setStyle(TableStyle([
+                ('LEFTPADDING', (0,0), (-1,-1), 18),
+                ('RIGHTPADDING', (0,0), (-1,-1), 12),
+                ('TOPPADDING', (0,0), (-1,0), 14),
+                ('BOTTOMPADDING', (0,-1), (-1,-1), 14),
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+            ]))
+            
+            return KeepTogether([t_title, t_content, Spacer(1, 15)])
 
-        # Caja de datos de la solicitud
-        y = caja_top - caja_altura - 28
-        DocumentoPDF.dibujar_titulo_caja(canv, x0 + 24, y, "Datos de la solicitud")
-        caja_top = y - 22
-        caja_altura = 198
-        DocumentoPDF.dibujar_caja(canv, x0, caja_top, w, caja_altura)
+        # Lista donde almacenaremos todos los elementos en orden (la "historia" del PDF)
+        story = []
 
-        fila = caja_top - 30
-        fecha_creacion = getattr(getattr(solicitud, "entrevista", None), "fecha", None)
-        DocumentoPDF.anadir_apartado(canv, x_izq, fila, "Identificador:", getattr(solicitud, "id_solicitud", None))
-        DocumentoPDF.anadir_apartado(canv, x_der, fila, "Fecha Creación:", fecha_creacion)
-        fila -= DocumentoPDF.espacio_fila
+        # ---------------------------------------------------------------------
+        # 1. Datos del interno
+        # Usamos una tabla de 2 columnas para que los textos largos empujen el resto sin solaparse
+        data_interno = [
+            [p_field("Número RC:", getattr(interno, "num_RC", None)), p_field("Nombre:", getattr(interno, "nombre", None))],
+            [p_field("Fecha Nacimiento:", getattr(interno, "fecha_nac", None)), p_field("Situación:", getattr(interno, "situacion_legal", None))],
+            [p_field("Delito de última condena:", getattr(interno, "delito", None)), p_field("Fecha ingreso:", getattr(interno, "fecha_ingreso", None))],
+            [p_field("Módulo:", getattr(interno, "modulo", None)), p_field("Duración condena (años):", getattr(interno, "condena", None))]
+        ]
+        t_interno = Table(data_interno, colWidths=[(A4[0]-84)/2]*2) # Ajuste ligero de ancho por padding
+        t_interno.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP')]))
+        story.append(create_box("Datos del interno", [t_interno]))
 
-        # Reparto equitativo de la fila: tipo | motivo | urgencia
-        columnas_3 = w - 72
-        col1 = x_izq
-        col2 = x_izq + (columnas_3 / 3)
-        col3 = x_izq + (2 * columnas_3 / 3)
-        DocumentoPDF.anadir_apartado(canv, col1, fila, "Tipo:", getattr(solicitud, "tipo", None))
-        DocumentoPDF.anadir_apartado(canv, col2, fila, "Motivo:", getattr(solicitud, "motivo", None))
-        DocumentoPDF.anadir_apartado(canv, col3, fila, "Urgencia:", getattr(solicitud, "urgencia", None))
+        # ---------------------------------------------------------------------
+        # 2. Datos de la solicitud
+        t_sol_1 = Table([
+            [p_field("Identificador:", getattr(solicitud, "id_solicitud", None)), p_field("Fecha Creación:", getattr(solicitud, "fecha_creacion", None))],
+            [p_field("Tipo:", getattr(solicitud, "tipo", None)), p_field("Urgencia:", getattr(solicitud, "urgencia", None))],
+        ], colWidths=[(A4[0]-84)/2]*2)
+        t_sol_1.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP')]))
 
-        fila -= DocumentoPDF.espacio_fila
-        canv.setFont("Helvetica-Bold", 10)
-        canv.drawString(x_izq, fila, "Descripción:")
-        DocumentoPDF.texto_linea(canv, x_izq + 65, fila, getattr(solicitud, "descripcion", None), 450, max_lines=2)
+        t_sol_2 = Table([
+            [p_field("Fecha inicio:", getattr(solicitud, "fecha_inicio", None)), p_field("Hora salida:", getattr(solicitud, "hora_salida", None))],
+            [p_field("Fecha fin:", getattr(solicitud, "fecha_fin", None)), p_field("Hora entrada:", getattr(solicitud, "hora_llegada", None))],
+        ], colWidths=[(A4[0]-84)/2]*2)
+        t_sol_2.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP')]))
 
-        fila -= DocumentoPDF.espacio_fila * 2
-        DocumentoPDF.anadir_apartado(canv, x_izq, fila, "Fecha inicio:", getattr(solicitud, "fecha_inicio", None))
-        DocumentoPDF.anadir_apartado(canv, x_der, fila, "Hora salida:", getattr(solicitud, "hora_salida", None))
-        fila -= DocumentoPDF.espacio_fila
-        DocumentoPDF.anadir_apartado(canv, x_izq, fila, "Fecha fin:", getattr(solicitud, "fecha_fin", None))
-        DocumentoPDF.anadir_apartado(canv, x_der, fila, "Hora entrada:", getattr(solicitud, "hora_llegada", None))
-        fila -= DocumentoPDF.espacio_fila
-        destino = ", ".join([
+        # Formateo dinámico de la dirección para evitar comas sueltas
+        partes_destino = [
             DocumentoPDF.texto(getattr(solicitud, "direccion", None), ""),
             DocumentoPDF.texto(getattr(solicitud, "destino", None), ""),
             DocumentoPDF.texto(getattr(solicitud, "provincia", None), ""),
-            DocumentoPDF.texto(getattr(solicitud, "cod_pos", None), "") 
-        ]).strip()
-        DocumentoPDF.anadir_apartado(canv, x_izq, fila, "Dirección destino:", destino)
+            DocumentoPDF.texto(getattr(solicitud, "cod_pos", None), "")
+        ]
+        partes_destino = [p for p in partes_destino if p.strip() and p != "__________"]
+        destino = ", ".join(partes_destino) if partes_destino else "__________"
 
+        content_solicitud = [
+            t_sol_1, 
+            Spacer(1, 8),
+            p_field("Motivo:", getattr(solicitud, "motivo", None), justified=True),
+            Spacer(1, 8),
+            p_field("Descripción:", getattr(solicitud, "descripcion", None), justified=True),
+            Spacer(1, 8),
+            t_sol_2,
+            Spacer(1, 8),
+            p_field("Dirección destino:", destino, justified=True)
+        ]
+        story.append(create_box("Datos de la solicitud", content_solicitud))
 
-        # Caja de estado y observaciones
-        y = caja_top - caja_altura - 28
-        DocumentoPDF.dibujar_titulo_caja(canv, x0 + 24, y, "Estado de la solicitud")
-        caja_top = y - 22
-        caja_altura = 126
-        DocumentoPDF.dibujar_caja(canv, x0, caja_top, w, caja_altura)
+        # ---------------------------------------------------------------------
+        # 3. Estado de la solicitud
+        content_estado = [
+            p_field("Estado:", getattr(solicitud, "estado", None)),
+            Spacer(1, 8),
+            p_field("Observaciones:", getattr(solicitud, "observaciones", None), justified=True),
+            Spacer(1, 8),
+            p_field("Fecha entrevista:", getattr(getattr(solicitud, "entrevista", None), "fecha", None)),
+            Spacer(1, 8),
+            p_field("Conclusiones del profesional:", getattr(solicitud, "conclusiones_profesional", None), justified=True)
+        ]
+        story.append(create_box("Estado de la solicitud", content_estado))
 
-        fila = caja_top - 30
-        DocumentoPDF.anadir_apartado(canv, x_izq, fila, "Estado:", getattr(solicitud, "estado", None))
-        fila -= DocumentoPDF.espacio_fila
-        canv.setFont("Helvetica-Bold", 10)
-        canv.drawString(x_izq, fila, "Observaciones:")
-        DocumentoPDF.texto_linea(canv, x_izq + 80, fila, getattr(solicitud, "observaciones", None), 460, max_lines=1)
-        fila -= DocumentoPDF.espacio_fila
-        fecha_entrevista = getattr(getattr(solicitud, "entrevista", None), "fecha", None)
-        DocumentoPDF.anadir_apartado(canv, x_izq, fila, "Fecha entrevista:", fecha_entrevista)
-        fila -= DocumentoPDF.espacio_fila
-        canv.setFont("Helvetica-Bold", 10)
-        canv.drawString(x_izq, fila, "Conclusiones del profesional:")
-        conclusiones = DocumentoPDF.texto(getattr(solicitud, "conclusiones_profesional", None), "sin comentarios")
-        DocumentoPDF.texto_linea(canv, x_izq + 145, fila, conclusiones, 400, max_lines=1)
+        # ---------------------------------------------------------------------
+        # 4. Datos de contactos
+        # Usamos tablas internas para alinear los campos de contacto
+        t_cp = Table([
+            [p_field("Nombre:", getattr(solicitud, "nombre_cp", None)), p_field("Teléfono:", getattr(solicitud, "telf_cp", None)), p_field("Relación:", getattr(solicitud, "relacion_cp", None))]
+        ], colWidths=[(A4[0]-84)/3]*3)
+        t_cp.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0)]))
 
-        canv.showPage()
+        t_cs = Table([
+            [p_field("Nombre:", getattr(solicitud, "nombre_cs", None)), p_field("Teléfono:", getattr(solicitud, "telf_cs", None)), p_field("Relación:", getattr(solicitud, "relacion_cs", None))]
+        ], colWidths=[(A4[0]-84)/3]*3)
+        t_cs.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('LEFTPADDING', (0,0), (-1,-1), 0)]))
 
-        # Pagina 2
-        DocumentoPDF.dibujar_pag(canv, ancho, alto)
-        DocumentoPDF.dibujar_logo(canv, ancho, alto, tam=42)
+        content_contactos = [
+            Paragraph("CONTACTO PRINCIPAL", style_subtitle),
+            t_cp,
+            Spacer(1, 4),
+            p_field("Dirección:", getattr(solicitud, "direccion_cp", None)),
+            Spacer(1, 8),
+            Paragraph("CONTACTO SECUNDARIO", style_subtitle),
+            t_cs
+        ]
+        story.append(create_box("Datos de contactos", content_contactos))
 
-        # Caja de contactos
-        y2 = alto - 80
-        DocumentoPDF.dibujar_titulo_caja(canv, x0 + 16, y2, "Datos de contactos")
-        caja_top = y2 - 22
-        caja_altura = 160
-        DocumentoPDF.dibujar_caja(canv, x0 - 10, caja_top, w + 20, caja_altura)
-
-        x1 = x0 + 30
-        x2 = x0 + 215
-        x3 = x0 + 390
-        fila = caja_top - 24
-
-        canv.setFont("Helvetica-Bold", 10)
-        canv.drawString(x1, fila, "CONTACTO PRINCIPAL")
-        fila -= DocumentoPDF.espacio_fila - 2
-        DocumentoPDF.anadir_apartado(canv, x1, fila, "Nombre:", getattr(solicitud, "nombre_cp", None))
-        DocumentoPDF.anadir_apartado(canv, x2, fila, "Teléfono:", getattr(solicitud, "telf_cp", None))
-        DocumentoPDF.anadir_apartado(canv, x3, fila, "Relación:", getattr(solicitud, "relacion_cp", None))
-        fila -= DocumentoPDF.espacio_fila
-        DocumentoPDF.anadir_apartado(canv, x1, fila, "Dirección:", getattr(solicitud, "direccion_cp", None))
-        fila -= DocumentoPDF.espacio_fila
-        canv.setFont("Helvetica-Bold", 10)
-        canv.drawString(x1, fila, "CONTACTO SECUNDARIO")
-        fila -= DocumentoPDF.espacio_fila - 2
-        DocumentoPDF.anadir_apartado(canv, x1, fila, "Nombre:", getattr(solicitud, "nombre_cs", None))
-        DocumentoPDF.anadir_apartado(canv, x2, fila, "Teléfono:", getattr(solicitud, "telf_cs", None))
-        DocumentoPDF.anadir_apartado(canv, x3, fila, "Relación:", getattr(solicitud, "relacion_cs", None))
-
-        y2 = caja_top - caja_altura - 30
-        DocumentoPDF.dibujar_titulo_caja(canv, x0 + 16, y2, "Compromisos", w=150)
-        caja_top = y2 - 22
-        caja_altura = 150
-        DocumentoPDF.dibujar_caja(canv, x0 - 10, caja_top, w + 20, caja_altura)
-
-        canv.setFont("Helvetica-Bold", 10)
-        canv.drawString(x1, caja_top - 28, "Se ha comprometido a:")
+        # ---------------------------------------------------------------------
+        # 5. Compromisos
+        comp_intro = Paragraph("<b>Se ha comprometido a:</b>", style_normal)
         compromisos = decodificar(getattr(solicitud, "compromisos", 0), COMP_LABELS) or ["__________"]
-        y_comp = caja_top - 48
-        canv.setFont("Helvetica", 10)
-        for comp in compromisos[:6]:
-            canv.drawString(x1 + 8, y_comp, f"- {comp}")
-            y_comp -= 17
+        # Usamos un carácter de viñeta estándar
+        comp_list = [Paragraph(f"• {comp}", style_normal) for comp in compromisos]
+        story.append(create_box("Compromisos", [comp_intro, Spacer(1, 6)] + comp_list))
 
-        canv.setFillColor(colors.black)
-        canv.setFont("Helvetica-Bold", 20)
-        canv.drawString(x0, 255, "Firmas")
+        # ---------------------------------------------------------------------
+        # 6. Firmas
+        # Añadimos espacio flexible antes de las firmas para intentar que queden al final si sobra sitio
+        story.append(Spacer(1, 20))
+        story.append(Paragraph("<b>Firmas</b>", ParagraphStyle('FirmaT', parent=style_normal, fontSize=20)))
+        story.append(Spacer(1, 15))
 
-        canv.setFont("Helvetica", 11)
-        canv.drawString(x0 + 55, 195, "Firma del interno")
-        canv.drawString(x0 + 330, 195, "Firma del profesional")
+        firma_box_left = RoundedTable(
+            [[Paragraph("Fdo:", style_normal)]],
+            colWidths=[230],
+            rowHeights=[86],
+            hAlign='CENTER',
+            radius=12,
+            fill_color=DocumentoPDF.color_caja,
+            stroke_color=DocumentoPDF.color_borde,
+        )
+        firma_box_left.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'BOTTOM'),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('LEFTPADDING', (0,0), (-1,-1), 14),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ]))
 
-        box_w = 210
-        caja_altura = 90
-        left_box_x = x0 + 5
-        right_box_x = x0 + w - box_w - 5
-        box_y = 95
-        canv.setFillColor(DocumentoPDF.color_caja)
-        canv.setStrokeColor(DocumentoPDF.color_borde)
-        canv.roundRect(left_box_x, box_y, box_w, caja_altura, 12, stroke=1, fill=1)
-        canv.roundRect(right_box_x, box_y, box_w, caja_altura, 12, stroke=1, fill=1)
+        firma_box_right = RoundedTable(
+            [[Paragraph("Fdo:", style_normal)]],
+            colWidths=[230],
+            rowHeights=[86],
+            hAlign='CENTER',
+            radius=12,
+            fill_color=DocumentoPDF.color_caja,
+            stroke_color=DocumentoPDF.color_borde,
+        )
+        firma_box_right.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'BOTTOM'),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('LEFTPADDING', (0,0), (-1,-1), 14),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ]))
 
-        canv.setFillColor(colors.HexColor("#888888"))
-        canv.setFont("Helvetica", 10)
-        canv.drawString(left_box_x + 90, box_y + 28, "Fdo:")
-        canv.drawString(right_box_x + 90, box_y + 28, "Fdo:")
-        canv.save()
+        t_firmas = Table([
+            [Paragraph("Firma del interno", style_normal), Paragraph("Firma del profesional", style_normal)],
+            [firma_box_left, firma_box_right]
+        ], colWidths=[(A4[0]-60)/2]*2)
+        t_firmas.setStyle(TableStyle([
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
+            ('TOPPADDING', (0,0), (-1,-1), 0),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+        ]))
+        story.append(KeepTogether([t_firmas]))
+
+        # ---------------------------------------------------------------------
+        # Renderizado final del PDF
+        # onFirstPage y onLaterPages dibujan el fondo gris general y los logos en cada página
+        doc.build(story, onFirstPage=DocumentoPDF._on_page, onLaterPages=DocumentoPDF._on_page)

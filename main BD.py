@@ -28,17 +28,17 @@ def generar_internos():
     agregar_interno("6", "6", "condenado", "Estafa", "4", "02/02/1980", "02/02/2025", "Módulo C")
 
 def generar_solicitud():
-    agregar_solicitud("2", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "22/11/2020", "25/22/2020",
+    agregar_solicitud("2", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "20/11/2020", "22/11/2020", "25/22/2020",
                       "16:00", "10:00", "Moguer", "Moguer", "calle 123", "21", 
                       "pepa", "1233", "mujer", "calle 123",
                       "carmen", "2222", "madre",
                       "123", "123456", "nada", "iniciada") #1
-    agregar_solicitud("5", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "22/11/2020", "25/22/2020",
+    agregar_solicitud("5", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "20/11/2020", "22/11/2020", "25/22/2020",
                       "16:00", "10:00", "Moguer", "Moguer", "calle 123", "21", 
                       "pepa", "1233", "mujer", "calle 123",
                       "carmen", "2222", "madre",
                       "123", "123456", "nada", "pendiente") #2
-    agregar_solicitud("6", "juridico", "cita judicial", "salida para comparecencia en sede judicial", "normal", "10/03/2026", "10/03/2026",
+    agregar_solicitud("6", "juridico", "cita judicial", "salida para comparecencia en sede judicial", "normal", "09/03/2026", "10/03/2026", "10/03/2026",
                       "08:00", "14:00", "Juzgado Central", "Huelva", "Avenida Principal 45", "21001",
                       "Laura Perez", "600112233", "hermana", "Calle Real 10",
                       "Antonio Perez", "600445566", "padre",

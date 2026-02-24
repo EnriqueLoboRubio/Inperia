@@ -208,6 +208,7 @@ class SolicitudController(QObject):
             motivo=self.solicitud.motivo,
             descripcion=self.solicitud.descripcion,
             urgencia=self.solicitud.urgencia,
+            fecha_creacion=self.solicitud.fecha_creacion,
             fecha_inicio=self.solicitud.fecha_inicio,
             fecha_fin=self.solicitud.fecha_fin,
             hora_salida=self.solicitud.hora_salida,

@@ -8,6 +8,7 @@ class Solicitud:
         self.motivo = ""
         self.descripcion = ""
         self.urgencia = None
+        self.fecha_creacion = datetime.now().strftime("%d/%m/%Y")
 
         self.fecha_inicio = ""       
         self.fecha_fin = ""
@@ -69,8 +70,7 @@ class Solicitud:
         if not self.direccion.strip():
             return False, "Debe ingresar la dirección"           
         try:
-                    # 1. Convertir Cadenas a Objetos (Parsing)
-                    # El formato debe coincidir con el usado en el controller: "dd/MM/yyyy" y "HH:mm"
+                    # 1. Convertir Cadenas a Objetos (Parsing)                 
                     formato_fecha = "%d/%m/%Y"
                     formato_hora = "%H:%M"
 
@@ -89,8 +89,7 @@ class Solicitud:
                     if dias_diferencia > 7:
                         return False, f"El permiso no puede exceder los 7 días (Has seleccionado {dias_diferencia})."
 
-                    # --- REGLA 3: Hora de salida (10:30 - 12:00) ---
-                    # Creamos los límites de tiempo para comparar
+                    # --- REGLA 3: Hora de salida (10:30 - 12:00) ---                    
                     limite_salida_inicio = datetime.strptime("10:30", "%H:%M").time()
                     limite_salida_fin = datetime.strptime("12:00", "%H:%M").time()
 
@@ -102,6 +101,13 @@ class Solicitud:
 
                     if h_llegada > limite_llegada:
                         return False, "La hora de llegada no puede ser después de las 20:00."
+                    
+                    # --- REGLA %: Ambas fechas debe ser posteriores a la fecha actual ---
+                    fecha_actual = datetime.now().date()
+                    if f_inicio < fecha_actual:
+                        return False, "La fecha de inicio no puede ser anterior a la fecha actual."
+                    if f_fin < fecha_actual:
+                        return False, "La fecha de fin no puede ser anterior a la fecha actual."
 
                     # Si pasa todas las validaciones
                     return True, ""
@@ -140,6 +146,8 @@ class Solicitud:
         self.descripcion = ""
         self.urgencia = None
         self.motivo = ""
+        self.fecha_creacion = datetime.now().strftime("%d/%m/%Y")
+
         
         # Paso 2
         self.fecha_inicio = None

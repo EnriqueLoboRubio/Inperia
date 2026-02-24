@@ -14,7 +14,8 @@ def crear_solicitud():
             tipo TEXT NOT NULL CHECK(tipo IN ('familiar', 'medico', 'educativo', 'laboral', 'defuncion', 'juridico')),
             motivo TEXT NOT NULL,
             descripcion TEXT NOT NULL,
-            urgencia TEXT NOT NULL CHECK(urgencia IN ('normal','importante','urgente')),                                 
+            urgencia TEXT NOT NULL CHECK(urgencia IN ('normal','importante','urgente')),
+            fecha_creacion TEXT NOT NULL,
             fecha_inicio TEXT NOT NULL,                                
             fecha_fin TEXT NOT NULL,        
             hora_salida TEXT NOT NULL, 
@@ -45,7 +46,7 @@ def crear_solicitud():
     conexion.close()
 
 # Función para agregar una nueva solicitud a la base de datos
-def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
+def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                       destino, provincia, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
                       docs, compromiso, observaciones, estado, id_profesional=None, conclusiones_profesional=None):
@@ -53,12 +54,12 @@ def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_ini
     cursor = conexion.cursor()
     try:        
         cursor.execute('''
-            INSERT INTO solicitudes (id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
+            INSERT INTO solicitudes (id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                                     destino, provincia, direccion, cod_pos, 
                                     nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
                                     docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (id_interno, tipo, motivo, descripcion, urgencia, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                       destino, provincia, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
                       docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional))
