@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QLabel, QLineEdit, QPushButton,
-    QHBoxLayout, QVBoxLayout, QMessageBox, QGraphicsOpacityEffect, QFrame, QDialog 
+    QHBoxLayout, QVBoxLayout, QMessageBox, QGraphicsOpacityEffect, QFrame, QDialog,
+    QSizePolicy, QGraphicsDropShadowEffect
 )
-from PyQt5.QtGui import QIcon, QPixmap, QFont
-from PyQt5.QtCore import Qt, QSize, QParallelAnimationGroup, QEasingCurve, QPropertyAnimation, QRect, QTimer, pyqtSignal
+from PyQt5.QtGui import QIcon, QPixmap, QFont, QColor
+from PyQt5.QtCore import Qt, QSize, QParallelAnimationGroup, QEasingCurve, QPropertyAnimation, QRect, QTimer, pyqtSignal, QEvent
 from gui.estilos import *
 
 class VentanaLogin(QMainWindow):
@@ -25,12 +26,15 @@ class VentanaLogin(QMainWindow):
         self.setWindowTitle("INPERIA")
         self.setWindowIcon(QIcon("assets/icono_pest.ico"))
         self.setMinimumSize(1200,700)
-        self.showMaximized()
+        # Evita mostrar la ventana antes de construir la UI completa.
+        self.setWindowState(self.windowState() | Qt.WindowMaximized)
 
     def initUI(self):        
         central = QWidget()
         self.setCentralWidget(central)
         layout_principal = QHBoxLayout()
+        layout_principal.setContentsMargins(0, 0, 0, 0)
+        layout_principal.setSpacing(0)
         central.setLayout(layout_principal)    
 
         #----Panel Izquierdo----
@@ -39,19 +43,27 @@ class VentanaLogin(QMainWindow):
         self.izq.setPixmap(pixmap)
         self.izq.setAlignment(Qt.AlignCenter)
         self.izq.setScaledContents(True)
-        self.izq.setMaximumSize(800, 1000) 
+        self.izq.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.izq.installEventFilter(self)
         
         # Overlay      
         self.texto_over = QLabel("INPERIA\nINTERNO", self.izq)
-        self.texto_over.setFont(QFont("Arial", 32, QFont.Bold))
-        self.texto_over.setStyleSheet(ESTILO_TEXTO_LOGIN)
+        self.texto_over.setFont(QFont("Arial", 25, QFont.Bold))
         self.texto_over.setAlignment(Qt.AlignCenter)
-        self.texto_over.setFixedSize(300, 100)
-        self.texto_over.move(255,350)             
+        self.texto_over.setFixedSize(440, 165)
+        self._aplicar_estilo_overlay(es_profesional=False)
+
+        sombra = QGraphicsDropShadowEffect(self.texto_over)
+        sombra.setBlurRadius(52)
+        sombra.setOffset(0, 12)
+        sombra.setColor(QColor(0, 0, 0, 130))
+        self.texto_over.setGraphicsEffect(sombra)
+        self._posicionar_texto_overlay()
 
         #----Panel Derecho----
         der = QWidget()
         layout_der = QVBoxLayout()       
+        layout_der.setContentsMargins(0, 0, 0, 0)
         layout_der.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
         der.setLayout(layout_der)
 
@@ -152,6 +164,51 @@ class VentanaLogin(QMainWindow):
         self.indicador_deslizante.raise_()
         self.indicador_deslizante.lower()
 
+    def _posicionar_texto_overlay(self):
+        if not hasattr(self, "izq") or not hasattr(self, "texto_over"):
+            return
+        x = (self.izq.width() - self.texto_over.width()) // 2
+        y = (self.izq.height() - self.texto_over.height()) // 2
+        self.texto_over.move(max(0, x), max(0, y))
+
+    def _aplicar_estilo_overlay(self, es_profesional: bool):
+        if es_profesional:
+            self.texto_over.setStyleSheet("""
+                QLabel {
+                    color: #111111;
+                    background-color: rgba(105, 105, 105, 182);
+                    border: 1px solid rgba(255, 255, 255, 45);
+                    border-radius: 22px;
+                    padding: 16px 28px;
+                }
+            """)
+        else:
+            self.texto_over.setStyleSheet("""
+                QLabel {
+                    color: white;
+                    background-color: rgba(78, 78, 78, 176);
+                    border: 1px solid rgba(255, 255, 255, 38);
+                    border-radius: 22px;
+                    padding: 16px 28px;
+                }
+            """)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._posicionar_texto_overlay()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        # Recalcula cuando la ventana ya está mostrada y el layout aplicado.
+        QTimer.singleShot(0, self._posicionar_texto_overlay)
+        QTimer.singleShot(0, self.ajustar_indicador_inicial)
+        QTimer.singleShot(60, self._posicionar_texto_overlay)
+
+    def eventFilter(self, obj, event):
+        if obj is self.izq and event.type() in (QEvent.Resize, QEvent.Show, QEvent.Move):
+            QTimer.singleShot(0, self._posicionar_texto_overlay)
+        return super().eventFilter(obj, event)
+
     def animar_indicador(self, boton_destino: QPushButton):
         
         destino_rect = boton_destino.geometry()
@@ -178,7 +235,11 @@ class VentanaLogin(QMainWindow):
             self.input_contraseña.clear()             
             self.tipo_pantalla = "profesional"             
             
-            self.animacion_cambio_panel(QPixmap("assets/inicio_profesional.jpg"), "INPERIA\nPROFESIONAL")
+            self.animacion_cambio_panel(
+                QPixmap("assets/inicio_profesional.jpg"),
+                "INPERIA\nPROFESIONAL",
+                es_profesional=True
+            )
             self.animar_indicador(self.boton_profesional)
             self.actualizar_estilos_botones(es_usuario=False)
             
@@ -189,72 +250,61 @@ class VentanaLogin(QMainWindow):
             self.input_contraseña.clear()
             self.tipo_pantalla = "interno"            
             
-            self.animacion_cambio_panel(QPixmap("assets/inicio_interno.jpg"), "INPERIA\nINTERNO")
+            self.animacion_cambio_panel(
+                QPixmap("assets/inicio_interno.jpg"),
+                "INPERIA\nINTERNO",
+                es_profesional=False
+            )
             self.animar_indicador(self.boton_interno)
             self.actualizar_estilos_botones(es_usuario=True)
 
-    def animacion_cambio_panel(self, nuevo_pixmap, nuevo_texto):
-            
-            #Crear efectos de opacidad
-            efecto_img = QGraphicsOpacityEffect()
-            self.izq.setGraphicsEffect(efecto_img)
+    def animacion_cambio_panel(self, nuevo_pixmap, nuevo_texto, es_profesional):
+        # Evitar solape de animaciones/effects al cambiar rápido de perfil.
+        if hasattr(self, "grupo_salida") and self.grupo_salida.state() != self.grupo_salida.Stopped:
+            self.grupo_salida.stop()
+        if hasattr(self, "grupo_entrada") and self.grupo_entrada.state() != self.grupo_entrada.Stopped:
+            self.grupo_entrada.stop()
 
-            efecto_txt = QGraphicsOpacityEffect()
-            self.texto_over.setGraphicsEffect(efecto_txt)
+        self.izq.setGraphicsEffect(None)
+        self.texto_over.setGraphicsEffect(None)
 
-            #Animación desvacenimiento
-            animacion_salida_img = QPropertyAnimation(efecto_img, b"opacity")
-            animacion_salida_img.setDuration(300)
-            animacion_salida_img.setStartValue(1.0)
-            animacion_salida_img.setEndValue(0.0)
-            animacion_salida_img.setEasingCurve(QEasingCurve.InOutQuad)
+        # Solo animamos el panel izquierdo. El texto overlay (hijo) se desvanece junto al panel.
+        efecto_img = QGraphicsOpacityEffect()
+        self.izq.setGraphicsEffect(efecto_img)
 
+        animacion_salida_img = QPropertyAnimation(efecto_img, b"opacity")
+        animacion_salida_img.setDuration(360)
+        animacion_salida_img.setStartValue(1.0)
+        animacion_salida_img.setEndValue(0.0)
+        animacion_salida_img.setEasingCurve(QEasingCurve.InOutCubic)
 
-            animacion_salida_txt = QPropertyAnimation(efecto_txt, b"opacity")
-            animacion_salida_txt.setDuration(300)
-            animacion_salida_txt.setStartValue(1.0)
-            animacion_salida_txt.setEndValue(0.0)
-            animacion_salida_txt.setEasingCurve(QEasingCurve.InOutQuad)  
+        self.grupo_salida = QParallelAnimationGroup()
+        self.grupo_salida.addAnimation(animacion_salida_img)
 
-            # Grupo de animaciones de salida
-            self.grupo_salida = QParallelAnimationGroup()
-            self.grupo_salida.addAnimation(animacion_salida_img)
-            self.grupo_salida.addAnimation(animacion_salida_txt)                 
-            
-            # Cuando termina la animación de salida, cambiar contenido y animar entrada
-            def cambiar_y_animar_entrada():
-                # Cambiar el contenido
-                self.izq.setPixmap(nuevo_pixmap)
-                self.texto_over.setText(nuevo_texto)
-                
-                # Animación de entrada
-                animacion_entrada_img = QPropertyAnimation(efecto_img, b"opacity")
-                animacion_entrada_img.setDuration(300)
-                animacion_entrada_img.setStartValue(0.0)
-                animacion_entrada_img.setEndValue(1.0)
-                animacion_entrada_img.setEasingCurve(QEasingCurve.InOutQuad)
+        def cambiar_y_animar_entrada():
+            # Cambiar todo junto para que no haya desfase visual entre imagen/titulo/estilo.
+            self._aplicar_estilo_overlay(es_profesional=es_profesional)
+            self.izq.setPixmap(nuevo_pixmap)
+            self.texto_over.setText(nuevo_texto)
+            self._posicionar_texto_overlay()
 
-                animacion_entrada_txt = QPropertyAnimation(efecto_txt, b"opacity")
-                animacion_entrada_txt.setDuration(300)
-                animacion_entrada_txt.setStartValue(0.0)
-                animacion_entrada_txt.setEndValue(1.0)
-                animacion_entrada_txt.setEasingCurve(QEasingCurve.InOutQuad)
-                
-                # Grupo de animaciones de entrada
-                self.grupo_entrada = QParallelAnimationGroup()
-                self.grupo_entrada.addAnimation(animacion_entrada_img)
-                self.grupo_entrada.addAnimation(animacion_entrada_txt)
-                
-                # Limpiar efectos cuando termine la animación de entrada
-                def limpiar_efectos():
-                    self.izq.setGraphicsEffect(None)
-                    self.texto_over.setGraphicsEffect(None)
-                
-                self.grupo_entrada.finished.connect(limpiar_efectos)
-                self.grupo_entrada.start()
-            
-            self.grupo_salida.finished.connect(cambiar_y_animar_entrada)
-            self.grupo_salida.start()         
+            animacion_entrada_img = QPropertyAnimation(efecto_img, b"opacity")
+            animacion_entrada_img.setDuration(420)
+            animacion_entrada_img.setStartValue(0.0)
+            animacion_entrada_img.setEndValue(1.0)
+            animacion_entrada_img.setEasingCurve(QEasingCurve.InOutCubic)
+
+            self.grupo_entrada = QParallelAnimationGroup()
+            self.grupo_entrada.addAnimation(animacion_entrada_img)
+
+            def limpiar_efectos():
+                self.izq.setGraphicsEffect(None)
+
+            self.grupo_entrada.finished.connect(limpiar_efectos)
+            self.grupo_entrada.start()
+
+        self.grupo_salida.finished.connect(cambiar_y_animar_entrada)
+        self.grupo_salida.start()
 
     def click_entrar(self):
         """

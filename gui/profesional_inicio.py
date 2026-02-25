@@ -3,7 +3,9 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
 from PyQt5.QtGui import QFont, QIcon
+
 from gui.pantalla_bienvenida_profesional import PantallaBienvenidaProfesional
+from gui.pantalla_perfil import PantallaPerfil
 
 
 class VentanaProfesional(QMainWindow):
@@ -41,7 +43,7 @@ class VentanaProfesional(QMainWindow):
         
         # Layout principal horizontal (Menú Lateral + Contenido Principal)
         main_layout = QHBoxLayout(main_widget)
-        main_layout.setContentsMargins(0, 0, 0, 0) # Quitar márgenes
+        main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)        
 
         # ------------------- 1. Panel del Menú Lateral -------------------
@@ -97,6 +99,20 @@ class VentanaProfesional(QMainWindow):
         self.boton_estadisticas.setFont(QFont("Arial", 10))
         self.boton_estadisticas.hide() # Ocultar por defecto
 
+        # Botón nueva
+        self.boton_nueva = QPushButton("Nueva solicitud")
+        self.boton_nueva.setToolTip("Asignar nueva solicitud")
+        self.boton_nueva.setStyleSheet(self.boton_estilo)
+        self.boton_nueva.setFont(QFont("Arial", 10))
+        self.boton_nueva.hide()
+
+        # Botón pendiente
+        self.boton_pendiente = QPushButton("Solicitudes pendientes")
+        self.boton_pendiente.setToolTip("Ver solicitudes pendientes")
+        self.boton_pendiente.setStyleSheet(self.boton_estilo)
+        self.boton_pendiente.setFont(QFont("Arial", 10))
+        self.boton_pendiente.hide()
+
         # Botón Historial
         self.boton_historial = QPushButton("Historial de entrevistas")
         self.boton_historial.setToolTip("Ver el historial de entrevistas realizadas")
@@ -105,8 +121,8 @@ class VentanaProfesional(QMainWindow):
         self.boton_historial.hide()
 
         # Botón Datos
-        self.boton_datos = QPushButton("Datos de internos")
-        self.boton_datos.setToolTip("Ver y gestionar datos de internos")
+        self.boton_datos = QPushButton("Datos de internos asignados")
+        self.boton_datos.setToolTip("Ver datos de internos asignados")
         self.boton_datos.setStyleSheet(self.boton_estilo)
         self.boton_datos.setFont(QFont("Arial", 10))
         self.boton_datos.hide()
@@ -135,9 +151,11 @@ class VentanaProfesional(QMainWindow):
        
         # Lista de todos los elementos del menú principal (para mostrar/ocultar)
         self.main_menu_widgets = [
-            self.boton_estadisticas,
+            self.boton_nueva,
+            self.boton_pendiente,
             self.boton_historial,
             self.boton_datos,
+            self.boton_estadisticas,
             self.boton_modificar,
             self.boton_ajustes_modelo,
             self.boton_casos_criticos
@@ -204,6 +222,7 @@ class VentanaProfesional(QMainWindow):
         self.stacked_widget = QStackedWidget()
 
         self.pantalla_bienvenida = PantallaBienvenidaProfesional()        
+        self.pantalla_perfil = PantallaPerfil()
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                                  
         # Aquí se pueden añadir más pantallas al stacked_widget según sea necesario

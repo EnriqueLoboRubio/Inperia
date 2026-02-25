@@ -31,7 +31,8 @@ class PantallaBienvenidaInterno(QWidget):
         principal_layout.addStretch(1)
 
         # Botón iniciar nueva entrevista       
-        self.boton_iniciar = QPushButton("Iniciar nueva entrevista")             
+        self.boton_iniciar = QPushButton("Iniciar nueva entrevista")   
+        self.boton_iniciar.setToolTip("Iniciar nueva entrevista")          
         self.boton_iniciar.setStyleSheet(ESTILO_BOTON_NEGRO)
 
         principal_layout.addWidget(self.boton_iniciar, alignment=Qt.AlignCenter)

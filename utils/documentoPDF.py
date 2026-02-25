@@ -64,7 +64,7 @@ class DocumentoPDF:
     @staticmethod
     def logo_inperia():
         base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        return os.path.join(base, "assets", "inperiaPDF.png")
+        return os.path.join(base, "assets", "inperiaNegro.png")
 
     @staticmethod
     def dibujar_logo(c, x, y, tam=42):

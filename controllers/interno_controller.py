@@ -86,52 +86,6 @@ class InternoController(QObject):
         else:
             return None
         
-    #Buscar solicitud pendiente o iniciada del interno
-    def cargar_solicitud_pendiente_iniciada(self):
-        datos_solicitud = encontrar_solicitud_pendiente_por_interno(self.interno.num_RC)
-        if datos_solicitud:
-            solicitud = Solicitud()
-            solicitud.id_solicitud=datos_solicitud[0]               
-            solicitud.tipo=datos_solicitud[2]
-            solicitud.motivo=datos_solicitud[3]
-            solicitud.descripcion=datos_solicitud[4]
-            solicitud.urgencia=datos_solicitud[5]
-
-            solicitud.fecha_creacion = datos_solicitud[6]
-            solicitud.fecha_inicio = datos_solicitud[7]
-            solicitud.fecha_fin = datos_solicitud[8]
-            solicitud.hora_salida = datos_solicitud[9]
-            solicitud.hora_llegada = datos_solicitud[10]
-            solicitud.destino = datos_solicitud[11]
-            solicitud.provincia = datos_solicitud[12]
-            solicitud.direccion = datos_solicitud[13]
-            solicitud.cod_pos = datos_solicitud[14]
-
-            # Contacto Principal (CP)
-            solicitud.nombre_cp = datos_solicitud[15]
-            solicitud.telf_cp = datos_solicitud[16]
-            solicitud.relacion_cp = datos_solicitud[17]
-            solicitud.direccion_cp = datos_solicitud[18]
-
-            # Contacto Secundario (CS)
-            solicitud.nombre_cs = datos_solicitud[19]
-            solicitud.telf_cs = datos_solicitud[20]
-            solicitud.relacion_cs = datos_solicitud[21]
-
-            solicitud.docs = datos_solicitud[22]
-            solicitud.compromisos = datos_solicitud[23]
-            
-            # Otros campos
-            solicitud.observaciones = datos_solicitud[24]
-            solicitud.conclusiones_profesional = datos_solicitud[25]
-            solicitud.id_profesional = datos_solicitud[26]
-            solicitud.estado = datos_solicitud[27]
-            solicitud.entrevista = self.cargar_entrevista_solicitud(solicitud.id_solicitud)                                                   
-
-            return solicitud
-        else:
-            return None
-        
     def cargar_ultima_solicitud(self):
         datos_solicitud = encontrar_ultima_solicitud_por_interno(self.interno.num_RC)
         if datos_solicitud:

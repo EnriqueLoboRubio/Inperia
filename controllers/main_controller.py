@@ -1,25 +1,69 @@
 import sys
-from PyQt5.QtWidgets import QApplication
-# VISTAS
+from pathlib import Path
+from PyQt5.QtCore import QEasingCurve, QPropertyAnimation, Qt
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QVBoxLayout
 from gui.login import VentanaLogin
-from gui.interno_inicio import VentanaInterno
-from gui.profesional_inicio import VentanaProfesional 
-from gui.pantalla_bienvenida_interno import PantallaBienvenidaInterno
-from gui.pantalla_bienvenida_profesional import PantallaBienvenidaProfesional
 
-# Importamos los CONTROLADORES ESPECÍFICOS
+# CONTROLADORES ESPECÍFICOS
 from controllers.login_controller import LoginController
 from controllers.interno_controller import InternoController
+from controllers.profesional_controller import ProfesionalController
 
 class MainController:
     def __init__(self):
         # aplicación Qt
         self.app = QApplication(sys.argv)
+        self.splash_widget = None
+        self.splash_animacion = None
         
         self.ventana_actual = None
         self.controlador_interno = None
         self.login_controller = None                 
 
+        self.mostrar_splash_inicio()
+
+    def mostrar_splash_inicio(self):
+        ruta_imagen = Path(__file__).resolve().parent.parent / "assets" / "inperiaNegro.png"
+
+        self.splash_widget = QWidget()
+        self.splash_widget.setWindowFlags(
+            Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.SplashScreen
+        )
+        self.splash_widget.setAttribute(Qt.WA_TranslucentBackground, True)
+
+        layout = QVBoxLayout(self.splash_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        etiqueta_imagen = QLabel()
+        pixmap = QPixmap(str(ruta_imagen))
+        etiqueta_imagen.setPixmap(pixmap)
+        etiqueta_imagen.setAlignment(Qt.AlignCenter)
+        layout.addWidget(etiqueta_imagen)
+
+        self.splash_widget.setWindowOpacity(0.0)
+        self.splash_widget.adjustSize()
+        pantalla = QApplication.primaryScreen()
+        if pantalla:
+            rect_pantalla = pantalla.availableGeometry()
+            x = rect_pantalla.x() + (rect_pantalla.width() - self.splash_widget.width()) // 2
+            y = rect_pantalla.y() + (rect_pantalla.height() - self.splash_widget.height()) // 2
+            self.splash_widget.move(x, y)
+        self.splash_widget.show()
+
+        self.splash_animacion = QPropertyAnimation(self.splash_widget, b"windowOpacity")
+        self.splash_animacion.setDuration(900)
+        self.splash_animacion.setStartValue(0.0)
+        self.splash_animacion.setEndValue(1.0)
+        self.splash_animacion.setEasingCurve(QEasingCurve.InOutQuad)
+        self.splash_animacion.finished.connect(self.cerrar_splash_y_mostrar_login)
+        self.splash_animacion.start()
+
+    def cerrar_splash_y_mostrar_login(self):
+        if self.splash_widget:
+            self.splash_widget.close()
+            self.splash_widget = None
+        self.splash_animacion = None
         self.mostrar_login()
 
     def mostrar_login(self):
@@ -69,8 +113,8 @@ class MainController:
         self.controlador_interno.logout_signal.connect(self.regresar_login)    
 
     def iniciar_sesion_profesional(self, usuario):
-        self.ventana_actual = VentanaProfesional()
-        self.ventana_actual.show()
+        self.controlador_profesional = ProfesionalController(usuario)
+        self.controlador_profesional.logout_signal.connect(self.regresar_login)    
 
     def ejecutar(self):
         sys.exit(self.app.exec_())
