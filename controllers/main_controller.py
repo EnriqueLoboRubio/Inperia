@@ -1,7 +1,8 @@
 import sys
+import ctypes
 from pathlib import Path
 from PyQt5.QtCore import QEasingCurve, QPropertyAnimation, Qt
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QVBoxLayout
 from gui.login import VentanaLogin
 
@@ -12,8 +13,13 @@ from controllers.profesional_controller import ProfesionalController
 
 class MainController:
     def __init__(self):
+        if sys.platform == "win32":
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Inperia.App")
+
         # aplicación Qt
         self.app = QApplication(sys.argv)
+        ruta_icono = Path(__file__).resolve().parent.parent / "assets" / "inperia.ico"
+        self.app.setWindowIcon(QIcon(str(ruta_icono)))
         self.splash_widget = None
         self.splash_animacion = None
         

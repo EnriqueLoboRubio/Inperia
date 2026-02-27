@@ -24,7 +24,7 @@ class VentanaLogin(QMainWindow):
 
     def setup_window(self):
         self.setWindowTitle("INPERIA")
-        self.setWindowIcon(QIcon("assets/icono_pest.ico"))
+        self.setWindowIcon(QIcon("assets/inperia.ico"))
         self.setMinimumSize(1200,700)
         # Evita mostrar la ventana antes de construir la UI completa.
         self.setWindowState(self.windowState() | Qt.WindowMaximized)

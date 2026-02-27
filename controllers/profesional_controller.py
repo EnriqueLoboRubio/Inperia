@@ -42,12 +42,6 @@ class ProfesionalController(QObject):
 
         # ACTUALIZAR PANTALLA INICIO
         self.ventana_profesional.pantalla_bienvenida.set_profesional(self.profesional)
-
-
-
-
-        
-
         self.conectar_senales()
 
     # -------- CARGAR DATOS --------
@@ -61,12 +55,23 @@ class ProfesionalController(QObject):
                 nombre=self.usuario.nombre,
                 email=self.usuario.email,
                 contrasena=self.usuario.contrasena,
-                rol=self.usuario.rol,
                 num_profesional=datos_profesional[0],
             )
             return profesional
         else:
             return None
+
+    def conectar_senales(self):
+        self.ventana_profesional.boton_cerrar_sesion.clicked.connect(
+            self.cerrar_sesion
+        )
+
+    def cerrar_sesion(self):
+        confirmado = self.ventana_profesional.mostrar_confirmacion_logout()
+
+        if confirmado:
+            self.ventana_profesional.close()
+            self.logout_signal.emit()
 
     
 

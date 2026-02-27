@@ -5,6 +5,7 @@ from db.entrevista_db import *
 from db.respuesta_db import *
 from db.comentario_pregunta_db import *
 from db.comentario_entrevista_db import *
+from db.profesional_db import *
 from db.conexion import obtener_conexion
 import sqlite3
 import json
@@ -20,6 +21,7 @@ def generar_usuario():
     agregar_usuario("profesional", "4@g.com", "4", "profesional") #4
     agregar_usuario("interno 5", "5@g.com", "5", "interno") #5
     agregar_usuario("interno 6", "6@g.com", "6", "interno") #6
+    agregar_usuario("profesional 2", "7@g.com", "7", "profesional") #7
 
 def generar_internos():
     agregar_interno("2", "2", "condenado", "Robo", "5", "01/01/1980", "01/01/2025", "Módulo A")
@@ -43,6 +45,31 @@ def generar_solicitud():
                       "Laura Perez", "600112233", "hermana", "Calle Real 10",
                       "Antonio Perez", "600445566", "padre",
                       "1", "1", "Documentacion completa revisada", "rechazada") #3
+
+def generar_profesionales_y_asignaciones():
+    # Crear registros en tabla profesionales
+    profesional_1 = encontrar_usuario_por_email("4@g.com")
+    profesional_2 = encontrar_usuario_por_email("7@g.com")
+
+    if profesional_1:
+        agregar_profesional(profesional_1[0], "COL-0004")
+    if profesional_2:
+        agregar_profesional(profesional_2[0], "COL-0007")
+
+    # Asignar la solicitud rechazada al primer profesional
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    if profesional_1:
+        cursor.execute(
+            """
+            UPDATE solicitudes
+            SET id_profesional = ?
+            WHERE estado = 'rechazada'
+            """,
+            (profesional_1[0],),
+        )
+    conexion.commit()
+    conexion.close()
 
 
 def generar_entrevista():
@@ -107,6 +134,7 @@ def reiniciar_base_de_datos():
     borrar_respuestas()
     borrar_entrevistas()
     borrar_solicitudes()
+    eliminar_profesional()
     borrar_internos()
     borrar_usuarios()    
     
@@ -117,7 +145,7 @@ def reiniciar_base_de_datos():
     
     crear_usuario()       #
     crear_interno()       #
-    #crear_profesional()   #
+    crear_profesional()   #
     crear_respuesta()     #
     crear_comentario_pre() #
     crear_comentario_ent() #
@@ -176,7 +204,8 @@ def reiniciar_y_generar():
 
     generar_usuario()
     generar_internos()
-    generar_solicitud()    
+    generar_solicitud()
+    generar_profesionales_y_asignaciones()
     generar_entrevista()
     generar_comentarios_preguntas()
 

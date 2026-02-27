@@ -2,12 +2,13 @@ from models.usuario import Usuario
 from utils.enums import Tipo_rol
 
 class Profesional(Usuario):
-    def __init__(self, id_usuario, nombre, contrasena, rol, tipo):
+    def __init__(self, id_usuario, num_profesional, nombre, email, contrasena,):
         
-        super().__init__(id_usuario, nombre, contrasena, Tipo_rol.PROFESIONAL.value)
+        super().__init__(id_usuario, nombre, email, contrasena, Tipo_rol.PROFESIONAL.value)
 
-        self.tipo = tipo    
-        self.entrevistas = []
+           
+        self.num_profesional = num_profesional
+        self.solicitudes = []
     
-    def add_entrevista(self, entrevista):
-        self.entrevistas.append(entrevista)
+    def add_solicitud(self, solicitud):
+        self.solicitudes.append(solicitud)

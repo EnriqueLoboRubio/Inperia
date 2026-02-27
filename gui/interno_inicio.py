@@ -41,7 +41,7 @@ class VentanaInterno(QMainWindow):
         self.initUI()
 
     def setup_window(self):      
-        self.setWindowIcon(QIcon("assets/icono_pest.ico"))
+        self.setWindowIcon(QIcon("assets/inperia.ico"))
         self.setMinimumSize(1200,700)
         self.showMaximized()      
 
@@ -284,7 +284,7 @@ class VentanaInterno(QMainWindow):
                 color: white; 
                 border: 1px solid rgba(255, 255, 255, 0.4); 
                 padding: 10px 15px; 
-                text-align: center;
+                text-align: left;
                 background-color: "#AC1F20";
                 border-radius: 15px;
             }

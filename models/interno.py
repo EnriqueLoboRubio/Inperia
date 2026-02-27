@@ -4,7 +4,7 @@ from utils.enums import Tipo_rol
 class Interno(Usuario):
     def __init__(self, id_usuario, nombre, email, contrasena, rol, num_RC, situacion_legal, delito, fecha_nac, condena, fecha_ingreso, modulo):
         
-        super().__init__(id_usuario, nombre, email, contrasena, Tipo_rol.INTERNO)
+        super().__init__(id_usuario, nombre, email, contrasena, Tipo_rol.INTERNO.value)
 
         self.num_RC = num_RC
         self.situacion_legal = situacion_legal

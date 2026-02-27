@@ -1,18 +1,20 @@
 from PyQt5.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QStackedWidget
+    QMainWindow, QWidget, QVBoxLayout, QPushButton, QHBoxLayout, QStackedWidget,
+    QDialog, QFrame, QLabel
 )
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QTimer
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont, QIcon, QPixmap
 
 from gui.pantalla_bienvenida_profesional import PantallaBienvenidaProfesional
 from gui.pantalla_perfil import PantallaPerfil
+from gui.estilos import *
 
 
 class VentanaProfesional(QMainWindow):
     
     # Ancho del menú cuando está cerrado y abierto
-    MENU_ANCHURA_CERRADO = 80
-    MENU_ANCHURA_ABIERTO = 450
+    MENU_ANCHURA_CERRADO = 70
+    MENU_ANCHURA_ABIERTO = 250
     COLOR_ABIERTO = "#2B2A2A"
     COLOR_CERRADO = "transparent"
 
@@ -33,7 +35,7 @@ class VentanaProfesional(QMainWindow):
         self.init_ui()
 
     def setup_window(self):      
-        self.setWindowIcon(QIcon("assets/icono_pest.ico"))
+        self.setWindowIcon(QIcon("assets/inperia.ico"))
         self.setMinimumSize(1200,700)
         self.showMaximized()        
 
@@ -53,6 +55,7 @@ class VentanaProfesional(QMainWindow):
         
         menu_layout = QVBoxLayout(self.menu_frame)
         menu_layout.setAlignment(Qt.AlignTop)
+        menu_layout.setContentsMargins(5, 5, 5, 5)
         menu_layout.setSpacing(10)      
         
         # Botón Hamburguesa
@@ -265,7 +268,7 @@ class VentanaProfesional(QMainWindow):
                 color: white; 
                 border: 1px solid rgba(255, 255, 255, 0.4); 
                 padding: 10px 15px; 
-                text-align: center;
+                text-align: left;
                 background-color: "#AC1F20";
                 border-radius: 15px;
             }
@@ -359,7 +362,91 @@ class VentanaProfesional(QMainWindow):
         self.animacion_ajustes_max.setStartValue(self.ajustes_menu_frame.width())
         self.animacion_ajustes_max.setEndValue(anchura_final)
         self.animacion_ajustes_max.setEasingCurve(QEasingCurve.InOutQuad)
-        self.animacion_ajustes_max.start()                
-        
-        
-    
+        self.animacion_ajustes_max.start()
+
+    def mostrar_confirmacion_logout(self):
+        dialogo = QDialog(self)
+        dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
+        dialogo.setAttribute(Qt.WA_TranslucentBackground)
+        dialogo.setModal(True)
+
+        layout_main = QVBoxLayout(dialogo)
+        layout_main.setContentsMargins(0, 0, 0, 0)
+
+        fondo = QFrame()
+        fondo.setObjectName("FondoDialogo")
+        fondo.setStyleSheet(ESTILO_DIALOGO_ERROR)
+
+        layout_interno = QVBoxLayout(fondo)
+        layout_interno.setContentsMargins(20, 20, 20, 20)
+        layout_interno.setSpacing(10)
+
+        layout_cabecera = QHBoxLayout()
+
+        lbl_icono = QLabel()
+        pixmap = QPixmap("assets/error.png").scaled(
+            30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        lbl_icono.setPixmap(pixmap)
+
+        titulo = QLabel("Cerrar sesión")
+        titulo.setObjectName("TituloError")
+
+        layout_cabecera.addWidget(lbl_icono)
+        layout_cabecera.addWidget(titulo)
+        layout_cabecera.addStretch()
+
+        lbl_mensaje = QLabel(
+            "¿Estás seguro de que quieres cerrar sesión?\n\n"
+            "Perderá los datos no guardados."
+        )
+        lbl_mensaje.setObjectName("TextoError")
+        lbl_mensaje.setWordWrap(True)
+        lbl_mensaje.setMinimumWidth(320)
+
+        btn_si = QPushButton("Sí")
+        btn_no = QPushButton("No")
+
+        btn_si.setCursor(Qt.PointingHandCursor)
+        btn_no.setCursor(Qt.PointingHandCursor)
+
+        btn_si.setStyleSheet("""
+            QPushButton {
+                background-color: #792A24;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 25px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #C03930; }
+        """)
+
+        btn_no.setStyleSheet("""
+            QPushButton {
+                background-color: #555;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 25px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #777; }
+        """)
+
+        btn_si.clicked.connect(dialogo.accept)
+        btn_no.clicked.connect(dialogo.reject)
+
+        layout_botones = QHBoxLayout()
+        layout_botones.addStretch()
+        layout_botones.addWidget(btn_no)
+        layout_botones.addWidget(btn_si)
+
+        layout_interno.addLayout(layout_cabecera)
+        layout_interno.addSpacing(10)
+        layout_interno.addWidget(lbl_mensaje)
+        layout_interno.addSpacing(20)
+        layout_interno.addLayout(layout_botones)
+
+        layout_main.addWidget(fondo)
+
+        resultado = dialogo.exec_()
+        return resultado == QDialog.Accepted
