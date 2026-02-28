@@ -14,7 +14,7 @@ from PyQt5.QtGui import QPixmap, QIcon
 from gui.estilos import *
 
 FILTRO_ESTADO_A_VALOR = {
-    "Todos los estados": "todos",
+    "Todos": "todos",
     "Nuevas": "iniciada",
     "Iniciadas": "iniciada",
     "Pendientes": "pendiente",
@@ -26,13 +26,13 @@ FILTRO_ESTADO_A_VALOR = {
 }
 
 OPCIONES_COMBO_POR_TOP = {
-    "por_evaluar": ["Todos los estados", "Pendientes", "Iniciadas"],
-    "completadas": ["Todos los estados", "Aceptadas", "Canceladas", "Rechazadas"],
-    "nuevas": ["Todos los estados", "Pendientes", "Iniciadas"],
-    None: ["Todos los estados", "Nuevas", "Pendientes", "Completadas", "Aceptadas", "Rechazadas", "Canceladas"],
+    "por_evaluar": ["Todos", "Pendientes", "Iniciadas"],
+    "completadas": ["Todos", "Aceptadas", "Canceladas", "Rechazadas"],
+    "nuevas": ["Todos", "Pendientes", "Iniciadas"],
+    None: ["Todos", "Nuevas", "Pendientes", "Completadas", "Aceptadas", "Rechazadas", "Canceladas"],
 }
 
-OPCIONES_COMBO_HISTORIAL = ["Todos los estados", "Iniciadas", "Pendientes", "Aceptadas", "Rechazadas", "Canceladas"]
+OPCIONES_COMBO_HISTORIAL = ["Todos", "Iniciadas", "Pendientes", "Aceptadas", "Rechazadas", "Canceladas"]
 
 
 class TarjetaSolicitud(QFrame):
@@ -372,6 +372,7 @@ class PantallaListaSolicitud(QWidget):
         self.combo_estado = QComboBox()
         self.combo_estado.setFixedSize(210, 40)
         self.combo_estado.addItems(OPCIONES_COMBO_POR_TOP[None])
+        self.combo_estado.setToolTip("Filtrar por estado")
         self.combo_estado.setStyleSheet(ESTILO_COMBOBOX)
         self.combo_estado.currentTextChanged.connect(self._al_cambiar_combo_estado)
 
@@ -386,7 +387,7 @@ class PantallaListaSolicitud(QWidget):
         self._internos_por_rc = self._normalizar_internos(internos)
         self._actualizar_lista()
 
-    def aplicar_filtro_inicial(self, top_activo=None, combo_texto="Todos los estados", solo_sin_profesional=False, modo_historial=False):
+    def aplicar_filtro_inicial(self, top_activo=None, combo_texto="Todos", solo_sin_profesional=False, modo_historial=False):
         self._top_activo = top_activo
         self._modo_historial = modo_historial
         self._aplicar_estado_botones_superiores(self._top_activo)
@@ -408,7 +409,7 @@ class PantallaListaSolicitud(QWidget):
     def _al_cambiar_filtro_superior(self, clave):
         self._top_activo = None if self._top_activo == clave else clave
         self._aplicar_estado_botones_superiores(self._top_activo)
-        self._configurar_combo_para_top(self._top_activo, "Todos los estados")
+        self._configurar_combo_para_top(self._top_activo, "Todos")
         self._actualizar_lista()
         self.filtro_superior_cambiado.emit(self._top_activo)
 
@@ -419,7 +420,7 @@ class PantallaListaSolicitud(QWidget):
         # El combo queda restringido por el botón superior activo.
         self._actualizar_lista()
 
-    def _configurar_combo_para_top(self, top_activo, seleccion="Todos los estados"):
+    def _configurar_combo_para_top(self, top_activo, seleccion="Todos"):
         if top_activo is None and self._modo_historial:
             opciones = OPCIONES_COMBO_HISTORIAL
         else:

@@ -82,6 +82,33 @@ def encontrar_usuario_por_id(id):
     
     return usuario
 
+
+def actualizar_usuario(id_usuario, nombre=None, contrasena=None):
+    campos = []
+    valores = []
+
+    if nombre is not None:
+        campos.append("nombre = ?")
+        valores.append(nombre)
+
+    if contrasena is not None:
+        campos.append("contrasena = ?")
+        valores.append(encriptar_contrasena(contrasena))
+
+    if not campos:
+        return False
+
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        query = f"UPDATE usuarios SET {', '.join(campos)} WHERE id = ?"
+        valores.append(id_usuario)
+        cursor.execute(query, tuple(valores))
+        conexion.commit()
+        return cursor.rowcount > 0
+    finally:
+        conexion.close()
+
 # Función para borrar la tabla de usuarios (para pruebas)
 def borrar_usuarios():
     conexion = obtener_conexion()

@@ -232,6 +232,7 @@ class VentanaProfesional(QMainWindow):
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                                  
         self.stacked_widget.addWidget(self.pantalla_lista_solicitud)
+        self.stacked_widget.addWidget(self.pantalla_perfil)
         # Aquí se pueden añadir más pantallas al stacked_widget según sea necesario
 
         self.stacked_widget.setCurrentWidget(self.pantalla_bienvenida)
@@ -485,3 +486,6 @@ class VentanaProfesional(QMainWindow):
 
         resultado = dialogo.exec_()
         return resultado == QDialog.Accepted
+
+    def mostrar_pantalla_perfil(self):
+        self.stacked_widget.setCurrentWidget(self.pantalla_perfil)

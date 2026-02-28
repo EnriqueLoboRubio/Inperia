@@ -13,6 +13,7 @@ from gui.ventana_detalle_pregunta_interno import VentanaDetallePregunta
 from db.interno_db import *
 from db.solicitud_db import *
 from db.entrevista_db import *
+from db.usuario_db import actualizar_usuario
 
 from models.interno import Interno
 from models.solicitud import Solicitud
@@ -267,6 +268,11 @@ class InternoController(QObject):
             self.iniciar_progreso
         )
 
+        # PANTALLA PERFIL
+        self.ventana_interno.pantalla_perfil.guardar_cambios.connect(
+            self.guardar_cambios_perfil
+        )
+
     # -------- FUNCIONES DE NAVEGACIÓN --------
 
     def iniciar_entrevista(self):
@@ -279,6 +285,8 @@ class InternoController(QObject):
         self.ventana_interno.mostrar_pantalla_progreso() 
 
     def iniciar_perfil(self):
+        if self.interno:
+            self.ventana_interno.pantalla_perfil.set_datos_usuario(self.interno)
         self.ventana_interno.mostrar_pantalla_perfil()    
 
     def pregunta_atras(self):
@@ -508,6 +516,45 @@ class InternoController(QObject):
         self.solicitud_actual = self.cargar_ultima_solicitud()
         self.progreso_controller.solicitud = self.solicitud_actual
         self.progreso_controller.cargar_datos()
-    
+        
+    def guardar_cambios_perfil(self):
+        if not self.interno:
+            return
+
+        datos = self.ventana_interno.pantalla_perfil.get_datos_edicion()
+        nombre_nuevo = datos["nombre"]
+        nombre_original = datos["nombre_original"]
+        password = datos["password"]
+        password_confirm = datos["password_confirm"]
+
+        if not nombre_nuevo:
+            self.msg.mostrar_advertencia("Atencion", "El nombre no puede estar vacio.")
+            return
+
+        if password or password_confirm:
+            if password != password_confirm:
+                self.msg.mostrar_advertencia("Atencion", "Las contraseñas no coinciden.")
+                return
+
+        cambio_nombre = nombre_nuevo != nombre_original
+        cambio_password = bool(password)
+        if not cambio_nombre and not cambio_password:
+            self.msg.mostrar_advertencia("Atencion", "No hay cambios para guardar.")
+            return
+
+        ok = actualizar_usuario(
+            self.interno.id_usuario,
+            nombre=nombre_nuevo if cambio_nombre else None,
+            contrasena=password if cambio_password else None
+        )
+        if not ok:
+            self.msg.mostrar_advertencia("Atencion", "No se pudo actualizar el perfil.")
+            return
+
+        self.interno.nombre = nombre_nuevo
+        self.usuario.nombre = nombre_nuevo
+        self.ventana_interno.pantalla_bienvenida.set_interno(self.interno)
+        self.msg.mostrar_mensaje("Perfil actualizado", "Cambios guardados correctamente.")
+
 
 

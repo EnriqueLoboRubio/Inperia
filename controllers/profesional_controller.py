@@ -14,6 +14,7 @@ from db.interno_db import *
 from db.solicitud_db import *
 from db.entrevista_db import *
 from db.profesional_db import *
+from db.usuario_db import actualizar_usuario
 
 from models.profesional import Profesional
 from models.interno import Interno
@@ -86,6 +87,11 @@ class ProfesionalController(QObject):
         self.ventana_profesional.pantalla_lista_solicitud.filtro_superior_cambiado.connect(
             self.gestionar_filtro_superior_lista
         )
+        self.ventana_profesional.boton_usuario.clicked.connect(self.iniciar_perfil)
+        self.ventana_profesional.boton_perfil.clicked.connect(self.iniciar_perfil)
+        self.ventana_profesional.pantalla_perfil.guardar_cambios.connect(
+            self.guardar_cambios_perfil
+        )
 
     def actualizar_inicio_profesional(self):
         """
@@ -123,7 +129,7 @@ class ProfesionalController(QObject):
         self._mostrar_lista_solicitudes(
             filas,
             top_activo="nuevas",
-            combo_texto="Todos los estados",
+            combo_texto="Todos",
             solo_sin_profesional=True
         )
 
@@ -136,7 +142,7 @@ class ProfesionalController(QObject):
         self._mostrar_lista_solicitudes(
             filas,
             top_activo="por_evaluar",
-            combo_texto="Todos los estados",
+            combo_texto="Todos",
             solo_sin_profesional=False
         )
 
@@ -149,7 +155,7 @@ class ProfesionalController(QObject):
         self._mostrar_lista_solicitudes(
             filas,
             top_activo=None,
-            combo_texto="Todos los estados",
+            combo_texto="Todos",
             solo_sin_profesional=False
         )
 
@@ -162,7 +168,7 @@ class ProfesionalController(QObject):
         self._mostrar_lista_solicitudes(
             filas,
             top_activo="completadas",
-            combo_texto="Todos los estados",
+            combo_texto="Todos",
             solo_sin_profesional=False
         )
 
@@ -302,6 +308,51 @@ class ProfesionalController(QObject):
         if confirmado:
             self.ventana_profesional.close()
             self.logout_signal.emit()
+
+    def iniciar_perfil(self):
+        if not self.profesional:
+            return
+        self.ventana_profesional.pantalla_perfil.set_datos_usuario(self.profesional)
+        self.ventana_profesional.mostrar_pantalla_perfil()
+
+    def guardar_cambios_perfil(self):
+        if not self.profesional:
+            return
+
+        datos = self.ventana_profesional.pantalla_perfil.get_datos_edicion()
+        nombre_nuevo = datos["nombre"]
+        nombre_original = datos["nombre_original"]
+        password = datos["password"]
+        password_confirm = datos["password_confirm"]
+
+        if not nombre_nuevo:
+            self.msg.mostrar_advertencia("Atencion", "El nombre no puede estar vacio.")
+            return
+
+        if password or password_confirm:
+            if password != password_confirm:
+                self.msg.mostrar_advertencia("Atencion", "Las contraseñas no coinciden.")
+                return
+
+        cambio_nombre = nombre_nuevo != nombre_original
+        cambio_password = bool(password)
+        if not cambio_nombre and not cambio_password:
+            self.msg.mostrar_advertencia("Atencion", "No hay cambios para guardar.")
+            return
+
+        ok = actualizar_usuario(
+            self.profesional.id_usuario,
+            nombre=nombre_nuevo if cambio_nombre else None,
+            contrasena=password if cambio_password else None
+        )
+        if not ok:
+            self.msg.mostrar_advertencia("Atencion", "No se pudo actualizar el perfil.")
+            return
+
+        self.profesional.nombre = nombre_nuevo
+        self.usuario.nombre = nombre_nuevo
+        self.ventana_profesional.pantalla_bienvenida.set_profesional(self.profesional)
+        self.msg.mostrar_mensaje("Perfil actualizado", "Cambios guardados correctamente.")
 
     
 
