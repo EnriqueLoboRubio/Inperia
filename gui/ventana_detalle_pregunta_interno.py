@@ -2,24 +2,13 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayo
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl, Qt, QSize
 from PyQt5.QtGui import QFont, QIcon
-import json, os
+import os
+from db.pregunta_db import obtener_preguntas_como_diccionario
 
 from gui.estilos import *
 
 def cargar_datos_preguntas():
-    ruta_base = os.path.dirname(os.path.dirname(__file__))
-    ruta_json = os.path.join(ruta_base, 'data', 'preguntas.json')
-
-    try:
-        with open(ruta_json, 'r', encoding='utf-8') as f:
-            datos_preguntas = json.load(f)
-            return datos_preguntas
-    except FileNotFoundError:
-        print(f"Error: No se encontró el archivo en {ruta_json}")
-        return {"1": {"titulo": "Error", "texto": "No se pudo cargar el archivo 'preguntas.json'."}}
-    except json.JSONDecodeError:
-        print(f"Error: El archivo {ruta_json} tiene un formato JSON inválido.")
-        return {"1": {"titulo": "Error", "texto": "Error al leer el archivo 'preguntas.json'."}}
+    return obtener_preguntas_como_diccionario()
 
 class VentanaDetallePregunta(QDialog):
     def __init__(self, pregunta, numero, parent=None):

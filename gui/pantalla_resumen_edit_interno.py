@@ -4,38 +4,13 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
-import json, os
+from db.pregunta_db import obtener_preguntas_como_diccionario
 
 from gui.estilos import *
 
 
 def cargar_datos_preguntas():
-    #Carga las preguntas desde el archivo JSON        
-    ruta_base = os.path.dirname(os.path.dirname(__file__)) # Sube un nivel de carpeta
-    ruta_json = os.path.join(ruta_base, 'data', 'preguntas.json')
-
-    try:
-        with open(ruta_json, 'r', encoding='utf-8') as f:
-            # Carga el JSON
-            datos_preguntas = json.load(f)
-            return datos_preguntas
-    except FileNotFoundError:
-        print(f"Error: No se encontró el archivo en {ruta_json}")
-        # Devuelve datos de error para que la app no falle
-        return {
-            "1": {
-                "titulo": "Error",
-                "texto": "No se pudo cargar el archivo 'preguntas.json'."
-            }
-        }
-    except json.JSONDecodeError:
-        print(f"Error: El archivo {ruta_json} tiene un formato JSON inválido.")
-        return {
-            "1": {
-                "titulo": "Error",
-                "texto": "Error al leer el archivo 'preguntas.json'."
-            }
-        }
+    return obtener_preguntas_como_diccionario()
 
 
 

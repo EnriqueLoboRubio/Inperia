@@ -129,6 +129,14 @@ class VentanaLogin(QMainWindow):
         label_contraseña.setFont(QFont("Arial", 16))
         label_contraseña.setFixedWidth(500)
 
+        logo_inperia = QLabel()
+        pixmap_logo = QPixmap("assets/inperiaNegro.png").scaled(
+            220, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        logo_inperia.setPixmap(pixmap_logo)
+        logo_inperia.setAlignment(Qt.AlignCenter)
+        logo_inperia.setStyleSheet("background: transparent; border: none;")
+
         boton_entrar = QPushButton("Entrar")        
         boton_entrar.setFixedHeight(50)
         boton_entrar.setFixedWidth(200)         
@@ -139,6 +147,8 @@ class VentanaLogin(QMainWindow):
         formulario = QVBoxLayout()
         formulario.setSpacing(20) 
         
+        formulario.addWidget(logo_inperia, alignment=Qt.AlignCenter)
+        formulario.addSpacing(8)
         formulario.addWidget(label_correo, alignment=Qt.AlignCenter)
         formulario.addWidget(self.input_correo, alignment=Qt.AlignCenter)
         formulario.addWidget(label_contraseña, alignment=Qt.AlignCenter)

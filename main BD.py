@@ -6,6 +6,7 @@ from db.respuesta_db import *
 from db.comentario_pregunta_db import *
 from db.comentario_entrevista_db import *
 from db.profesional_db import *
+from db.pregunta_db import *
 from db.conexion import obtener_conexion
 import sqlite3
 import json
@@ -151,6 +152,7 @@ def reiniciar_base_de_datos():
     crear_comentario_ent() #
     crear_solicitud()     #
     crear_entrevista()    #
+    crear_pregunta()      #
     
     print("Base de datos reconstruida completamente.")  
 
@@ -201,6 +203,7 @@ def ver_info_completa_por_solicitud(id_solicitud):
 
 def reiniciar_y_generar():
     reiniciar_base_de_datos()
+    cargar_preguntas_desde_json()
 
     generar_usuario()
     generar_internos()

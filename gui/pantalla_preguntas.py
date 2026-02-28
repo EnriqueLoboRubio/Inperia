@@ -4,24 +4,16 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QFont, QPixmap, QTextCursor
 from PyQt5.QtCore import Qt, QSize, pyqtSignal 
 from datetime import datetime
-import json, os
+import os
 
 from utils.transcripcionVosk import HiloTranscripcion
 #from utils.transcripcionWhisper import HiloTranscripcion
+from db.pregunta_db import obtener_preguntas_como_diccionario
 
 from gui.estilos import *
 
 def cargar_datos_preguntas():
-    
-    ruta_base = os.path.dirname(os.path.dirname(__file__))
-    ruta_json = os.path.join(ruta_base, 'data', 'preguntas.json')
-
-    try:
-        with open(ruta_json, 'r', encoding='utf-8') as f:
-            datos_preguntas = json.load(f)
-            return datos_preguntas
-    except Exception as e:
-        return {"1": {"titulo": "Error", "texto": "Error al cargar archivo."}}
+    return obtener_preguntas_como_diccionario()
 
 class PantallaPreguntas(QWidget):
 
