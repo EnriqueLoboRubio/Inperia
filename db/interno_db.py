@@ -75,6 +75,28 @@ def encontrar_interno_por_id(id_usuario):
     conexion.close()
     return interno
 
+
+def encontrar_internos_por_num_rc(lista_num_rc):
+    if not lista_num_rc:
+        return []
+
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        placeholders = ",".join(["?"] * len(lista_num_rc))
+        query = f"""
+            SELECT i.num_RC, i.id_usuario, i.situacion_legal, i.delito, i.condena,
+                   i.fecha_nac, i.fecha_ingreso, i.modulo,
+                   u.nombre, u.email, u.contrasena, u.rol
+            FROM internos i
+            INNER JOIN usuarios u ON u.id = i.id_usuario
+            WHERE i.num_RC IN ({placeholders})
+        """
+        cursor.execute(query, tuple(lista_num_rc))
+        return cursor.fetchall()
+    finally:
+        conexion.close()
+
 # Función para borrar la tabla de internos (para pruebas)
 def borrar_internos():
     conexion = obtener_conexion()

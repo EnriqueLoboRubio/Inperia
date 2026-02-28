@@ -764,15 +764,7 @@ class PantallaProgresoInterno(QWidget):
         """
         Actualiza el badge de estado según el estado de la solicitud
         """
-        estados_config = {
-            "iniciada": ("Iniciada", "#3498DB"),
-            "pendiente": ("En revisión", "#DB9334"),           
-            "aceptada": ("Aceptada", "#27AE5F"),
-            "rechazada": ("Rechazada", "#E74D3C"),
-            "cancelada": ("Cancelada", "#A5C0C2")
-        }
-
-        texto, color = estados_config.get(estado, ("En revisión", "#DB9334"))        
+        texto, color = ESTADOS_SOLICITUD_COLOR.get(estado, ("En revisión", "#DB9334"))        
         self.estado_label.setText(texto)
         self.estado_label.setStyleSheet(ESTILO_ESTADO.replace("#D3D3D3", color))
 

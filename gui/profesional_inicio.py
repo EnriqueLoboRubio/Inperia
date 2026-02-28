@@ -7,6 +7,7 @@ from PyQt5.QtGui import QFont, QIcon, QPixmap
 
 from gui.pantalla_bienvenida_profesional import PantallaBienvenidaProfesional
 from gui.pantalla_perfil import PantallaPerfil
+from gui.pantalla_lista_solicitud import PantallaListaSolicitud
 from gui.estilos import *
 
 
@@ -110,21 +111,21 @@ class VentanaProfesional(QMainWindow):
         self.boton_nueva.hide()
 
         # Botón pendiente
-        self.boton_pendiente = QPushButton("Solicitudes pendientes")
-        self.boton_pendiente.setToolTip("Ver solicitudes pendientes")
+        self.boton_pendiente = QPushButton("Solicitudes por evaluar")
+        self.boton_pendiente.setToolTip("Ver solicitudes por evaluar")
         self.boton_pendiente.setStyleSheet(self.boton_estilo)
         self.boton_pendiente.setFont(QFont("Arial", 10))
         self.boton_pendiente.hide()
 
         # Botón Historial
-        self.boton_historial = QPushButton("Historial de entrevistas")
-        self.boton_historial.setToolTip("Ver el historial de entrevistas realizadas")
+        self.boton_historial = QPushButton("Historial de solicitudes")
+        self.boton_historial.setToolTip("Ver el historial de solicitudes")
         self.boton_historial.setStyleSheet(self.boton_estilo)
         self.boton_historial.setFont(QFont("Arial", 10))
         self.boton_historial.hide()
 
         # Botón Datos
-        self.boton_datos = QPushButton("Datos de internos asignados")
+        self.boton_datos = QPushButton("Datos de internos")
         self.boton_datos.setToolTip("Ver datos de internos asignados")
         self.boton_datos.setStyleSheet(self.boton_estilo)
         self.boton_datos.setFont(QFont("Arial", 10))
@@ -163,6 +164,7 @@ class VentanaProfesional(QMainWindow):
             self.boton_ajustes_modelo,
             self.boton_casos_criticos
         ]
+        self.menu_widgets_visibles = list(self.main_menu_widgets)
 
         # Añadir botones al layout del menú
         for boton in self.main_menu_widgets:
@@ -226,8 +228,10 @@ class VentanaProfesional(QMainWindow):
 
         self.pantalla_bienvenida = PantallaBienvenidaProfesional()        
         self.pantalla_perfil = PantallaPerfil()
+        self.pantalla_lista_solicitud = PantallaListaSolicitud()
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                                  
+        self.stacked_widget.addWidget(self.pantalla_lista_solicitud)
         # Aquí se pueden añadir más pantallas al stacked_widget según sea necesario
 
         self.stacked_widget.setCurrentWidget(self.pantalla_bienvenida)
@@ -291,6 +295,37 @@ class VentanaProfesional(QMainWindow):
         self.boton_ajustes.clicked.connect(self.movimiento_menu_ajustes)
 
     # ------------------- 5. Movimientos de Menú -------------------
+    def obtener_widgets_menu_visibles(self):
+        return [boton for boton in self.main_menu_widgets if boton in self.menu_widgets_visibles]
+
+    def actualizar_interfaz_inicio(self, num_solicitudes_pendientes, num_solicitudes_completadas, num_historial=None):
+        """
+        Sincroniza la pantalla de bienvenida y las opciones visibles del menú
+        según el estado de solicitudes del profesional.
+        """
+        self.pantalla_bienvenida.actualizar_interfaz(
+            num_solicitudes_pendientes,
+            num_solicitudes_completadas
+        )
+
+        if num_historial is None:
+            num_historial = num_solicitudes_completadas
+
+        if self.menu_abierto:
+            self.boton_pendiente.setVisible(num_solicitudes_pendientes > 0)
+            self.boton_historial.setVisible(num_historial > 0)
+        else:
+            self.boton_pendiente.hide()
+            self.boton_historial.hide()
+
+        self.menu_widgets_visibles = []
+        for boton in self.main_menu_widgets:
+            if boton == self.boton_pendiente and num_solicitudes_pendientes == 0:
+                continue
+            if boton == self.boton_historial and num_historial == 0:
+                continue
+            self.menu_widgets_visibles.append(boton)
+
     def movimiento_menu(self):   
 
         if self.ajustes_abierto:
@@ -313,7 +348,7 @@ class VentanaProfesional(QMainWindow):
             color_menu = self.COLOR_ABIERTO   
           
             # Mostrar botones con retardo para efecto escalonado
-            for i, boton in enumerate(self.main_menu_widgets):
+            for i, boton in enumerate(self.obtener_widgets_menu_visibles()):
                 QTimer.singleShot(i * 100, boton.show)  # Muestra cada botón con un retardo
             self.pie_menu_widget.show()  
             

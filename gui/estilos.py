@@ -9,11 +9,27 @@ COLOR_AZUL_CLARO = "#76bede"
 COLOR_AZUL_OSCURO = "#2196F3"
 COLOR_TEXTO_NEGRO = "#000000"
 
-# ----- ESTILOS COMUNES -----
+
+# --- ESTRUCTURA / CONTENEDORES ---
+ESTILO_FRAME_BORDE = f"""
+    QFrame {{
+        background-color: transparent;
+        border: 2px solid {COLOR_GRIS_CLARO};
+        border-radius: 12px;
+    }}
+"""
+
+ESTILO_APARTADO_FRAME = """
+    #apartado {
+        background-color: #f0f0f0;
+        border: 2px solid #E0E0E0;
+        border-radius: 12px;
+        padding: 10px;
+    }
+"""
+
 
 # --- LOGIN ---
-
-#Estilo para Qlabel login
 ESTILO_TEXTO_LOGIN = """
     QLabel {
         background-color: rgba(0, 0, 0, 0.4);
@@ -33,16 +49,8 @@ BOTON_PERFIL_LOGIN = """
     QPushButton:hover { background-color: rgba(128, 128, 128, 0.6); border-radius: 10px; }
 """
 
-# Estilo para contenedores con borde (como el encabezado y contenido)
-ESTILO_FRAME_BORDE = f"""
-    QFrame {{
-        background-color: transparent;
-        border: 2px solid {COLOR_GRIS_CLARO};
-        border-radius: 12px;
-    }}
-"""
 
-# Estilo para inputs
+# --- INPUTS ---
 ESTILO_INPUT = f"""
     QLineEdit, QTextEdit, QDateEdit, QTimeEdit, QComboBox {{
         background-color: {COLOR_BLANCO};
@@ -56,34 +64,6 @@ ESTILO_INPUT = f"""
     QLineEdit:focus, QTextEdit:focus, QTimeEdit:focus, QDateEdit:focus {{
         border: 1px solid {COLOR_AZUL_OSCURO};
     }}
-
-    /* --- COMBO BOX  --- */
-    QComboBox::drop-down {{
-        subcontrol-origin: padding;
-        subcontrol-position: center right;
-        width: 30px;
-        border: none;
-        background: transparent;
-    }}
-
-    QComboBox::down-arrow {{
-        image: url(assets/flecha_abajo.png); 
-        width: 14px;
-        height: 14px;
-    }}
-
-    QComboBox::down-arrow:hover {{
-        background-color: #F0F0F0;
-        border-radius: 4px;
-    }}         
-    
-    QComboBox QAbstractItemView {{
-        border: 1px solid #E0E0E0;
-        selection-background-color: {COLOR_AZUL_OSCURO};
-        selection-color: white;
-        background-color: white;
-        outline: 0;
-    }}    
 
     /* --- DATE --- */
     QDateEdit {{
@@ -246,6 +226,33 @@ ESTILO_INPUT = f"""
     }}
 """
 
+ESTILO_COMBOBOX = """
+            QComboBox {
+                background-color: #ECECEC;
+                border: 1px solid #BEBEBE;
+                border-radius: 20px;
+                padding: 0 14px;
+                font-size: 11pt;
+                color: #555555;
+            }
+            QComboBox::drop-down {
+                width: 28px;
+                border: none;
+                background: transparent;
+            }
+            QComboBox::down-arrow {
+                image: url(assets/flecha_abajo.png);
+                width: 14px;
+                height: 14px;
+            }
+            QComboBox QAbstractItemView {
+                border: 1px solid #E0E0E0;
+                selection-background-color: #2B2A2A;
+                selection-color: white;
+                background-color: white;
+            }
+        """
+
 
 # --- BOTONES ---
 ESTILO_BOTON_NEGRO = """                                   
@@ -331,41 +338,35 @@ ESTILO_BOTON_ERROR = """
             QPushButton:hover { background-color: #333; }
         """
 
-# --- ESTILOS DE PASOS SOLICITUD ---
-#Circulo
-ESTILO_CIRCULO_ACTUAL = """
-    QLabel {
-            background-color: #000;
-            color: #FFF;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 12pt;
-            font-family: 'Arial';
-        }
-"""
+ESTILO_BOTON_PERFIL =  """
+            QPushButton {
+                background-color: black;
+                color: white;
+                border: none;
+                border-radius: 26px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #333333; }
+        """
 
-ESTILO_CIRCULO_COMPLETADO = """
-    QLabel {
-            background-color: #4CAF50;
-            color: #FFF;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 12pt;
-            font-family: 'Arial';
-        }
-"""
+ESTILO_BOTON_SOLICITUD = """
+            QPushButton {
+                color: white;
+                border: none;
+                padding: 6px 14px;
+                text-align: center;
+                background-color: #2B2A2A;
+                border-radius: 10px;
+                font-family: 'Arial';
+                font-size: 10pt;
+                font-weight: 600;
+            }
+            QPushButton:hover { background-color: #464545; }
+            """
 
-ESTILO_CIRCULO_INACTIVO = """
-    QLabel {
-            background-color: #E0E0E0;
-            color: #666;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 12pt;
-            font-family: 'Arial';
-        }
-"""
-# Título paso encabezado
+
+# --- TEXTOS Y ETIQUETAS ---
 ESTILO_TITULO_PASO_ENCA = """
     QLabel {
     font-family: 'Arial';
@@ -409,17 +410,6 @@ ESTILO_SUBTITULO_SOLICITUD = """
     }
 """
 
-ESTILO_CHECKBOX = """
-    QCheckBox{
-        font-family: 'Arial';
-        font-size: 20px;
-        spacing: 8px;
-        background-color: transparent;
-    }
-
-"""
-
-# Título paso
 ESTILO_TITULO_PASO = """
     QLabel {
     font-family: 'Arial';
@@ -430,7 +420,6 @@ ESTILO_TITULO_PASO = """
     }
 """
 
-# Subítulo paso
 ESTILO_SUBTITULO_PASO = """
     QLabel {
     font-family: 'Arial';
@@ -481,19 +470,77 @@ ESTILO_SUBTITULO_PERMISO = """
     }
 """
 
-# Estilo para la etiqueta pequeña de arriba (ej: "Solicitante", "Destino")
 ESTILO_TITULO_DETALLE_SOLICITUD = "color: #9E9E9E; font-size: 12pt; font-weight: 500;"
-
-# Estilo para el dato principal (ej: Nombre, Fechas, Dirección)
 ESTILO_DATO_PRINCIPAL_SOLICITUD = "color: black; font-size: 11pt; font-weight: bold;"
-
-# Estilo para el dato secundario (ej: Nº RC)
 ESTILO_DATO_SECUNDARIO_SOLICITUD = "color: #757575; font-size: 10pt; font-weight: 500;"
-
 ESTILO_TEXTO = "color: black; font-size: 20px;"
 
+ESTILO_CHECKBOX = """
+    QCheckBox{
+        font-family: 'Arial';
+        font-size: 20px;
+        spacing: 8px;
+        background-color: transparent;
+    }
 
-# ---  TARJETAS ---
+"""
+
+
+# --- PASOS / ESTADOS DE SOLICITUD ---
+ESTILO_CIRCULO_ACTUAL = """
+    QLabel {
+            background-color: #000;
+            color: #FFF;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 12pt;
+            font-family: 'Arial';
+        }
+"""
+
+ESTILO_CIRCULO_COMPLETADO = """
+    QLabel {
+            background-color: #4CAF50;
+            color: #FFF;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 12pt;
+            font-family: 'Arial';
+        }
+"""
+
+ESTILO_CIRCULO_INACTIVO = """
+    QLabel {
+            background-color: #E0E0E0;
+            color: #666;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 12pt;
+            font-family: 'Arial';
+        }
+"""
+
+ESTILO_ESTADO = """
+    QLabel {
+        background-color: #D3D3D3;
+        color: #1A1A1A;          
+        border-radius: 15px;       
+        padding: 4px 12px;         
+        border: none;         
+        font-weight: 500;        
+        font-size: 8pt;
+    }
+"""
+
+ESTADOS_SOLICITUD_COLOR = {
+            "iniciada": ("Iniciada", "#59A6D9"),
+            "pendiente": ("Pendiente", "#DB9334"),           
+            "aceptada": ("Aceptada", "#27AE5F"),
+            "rechazada": ("Rechazada", "#E74D3C"),
+            "cancelada": ("Cancelada", "#A5C0C2")
+        }
+
+# --- TARJETAS ---
 ESTILO_TARJETA_RESUMEN = """
             QFrame {
                 background-color: #F5F5F5; 
@@ -515,18 +562,6 @@ ESTILO_NIVEL = """
             padding: 2px 12px;
         """
 
-ESTILO_ESTADO = """
-    QLabel {
-        background-color: #D3D3D3;
-        color: #1A1A1A;          
-        border-radius: 15px;       
-        padding: 4px 12px;         
-        border: none;         
-        font-weight: 500;        
-        font-size: 8pt;
-    }
-"""
-
 ESTILO_TARJETA_PERMISO_SEL = """
                 QWidget {
                     background-color: #E3F2FD;
@@ -544,7 +579,9 @@ ESTILO_TARJETA_PERMISO_NO ="""
                 }
                 QLabel { background: transparent; border: none; }
 """
-# --- SCROLL ---
+
+
+# --- SCROLL / SLIDER ---
 ESTILO_SCROLL = """
             QScrollArea {
                 border: none;
@@ -579,7 +616,6 @@ ESTILO_SCROLL = """
             }
         """
 
-#SLIDER AUDIO
 ESTILO_SLIDER = """
         QSlider::groove:horizontal {
             height: 6px;
@@ -598,6 +634,8 @@ ESTILO_SLIDER = """
         }
         """
 
+
+# --- VENTANAS / DIALOGOS ---
 ESTILO_VENTANA_DETALLE ="""
     QFrame#FondoDetalle {
         background-color: #E0E0E0;
@@ -637,13 +675,7 @@ ESTILO_DIALOGO_ERROR = """
     }
 """
 
-# APARTADOS
-ESTILO_APARTADO_FRAME = """
-    #apartado {
-        background-color: #f0f0f0;
-        border: 2px solid #E0E0E0;
-        border-radius: 12px;
-        padding: 10px;
-    }
-"""
+# --- VENTANA DE LISTA DE SOLICITUDES ---
+ESTILO_NOMBRE_INTERNO = "color: black; font-size: 20px; font-weight: bold;"
 
+ESTILO_NUM_RC = "color: #666666; font-size: 11pt;"

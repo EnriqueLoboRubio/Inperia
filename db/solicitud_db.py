@@ -3,6 +3,12 @@ from db.conexion import obtener_conexion
 
 # -------------------------------- SOLICITUD ------------------------------- #
 
+def _asegurar_columna_evaluacion(cursor):
+    try:
+        cursor.execute("ALTER TABLE solicitudes ADD COLUMN evaluacion_automatica TEXT")
+    except sqlite3.OperationalError:
+        pass
+
 # Función para crear la tabla de solicitud
 def crear_solicitud():
     conexion = obtener_conexion()
@@ -37,10 +43,14 @@ def crear_solicitud():
             conclusiones_profesional TEXT,
             id_profesional INTEGER,
             estado TEXT NOT NULL CHECK(estado IN ('iniciada', 'pendiente', 'aceptada', 'rechazada', 'cancelada')),
+            evaluacion_automatica TEXT,
             FOREIGN KEY (id_interno) REFERENCES internos(num_RC),
             FOREIGN KEY (id_profesional) REFERENCES usuarios(id)                          
         )
     ''')
+
+    # Migracion simple para BD ya creadas sin la columna nueva.
+    _asegurar_columna_evaluacion(cursor)
 
     conexion.commit()
     conexion.close()
@@ -49,20 +59,22 @@ def crear_solicitud():
 def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                       destino, provincia, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
-                      docs, compromiso, observaciones, estado, id_profesional=None, conclusiones_profesional=None):
+                      docs, compromiso, observaciones, estado, id_profesional=None, conclusiones_profesional=None,
+                      evaluacion_automatica=None):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:        
+        _asegurar_columna_evaluacion(cursor)
         cursor.execute('''
             INSERT INTO solicitudes (id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                                     destino, provincia, direccion, cod_pos, 
                                     nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
-                                    docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional, evaluacion_automatica)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                       destino, provincia, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
-                      docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional))
+                      docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional, evaluacion_automatica))
         conexion.commit()
 
         nuevo_id = cursor.lastrowid
@@ -113,6 +125,129 @@ def encontrar_ultima_solicitud_por_interno(id_interno):
     
     return solicitud
 
+def contar_solicitudes_por_profesional_y_estados(id_profesional, estados):
+    if not estados:
+        return 0
+
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+
+    try:
+        placeholders = ",".join(["?"] * len(estados))
+        query = f"""
+            SELECT COUNT(*)
+            FROM solicitudes
+            WHERE id_profesional = ?
+              AND estado IN ({placeholders})
+        """
+        cursor.execute(query, (id_profesional, *estados))
+        resultado = cursor.fetchone()
+        return resultado[0] if resultado else 0
+    finally:
+        conexion.close()
+
+
+def contar_solicitudes_por_profesional(id_profesional):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT COUNT(*)
+            FROM solicitudes
+            WHERE id_profesional = ?
+            """,
+            (id_profesional,)
+        )
+        resultado = cursor.fetchone()
+        return resultado[0] if resultado else 0
+    finally:
+        conexion.close()
+
+
+def contar_solicitudes_por_evaluar_profesional(id_profesional):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        _asegurar_columna_evaluacion(cursor)
+        cursor.execute(
+            """
+            SELECT COUNT(*)
+            FROM solicitudes
+            WHERE id_profesional = ?
+              AND estado IN ('iniciada', 'pendiente')
+              AND TRIM(COALESCE(evaluacion_automatica, '')) = ''
+              AND TRIM(COALESCE(conclusiones_profesional, '')) = ''
+            """,
+            (id_profesional,)
+        )
+        resultado = cursor.fetchone()
+        return resultado[0] if resultado else 0
+    finally:
+        conexion.close()
+
+
+def listar_solicitudes_nuevas_sin_profesional():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        _asegurar_columna_evaluacion(cursor)
+        cursor.execute(
+            """
+            SELECT *
+            FROM solicitudes
+            WHERE id_profesional IS NULL
+            ORDER BY id DESC
+            """
+        )
+        return cursor.fetchall()
+    finally:
+        conexion.close()
+
+
+def listar_solicitudes_pendientes_profesional(id_profesional):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        _asegurar_columna_evaluacion(cursor)
+        cursor.execute(
+            """
+            SELECT s.*
+            FROM solicitudes s
+            WHERE s.id_profesional = ?
+              AND s.estado = 'pendiente'
+              AND EXISTS (
+                  SELECT 1
+                  FROM entrevistas e
+                  WHERE e.id_solicitud = s.id
+              )
+            ORDER BY s.id DESC
+            """,
+            (id_profesional,)
+        )
+        return cursor.fetchall()
+    finally:
+        conexion.close()
+
+
+def listar_solicitudes_profesional(id_profesional):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        _asegurar_columna_evaluacion(cursor)
+        cursor.execute(
+            """
+            SELECT *
+            FROM solicitudes
+            WHERE id_profesional = ?
+            ORDER BY id DESC
+            """,
+            (id_profesional,)
+        )
+        return cursor.fetchall()
+    finally:
+        conexion.close()
+
 # Función para borrar la tabla de solicitudes (para pruebas)
 def borrar_solicitudes():
     conexion = obtener_conexion()
@@ -137,6 +272,27 @@ def actualizar_estado_solicitud(id_solicitud, estado):
         return True
     except Exception as e: 
         print(f"Error: No se ha podido crear la solicitud. {e}")       
+        return False
+    finally:
+        conexion.close()
+
+
+def asignar_profesional_a_solicitud(id_solicitud, id_profesional):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute(
+            """
+            UPDATE solicitudes
+            SET id_profesional = ?
+            WHERE id = ?
+            """,
+            (id_profesional, id_solicitud)
+        )
+        conexion.commit()
+        return cursor.rowcount > 0
+    except Exception as e:
+        print(f"Error al asignar profesional a solicitud: {e}")
         return False
     finally:
         conexion.close()

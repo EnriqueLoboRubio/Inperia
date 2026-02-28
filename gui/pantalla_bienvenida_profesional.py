@@ -21,7 +21,7 @@ class PantallaBienvenidaProfesional(QWidget):
 
         principal_layout.addSpacing(50)     
         
-        self.contenido = QLabel("Tiene entrevistas pendientes")
+        self.contenido = QLabel("Tiene solicitudes por evaluar")
         self.contenido.setFont(QFont("Arial", 22))
         self.contenido.setAlignment(Qt.AlignCenter)
         principal_layout.addWidget(self.contenido)
@@ -31,8 +31,8 @@ class PantallaBienvenidaProfesional(QWidget):
         # Botones
         layout_botones = QHBoxLayout()
 
-        self.boton_solicitudes_pendientes = QPushButton("Solicitudes pendientes")
-        self.boton_solicitudes_pendientes.setToolTip("Solicitudes pendientes")
+        self.boton_solicitudes_pendientes = QPushButton("Solicitudes por evaluar")
+        self.boton_solicitudes_pendientes.setToolTip("Solicitudes por evaluar")
         self.boton_solicitudes_pendientes.setStyleSheet(ESTILO_BOTON_NEGRO)
         layout_botones.addWidget(self.boton_solicitudes_pendientes, alignment=Qt.AlignCenter)
 
@@ -58,15 +58,13 @@ class PantallaBienvenidaProfesional(QWidget):
 
     def actualizar_interfaz(self, num_solicitudes_pendientes, num_solicitudes_completadas):
         if num_solicitudes_pendientes == 0 and num_solicitudes_completadas == 0:
-            self.contenido.setText("No tiene solicitudes pendientes ni completadas")
+            self.contenido.setText("No tiene solicitudes por evaluar ni completadas")
         elif num_solicitudes_pendientes == 0:
             self.contenido.setText(f"Tiene {num_solicitudes_completadas} solicitudes completadas")
         elif num_solicitudes_completadas == 0:
-            self.contenido.setText(f"Tiene {num_solicitudes_pendientes} solicitudes pendientes")
+            self.contenido.setText(f"Tiene {num_solicitudes_pendientes} solicitudes por evaluar")
         else:
-            self.contenido.setText(f"Tiene {num_solicitudes_pendientes} solicitudes pendientes\ny {num_solicitudes_completadas} solicitudes completadas")
+            self.contenido.setText(f"Tiene {num_solicitudes_pendientes} solicitudes por evaluar\ny {num_solicitudes_completadas} solicitudes completadas")
         
-        if num_solicitudes_pendientes == 0:
-            self.boton_solicitudes_pendientes.setVisible(False)
-        if num_solicitudes_completadas == 0:
-            self.boton_solicitudes_completadas.setVisible(False)
+        self.boton_solicitudes_pendientes.setVisible(num_solicitudes_pendientes > 0)
+        self.boton_historial_solicitudes.setVisible(num_solicitudes_completadas > 0)

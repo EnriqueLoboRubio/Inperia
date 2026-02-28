@@ -125,6 +125,7 @@ class InternoController(QObject):
             solicitud.conclusiones_profesional = datos_solicitud[25]
             solicitud.id_profesional = datos_solicitud[26]
             solicitud.estado = datos_solicitud[27]
+            solicitud.evaluacion_automatica = datos_solicitud[28] if len(datos_solicitud) > 28 else ""
             solicitud.entrevista = self.cargar_entrevista_solicitud(solicitud.id_solicitud)                                                   
 
             return solicitud
