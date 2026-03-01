@@ -1,0 +1,8 @@
+PyQt5
+bcrypt
+sounddevice
+PyAudio
+vosk
+openai-whisper
+numpy
+reportlab

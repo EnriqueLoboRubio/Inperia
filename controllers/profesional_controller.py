@@ -9,6 +9,7 @@ from controllers.progreso_controller import ProgresoController
 from gui.profesional_inicio import VentanaProfesional
 from gui.ventana_detalle_edit_pregunta_interno import VentanaDetallePreguntaEdit
 from gui.ventana_detalle_pregunta_interno import VentanaDetallePregunta
+from gui.ventana_detalle_edit_pregunta_profesional import VentanaDetallePreguntaEditProfesional
 
 from db.interno_db import *
 from db.solicitud_db import *
@@ -71,6 +72,9 @@ class ProfesionalController(QObject):
         self.ventana_profesional.boton_nueva.clicked.connect(self.mostrar_lista_nuevas)
         self.ventana_profesional.boton_pendiente.clicked.connect(self.mostrar_lista_pendientes)
         self.ventana_profesional.boton_historial.clicked.connect(self.mostrar_lista_historial)
+        self.ventana_profesional.boton_modificar.clicked.connect(
+            self.mostrar_lista_modificar_preguntas
+        )
 
         self.ventana_profesional.pantalla_bienvenida.boton_nueva_solicitud.clicked.connect(
             self.mostrar_lista_nuevas
@@ -86,6 +90,9 @@ class ProfesionalController(QObject):
         )
         self.ventana_profesional.pantalla_lista_solicitud.filtro_superior_cambiado.connect(
             self.gestionar_filtro_superior_lista
+        )
+        self.ventana_profesional.pantalla_lista_modificar_preguntas.grupo_botones_editar.idClicked.connect(
+            self.mostrar_detalle_editar_pregunta
         )
         self.ventana_profesional.boton_usuario.clicked.connect(self.iniciar_perfil)
         self.ventana_profesional.boton_perfil.clicked.connect(self.iniciar_perfil)
@@ -158,6 +165,25 @@ class ProfesionalController(QObject):
             combo_texto="Todos",
             solo_sin_profesional=False
         )
+
+    def mostrar_lista_modificar_preguntas(self):
+        pantalla = self.ventana_profesional.pantalla_lista_modificar_preguntas
+        pantalla.cargar_preguntas()
+        self.ventana_profesional.stacked_widget.setCurrentWidget(pantalla)
+
+    def mostrar_detalle_editar_pregunta(self, id_pregunta):
+        ventana_detalle = VentanaDetallePreguntaEditProfesional(
+            numero_pregunta=id_pregunta,
+            parent=self.ventana_profesional
+        )
+        resultado = ventana_detalle.exec_()
+
+        if resultado == QDialog.Accepted:
+            self.ventana_profesional.pantalla_lista_modificar_preguntas.cargar_preguntas()
+            self.msg.mostrar_mensaje(
+                "Guardado",
+                f"La pregunta {id_pregunta} se ha actualizado correctamente."
+            )
 
     def mostrar_lista_completadas(self):
         if not self.profesional:

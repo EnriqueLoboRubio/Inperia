@@ -8,6 +8,7 @@ from PyQt5.QtGui import QFont, QIcon, QPixmap
 from gui.pantalla_bienvenida_profesional import PantallaBienvenidaProfesional
 from gui.pantalla_perfil import PantallaPerfil
 from gui.pantalla_lista_solicitud import PantallaListaSolicitud
+from gui.pantalla_lista_modificar_preguntas import PantallaListaModificarPreguntas
 from gui.estilos import *
 
 
@@ -229,9 +230,11 @@ class VentanaProfesional(QMainWindow):
         self.pantalla_bienvenida = PantallaBienvenidaProfesional()        
         self.pantalla_perfil = PantallaPerfil()
         self.pantalla_lista_solicitud = PantallaListaSolicitud()
+        self.pantalla_lista_modificar_preguntas = PantallaListaModificarPreguntas()
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                                  
         self.stacked_widget.addWidget(self.pantalla_lista_solicitud)
+        self.stacked_widget.addWidget(self.pantalla_lista_modificar_preguntas)
         self.stacked_widget.addWidget(self.pantalla_perfil)
         # Aquí se pueden añadir más pantallas al stacked_widget según sea necesario
 
@@ -489,3 +492,6 @@ class VentanaProfesional(QMainWindow):
 
     def mostrar_pantalla_perfil(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_perfil)
+
+    def mostrar_pantalla_modificar_preguntas(self):
+        self.stacked_widget.setCurrentWidget(self.pantalla_lista_modificar_preguntas)
