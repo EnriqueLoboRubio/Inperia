@@ -14,7 +14,7 @@ def crear_comentario_pre():
             comentario TEXT NOT NULL,
             fecha TEXT NOT NULL,
             FOREIGN KEY (id_respuesta) REFERENCES respuestas(id) ON DELETE CASCADE,
-            FOREIGN KEY (id_profesional) REFERENCES usuarios(id)
+            FOREIGN KEY (id_profesional) REFERENCES profesionales(id_usuario) ON DELETE RESTRICT
         )
     ''')
 

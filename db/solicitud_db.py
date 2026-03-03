@@ -4,12 +4,6 @@ from db.fecha_utils import normalizar_fecha
 
 # -------------------------------- SOLICITUD ------------------------------- #
 
-def _asegurar_columna_evaluacion(cursor):
-    try:
-        cursor.execute("ALTER TABLE solicitudes ADD COLUMN evaluacion_automatica TEXT")
-    except sqlite3.OperationalError:
-        pass
-
 # Función para crear la tabla de solicitud
 def crear_solicitud():
     conexion = obtener_conexion()
@@ -44,14 +38,10 @@ def crear_solicitud():
             conclusiones_profesional TEXT,
             id_profesional INTEGER,
             estado TEXT NOT NULL CHECK(estado IN ('iniciada', 'pendiente', 'aceptada', 'rechazada', 'cancelada')),
-            evaluacion_automatica TEXT,
-            FOREIGN KEY (id_interno) REFERENCES internos(num_RC),
-            FOREIGN KEY (id_profesional) REFERENCES profesionales(id_usuario)                          
+            FOREIGN KEY (id_interno) REFERENCES internos(num_RC) ON DELETE CASCADE,
+            FOREIGN KEY (id_profesional) REFERENCES profesionales(id_usuario) ON DELETE SET NULL                          
         )
     ''')
-
-    # Migracion simple para BD ya creadas sin la columna nueva.
-    _asegurar_columna_evaluacion(cursor)
 
     # Indices para acelerar filtros/ordenaciones frecuentes.
     cursor.execute('''
@@ -82,12 +72,10 @@ def crear_solicitud():
 def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                       destino, provincia, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
-                      docs, compromiso, observaciones, estado, id_profesional=None, conclusiones_profesional=None,
-                      evaluacion_automatica=None):
+                      docs, compromiso, observaciones, estado, id_profesional=None, conclusiones_profesional=None):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:        
-        _asegurar_columna_evaluacion(cursor)
         fecha_creacion = normalizar_fecha(fecha_creacion)
         fecha_inicio = normalizar_fecha(fecha_inicio)
         fecha_fin = normalizar_fecha(fecha_fin)
@@ -95,12 +83,12 @@ def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_cre
             INSERT INTO solicitudes (id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                                     destino, provincia, direccion, cod_pos, 
                                     nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
-                                    docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional, evaluacion_automatica)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                       destino, provincia, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
-                      docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional, evaluacion_automatica))
+                      docs, compromiso, observaciones, conclusiones_profesional, estado, id_profesional))
         conexion.commit()
 
         nuevo_id = cursor.lastrowid
@@ -195,15 +183,19 @@ def contar_solicitudes_por_evaluar_profesional(id_profesional):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:
-        _asegurar_columna_evaluacion(cursor)
         cursor.execute(
             """
-            SELECT COUNT(*)
-            FROM solicitudes
-            WHERE id_profesional = ?
-              AND estado IN ('iniciada', 'pendiente')
-              AND TRIM(COALESCE(evaluacion_automatica, '')) = ''
-              AND TRIM(COALESCE(conclusiones_profesional, '')) = ''
+            SELECT COUNT(DISTINCT s.id)
+            FROM solicitudes s
+            LEFT JOIN entrevistas e
+              ON e.id_solicitud = s.id
+            LEFT JOIN comentarios_ent ce
+              ON ce.id_entrevista = e.id
+             AND ce.id_profesional = s.id_profesional
+            WHERE s.id_profesional = ?
+              AND s.estado IN ('iniciada', 'pendiente')
+              AND TRIM(COALESCE(ce.comentario_ia, '')) = ''
+              AND TRIM(COALESCE(ce.comentario_profesional, '')) = ''
             """,
             (id_profesional,)
         )
@@ -217,7 +209,6 @@ def listar_solicitudes_nuevas_sin_profesional():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:
-        _asegurar_columna_evaluacion(cursor)
         cursor.execute(
             """
             SELECT *
@@ -235,7 +226,6 @@ def listar_solicitudes_pendientes_profesional(id_profesional):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:
-        _asegurar_columna_evaluacion(cursor)
         cursor.execute(
             """
             SELECT s.*
@@ -260,7 +250,6 @@ def listar_solicitudes_profesional(id_profesional):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:
-        _asegurar_columna_evaluacion(cursor)
         cursor.execute(
             """
             SELECT *

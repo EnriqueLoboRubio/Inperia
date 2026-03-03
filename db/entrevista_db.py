@@ -16,8 +16,8 @@ def crear_entrevista():
             id_solicitud INTEGER NOT NULL,           
             fecha TEXT NOT NULL,
             puntuacion_global REAL,          
-            FOREIGN KEY (id_interno) REFERENCES internos(num_RC),
-            FOREIGN KEY (id_solicitud) REFERENCES solicitudes(id)                     
+            FOREIGN KEY (id_interno) REFERENCES internos(num_RC) ON DELETE CASCADE,
+            FOREIGN KEY (id_solicitud) REFERENCES solicitudes(id) ON DELETE CASCADE                     
         )
     ''')
 

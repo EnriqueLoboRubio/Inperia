@@ -16,8 +16,8 @@ def crear_respuesta():
             ruta_audio TEXT,
             puntuacion_ia REAL,
             nivel INTEGER,                          
-            FOREIGN KEY (id_entrevista) REFERENCES entrevistas(id)
-            FOREIGN KEY (id_pregunta) REFERENCES preguntas(id)
+            FOREIGN KEY (id_entrevista) REFERENCES entrevistas(id) ON DELETE CASCADE,
+            FOREIGN KEY (id_pregunta) REFERENCES preguntas(id) ON DELETE RESTRICT
         )
     ''')
 

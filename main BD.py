@@ -107,7 +107,7 @@ def generar_comentarios_preguntas():
         for id_respuesta, id_pregunta in respuestas:
             comentarios = [
                 (4, f"Comentario 1 - Entrevista {id_entrevista}, pregunta {id_pregunta}", "2026-03-12"),
-                (1, f"Comentario 2 - Entrevista {id_entrevista}, pregunta {id_pregunta}", "2026-03-13"),
+                (7, f"Comentario 2 - Entrevista {id_entrevista}, pregunta {id_pregunta}", "2026-03-13"),
             ]
 
             cursor.executemany(
