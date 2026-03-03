@@ -131,6 +131,28 @@ def listar_ultimas_entrevistas_por_interno(id_interno, limite=5):
     finally:
         conexion.close()
 
+
+def obtener_ultima_entrevista_interno_profesional(id_interno, id_profesional):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT e.id, e.fecha, e.puntuacion_global
+            FROM entrevistas e
+            INNER JOIN solicitudes s
+              ON s.id = e.id_solicitud
+            WHERE e.id_interno = ?
+              AND s.id_profesional = ?
+            ORDER BY e.fecha DESC, e.id DESC
+            LIMIT 1
+            """,
+            (id_interno, id_profesional),
+        )
+        return cursor.fetchone()
+    finally:
+        conexion.close()
+
 # Función para borrar la tabla de entrevistas (para pruebas)
 def borrar_entrevistas():
     conexion = obtener_conexion()

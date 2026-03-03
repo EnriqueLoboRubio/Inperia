@@ -8,6 +8,7 @@ from PyQt5.QtGui import QFont, QIcon, QPixmap
 from gui.pantalla_bienvenida_profesional import PantallaBienvenidaProfesional
 from gui.pantalla_perfil import PantallaPerfil
 from gui.pantalla_lista_solicitud import PantallaListaSolicitud
+from gui.pantalla_lista_internos_profesional import PantallaListaInternosProfesional
 from gui.pantalla_lista_modificar_preguntas import PantallaListaModificarPreguntas
 from gui.pantalla_perfil_interno_profesional import PantallaPerfilInternoProfesional
 from gui.estilos import *
@@ -205,7 +206,7 @@ class VentanaProfesional(QMainWindow):
         # BOTÓN DE USUARIO (Arriba a la derecha)
         self.usuario_widget = QWidget()
         self.usuario_layout = QHBoxLayout(self.usuario_widget)
-        self.usuario_layout.setContentsMargins(0, 0, 10, 0)        
+        self.usuario_layout.setContentsMargins(10, 0, 10, 0)
 
         self.boton_usuario = QPushButton()
         self.boton_usuario.setToolTip("Perfil de usuario")
@@ -221,9 +222,16 @@ class VentanaProfesional(QMainWindow):
             QPushButton:hover { background-color: rgba(85, 85, 85, 0.3); }
         """)
 
-        # Añadir botón al layout de usuario
+        self.titulo_pantalla = QLabel("Inicio")
+        self.titulo_pantalla.setFont(QFont("Arial", 16, QFont.Bold))
+        self.titulo_pantalla.setAlignment(Qt.AlignCenter)
+        self.titulo_pantalla.setStyleSheet("color: #111111;")
+
+        # Añadir título y botón al layout superior
         self.usuario_layout.addStretch(1)
-        self.usuario_layout.addWidget(self.boton_usuario)    
+        self.usuario_layout.addWidget(self.titulo_pantalla, alignment=Qt.AlignVCenter)
+        self.usuario_layout.addStretch(1)
+        self.usuario_layout.addWidget(self.boton_usuario)
 
         # PANTALLAS
         self.stacked_widget = QStackedWidget()
@@ -231,17 +239,30 @@ class VentanaProfesional(QMainWindow):
         self.pantalla_bienvenida = PantallaBienvenidaProfesional()        
         self.pantalla_perfil = PantallaPerfil()
         self.pantalla_lista_solicitud = PantallaListaSolicitud()
+        self.pantalla_lista_internos = PantallaListaInternosProfesional()
         self.pantalla_lista_modificar_preguntas = PantallaListaModificarPreguntas()
         self.pantalla_perfil_interno = PantallaPerfilInternoProfesional()
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                                  
         self.stacked_widget.addWidget(self.pantalla_lista_solicitud)
+        self.stacked_widget.addWidget(self.pantalla_lista_internos)
         self.stacked_widget.addWidget(self.pantalla_lista_modificar_preguntas)
         self.stacked_widget.addWidget(self.pantalla_perfil)
         self.stacked_widget.addWidget(self.pantalla_perfil_interno)
         # Aquí se pueden añadir más pantallas al stacked_widget según sea necesario
 
+        self._titulos_por_pantalla = {
+            self.pantalla_bienvenida: "Inicio",
+            self.pantalla_lista_solicitud: "Solicitudes",
+            self.pantalla_lista_internos: "Internos asignados",
+            self.pantalla_lista_modificar_preguntas: "Modificar preguntas",
+            self.pantalla_perfil: "Perfil",
+            self.pantalla_perfil_interno: "Perfil interno",
+        }
+        self.stacked_widget.currentChanged.connect(self._actualizar_titulo_pantalla)
+
         self.stacked_widget.setCurrentWidget(self.pantalla_bienvenida)
+        self._actualizar_titulo_pantalla()
 
         # Contenedor central
         self.central_widget = QWidget()
@@ -501,3 +522,10 @@ class VentanaProfesional(QMainWindow):
 
     def mostrar_pantalla_perfil_interno(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_perfil_interno)
+
+    def establecer_titulo_pantalla(self, titulo):
+        self.titulo_pantalla.setText(str(titulo or ""))
+
+    def _actualizar_titulo_pantalla(self, _index=None):
+        actual = self.stacked_widget.currentWidget()
+        self.titulo_pantalla.setText(self._titulos_por_pantalla.get(actual, "INPERIA"))

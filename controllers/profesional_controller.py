@@ -39,6 +39,7 @@ class ProfesionalController(QObject):
         self.ventana_profesional.show()
         self.msg = Mensajes(self.ventana_profesional)
         self._modo_lista_actual = None
+        self._vista_origen_perfil_interno = "solicitudes"
 
         # Objetos iniciales
         self.profesional = self.cargar_profesional()             
@@ -95,7 +96,13 @@ class ProfesionalController(QObject):
             self.mostrar_perfil_interno
         )
         self.ventana_profesional.pantalla_perfil_interno.volver.connect(
-            self.recargar_lista_actual
+            self.volver_desde_perfil_interno
+        )
+        self.ventana_profesional.boton_datos.clicked.connect(
+            self.mostrar_lista_internos_asignados
+        )
+        self.ventana_profesional.pantalla_lista_internos.ver_perfil_interno.connect(
+            self.mostrar_perfil_interno_desde_internos
         )
         self.ventana_profesional.pantalla_lista_modificar_preguntas.grupo_botones_editar.idClicked.connect(
             self.mostrar_detalle_editar_pregunta
@@ -240,6 +247,12 @@ class ProfesionalController(QObject):
         elif self._modo_lista_actual == "historial":
             self.mostrar_lista_historial()
 
+    def volver_desde_perfil_interno(self):
+        if self._vista_origen_perfil_interno == "internos":
+            self.mostrar_lista_internos_asignados()
+            return
+        self.recargar_lista_actual()
+
     def _mostrar_lista_solicitudes(self, filas_solicitud, top_activo, combo_texto, solo_sin_profesional):
         solicitudes = [self._construir_solicitud_desde_fila(fila) for fila in (filas_solicitud or [])]
         internos = self._cargar_internos_para_solicitudes(solicitudes)
@@ -253,6 +266,15 @@ class ProfesionalController(QObject):
             modo_historial=(self._modo_lista_actual == "historial")
         )
         self.ventana_profesional.stacked_widget.setCurrentWidget(pantalla)
+        titulos_modo = {
+            "nuevas": "Nuevas solicitudes",
+            "pendientes": "Solicitudes por evaluar",
+            "completadas": "Solicitudes completadas",
+            "historial": "Historial de solicitudes",
+        }
+        self.ventana_profesional.establecer_titulo_pantalla(
+            titulos_modo.get(self._modo_lista_actual, "Solicitudes")
+        )
 
     def _construir_solicitud_desde_fila(self, datos_solicitud):
         solicitud = Solicitud()
@@ -324,6 +346,14 @@ class ProfesionalController(QObject):
         return internos
 
     def mostrar_perfil_interno(self, interno):
+        self._vista_origen_perfil_interno = "solicitudes"
+        self._abrir_perfil_interno(interno)
+
+    def mostrar_perfil_interno_desde_internos(self, interno):
+        self._vista_origen_perfil_interno = "internos"
+        self._abrir_perfil_interno(interno)
+
+    def _abrir_perfil_interno(self, interno):
         if interno is None:
             return
         entrevistas = listar_ultimas_entrevistas_por_interno(interno.num_RC, limite=5)
@@ -334,6 +364,71 @@ class ProfesionalController(QObject):
             solicitudes=solicitudes,
         )
         self.ventana_profesional.mostrar_pantalla_perfil_interno()
+
+    def mostrar_lista_internos_asignados(self):
+        if not self.profesional:
+            return
+
+        filas = listar_solicitudes_profesional(self.profesional.id_usuario)
+        if not filas:
+            self.ventana_profesional.pantalla_lista_internos.cargar_datos([])
+            self.ventana_profesional.stacked_widget.setCurrentWidget(
+                self.ventana_profesional.pantalla_lista_internos
+            )
+            self.ventana_profesional.establecer_titulo_pantalla("Internos asignados")
+            return
+
+        ultima_solicitud_por_rc = {}
+        for fila in filas:
+            num_rc = fila[1]
+            if num_rc not in ultima_solicitud_por_rc:
+                ultima_solicitud_por_rc[num_rc] = fila
+
+        datos_internos = encontrar_internos_por_num_rc(list(ultima_solicitud_por_rc.keys()))
+        internos = []
+        for dato in datos_internos:
+            internos.append(
+                Interno(
+                    id_usuario=dato[1],
+                    nombre=dato[8],
+                    email=dato[9],
+                    contrasena=dato[10],
+                    rol=dato[11],
+                    num_RC=dato[0],
+                    situacion_legal=dato[2],
+                    delito=dato[3],
+                    fecha_nac=dato[5],
+                    condena=dato[4],
+                    fecha_ingreso=dato[6],
+                    modulo=dato[7],
+                    lugar_nacimiento=dato[12] if len(dato) > 12 else "",
+                    nombre_contacto_emergencia=dato[13] if len(dato) > 13 else "",
+                    relacion_contacto_emergencia=dato[14] if len(dato) > 14 else "",
+                    numero_contacto_emergencia=dato[15] if len(dato) > 15 else "",
+                )
+            )
+
+        internos_ordenados = sorted(internos, key=lambda x: str(getattr(x, "nombre", "")).lower())
+        datos_tarjetas = []
+        for interno in internos_ordenados:
+            ultima_entrevista = obtener_ultima_entrevista_interno_profesional(
+                interno.num_RC,
+                self.profesional.id_usuario
+            )
+            fecha_ult = ultima_entrevista[1] if ultima_entrevista else "-"
+            puntuacion = ultima_entrevista[2] if ultima_entrevista else None
+            datos_tarjetas.append(
+                {
+                    "interno": interno,
+                    "fecha_ultima_entrevista": fecha_ult,
+                    "puntuacion_global": puntuacion,
+                }
+            )
+
+        pantalla = self.ventana_profesional.pantalla_lista_internos
+        pantalla.cargar_datos(datos_tarjetas)
+        self.ventana_profesional.stacked_widget.setCurrentWidget(pantalla)
+        self.ventana_profesional.establecer_titulo_pantalla("Internos asignados")
 
     # Buscar entrevista de la solicitud
     def cargar_entrevista_solicitud(self, id_solicitud):
@@ -402,6 +497,4 @@ class ProfesionalController(QObject):
         self.msg.mostrar_mensaje("Perfil actualizado", "Cambios guardados correctamente.")
 
     
-
-
 

@@ -205,7 +205,7 @@ class VentanaInterno(QMainWindow):
         # BOTÓN DE USUARIO (Arriba a la derecha)
         self.usuario_widget = QWidget()
         self.usuario_layout = QHBoxLayout(self.usuario_widget)
-        self.usuario_layout.setContentsMargins(0, 0, 10, 0)        
+        self.usuario_layout.setContentsMargins(10, 0, 10, 0)
 
         self.boton_usuario = QPushButton()
         self.boton_usuario.setToolTip("Perfil de usuario")
@@ -221,9 +221,16 @@ class VentanaInterno(QMainWindow):
             QPushButton:hover { background-color: rgba(85, 85, 85, 0.3); }
         """)
 
-        # Añadir botón al layout de usuario
+        self.titulo_pantalla = QLabel("Inicio")
+        self.titulo_pantalla.setFont(QFont("Arial", 16, QFont.Bold))
+        self.titulo_pantalla.setAlignment(Qt.AlignCenter)
+        self.titulo_pantalla.setStyleSheet("color: #111111;")
+
+        # Añadir título y botón al layout superior
         self.usuario_layout.addStretch(1)
-        self.usuario_layout.addWidget(self.boton_usuario)    
+        self.usuario_layout.addWidget(self.titulo_pantalla, alignment=Qt.AlignVCenter)
+        self.usuario_layout.addStretch(1)
+        self.usuario_layout.addWidget(self.boton_usuario)
 
         # PANTALLAS
         self.stacked_widget = QStackedWidget()
@@ -245,8 +252,20 @@ class VentanaInterno(QMainWindow):
         self.stacked_widget.addWidget(self.pantalla_perfil)
         # añadir más pantallas 
 
+        self._titulos_por_pantalla = {
+            self.pantalla_bienvenida: "Inicio",
+            self.pantalla_preguntas: "Preguntas",
+            self.pantalla_resumen_edit: "Resumen de entrevista",
+            self.pantalla_resumen: "Resumen de entrevista",
+            self.pantalla_progreso: "Progreso",
+            self.pantalla_solicitud: "Nueva solicitud",
+            self.pantalla_perfil: "Perfil",
+        }
+        self.stacked_widget.currentChanged.connect(self._actualizar_titulo_pantalla)
+
         # pantalla inicial
         self.stacked_widget.setCurrentWidget(self.pantalla_bienvenida)
+        self._actualizar_titulo_pantalla()
 
         # Contenedor central
         self.central_widget = QWidget()
@@ -426,6 +445,10 @@ class VentanaInterno(QMainWindow):
 
     def mostrar_pantalla_perfil(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_perfil)
+
+    def _actualizar_titulo_pantalla(self, _index=None):
+        actual = self.stacked_widget.currentWidget()
+        self.titulo_pantalla.setText(self._titulos_por_pantalla.get(actual, "INPERIA"))
 
     def mostrar_advertencia(self, tit, mensaje):
         """

@@ -25,11 +25,6 @@ class PantallaListaModificarPreguntas(QWidget):
     def _iniciar_ui(self):
         principal_layout = QVBoxLayout(self)
 
-        titulo_pantalla = QLabel("Modificar Preguntas")
-        titulo_pantalla.setFont(QFont("Arial", 20, QFont.Bold))
-        titulo_pantalla.setAlignment(Qt.AlignLeft)
-        principal_layout.addWidget(titulo_pantalla)
-
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.NoFrame)
