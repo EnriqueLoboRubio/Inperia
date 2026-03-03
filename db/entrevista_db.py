@@ -99,6 +99,38 @@ def encontrar_entrevista_por_solicitud(id_solicitud):
     conexion.close()    
     return entrevista
 
+
+def listar_ultimas_entrevistas_por_interno(id_interno, limite=5):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT
+                e.id,
+                e.id_solicitud,
+                e.fecha,
+                e.puntuacion_global,
+                s.tipo,
+                COALESCE(ce.comentario_profesional, ''),
+                COALESCE(u.nombre, '')
+            FROM entrevistas e
+            LEFT JOIN solicitudes s ON s.id = e.id_solicitud
+            LEFT JOIN comentarios_ent ce
+              ON ce.id_entrevista = e.id
+             AND ce.id_profesional = s.id_profesional
+            LEFT JOIN usuarios u
+              ON u.id = s.id_profesional
+            WHERE e.id_interno = ?
+            ORDER BY e.fecha DESC, e.id DESC
+            LIMIT ?
+            """,
+            (id_interno, limite),
+        )
+        return cursor.fetchall()
+    finally:
+        conexion.close()
+
 # Función para borrar la tabla de entrevistas (para pruebas)
 def borrar_entrevistas():
     conexion = obtener_conexion()

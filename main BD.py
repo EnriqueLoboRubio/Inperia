@@ -8,123 +8,189 @@ from db.comentario_entrevista_db import *
 from db.profesional_db import *
 from db.pregunta_db import *
 from db.conexion import obtener_conexion
-import sqlite3
-import json
-import os
-from models.entrevista import Entrevista
 
 from models.pregunta import Pregunta
 
-def generar_usuario():    
-    agregar_usuario("admin", "admin@g.com", "Admin123", "administrador") #1
-    agregar_usuario("interno 2", "2@g.com", "2", "interno") #2
-    agregar_usuario("interno 3", "3@g.com", "3", "interno") #3
-    agregar_usuario("profesional", "4@g.com", "4", "profesional") #4
-    agregar_usuario("interno 5", "5@g.com", "5", "interno") #5
-    agregar_usuario("interno 6", "6@g.com", "6", "interno") #6
-    agregar_usuario("profesional 2", "7@g.com", "7", "profesional") #7
+
+def generar_usuarios():    
+    agregar_usuario("Interno 1", "interno1@g.com", "1", "interno")
+    agregar_usuario("Interno 2", "interno2@g.com", "2", "interno")
+    agregar_usuario("Interno 3", "interno3@g.com", "3", "interno")
+    agregar_usuario("Interno 4", "interno4@g.com", "4", "interno")
+    agregar_usuario("Profesional 1", "prof1@g.com", "1", "profesional")
+    agregar_usuario("Profesional 2", "prof2@g.com", "2", "profesional")
+
 
 def generar_internos():
-    agregar_interno("2", "2", "condenado", "Robo", "5", "1980-01-01", "2025-01-01", "Módulo A")
-    agregar_interno("3", "3", "condenado", "Robo", "5", "1980-01-01", "2025-01-01", "Módulo A")
-    agregar_interno("5", "5", "condenado", "Robo", "5", "1980-01-01", "2025-01-01", "Módulo B")
-    agregar_interno("6", "6", "condenado", "Estafa", "4", "1980-02-02", "2025-02-02", "Módulo C")
+    u1 = encontrar_usuario_por_email("interno1@g.com")
+    u2 = encontrar_usuario_por_email("interno2@g.com")
+    u3 = encontrar_usuario_por_email("interno3@g.com")
+    u4 = encontrar_usuario_por_email("interno4@g.com")
 
-def generar_solicitud():
-    agregar_solicitud("2", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "2020-11-20", "2020-11-22", "2020-11-25",
-                      "16:00", "10:00", "Moguer", "Moguer", "calle 123", "21", 
-                      "pepa", "1233", "mujer", "calle 123",
-                      "carmen", "2222", "madre",
-                      "123", "123456", "nada", "iniciada") #1
-    agregar_solicitud("5", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "2020-11-20", "2020-11-22", "2020-11-25",
-                      "16:00", "10:00", "Moguer", "Moguer", "calle 123", "21", 
-                      "pepa", "1233", "mujer", "calle 123",
-                      "carmen", "2222", "madre",
-                      "123", "123456", "nada", "pendiente") #2
-    agregar_solicitud("6", "juridico", "cita judicial", "salida para comparecencia en sede judicial", "normal", "2026-03-09", "2026-03-10", "2026-03-10",
-                      "08:00", "14:00", "Juzgado Central", "Huelva", "Avenida Principal 45", "21001",
-                      "Laura Perez", "600112233", "hermana", "Calle Real 10",
-                      "Antonio Perez", "600445566", "padre",
-                      "1", "1", "Documentacion completa revisada", "rechazada") #3
-
-def generar_profesionales_y_asignaciones():
-    # Crear registros en tabla profesionales
-    profesional_1 = encontrar_usuario_por_email("4@g.com")
-    profesional_2 = encontrar_usuario_por_email("7@g.com")
-
-    if profesional_1:
-        agregar_profesional(profesional_1[0], "COL-0004")
-    if profesional_2:
-        agregar_profesional(profesional_2[0], "COL-0007")
-
-    # Asignar la solicitud rechazada al primer profesional
-    conexion = obtener_conexion()
-    cursor = conexion.cursor()
-    if profesional_1:
-        cursor.execute(
-            """
-            UPDATE solicitudes
-            SET id_profesional = ?
-            WHERE estado = 'rechazada'
-            """,
-            (profesional_1[0],),
-        )
-    conexion.commit()
-    conexion.close()
+    agregar_interno(
+        1, u1[0], "condenado", "Hurto", 3, "1991-04-12", "2024-01-10", "Mod A",
+        lugar_nacimiento="Huelva",
+        nombre_contacto_emergencia="Maria Torres",
+        relacion_contacto_emergencia="madre",
+        numero_contacto_emergencia="600111001",
+    )
+    agregar_interno(
+        2, u2[0], "condenado", "Robo", 5, "1989-09-22", "2023-11-15", "Mod B",
+        lugar_nacimiento="Sevilla",
+        nombre_contacto_emergencia="Luis Gomez",
+        relacion_contacto_emergencia="padre",
+        numero_contacto_emergencia="600111002",
+    )
+    agregar_interno(
+        3, u3[0], "provisional", "Estafa", 2, "1993-02-03", "2025-01-20", "Mod C",
+        lugar_nacimiento="Cadiz",
+        nombre_contacto_emergencia="Clara Ruiz",
+        relacion_contacto_emergencia="hermana",
+        numero_contacto_emergencia="600111003",
+    )
+    agregar_interno(
+        4, u4[0], "condenado", "Lesiones", 4, "1987-12-30", "2022-07-01", "Mod D",
+        lugar_nacimiento="Cordoba",
+        nombre_contacto_emergencia="Pedro Martin",
+        relacion_contacto_emergencia="tio",
+        numero_contacto_emergencia="600111004",
+    )
 
 
-def generar_entrevista():
-    lista_objetos_pregunta = []
+def generar_profesionales():
+    prof1 = encontrar_usuario_por_email("prof1@g.com")
+    prof2 = encontrar_usuario_por_email("prof2@g.com")
 
-    # Creamos 10 objetos Pregunta con datos de relleno
+    id_prof1 = None
+    id_prof2 = None
+
+    if prof1:
+        agregar_profesional(prof1[0], "COL-0001")
+        id_prof1 = prof1[0]
+    if prof2:
+        agregar_profesional(prof2[0], "COL-0002")
+        id_prof2 = prof2[0]
+
+    return id_prof1, id_prof2
+
+
+def _crear_solicitud_completa(id_interno, estado, fecha_base, id_profesional=None, conclusiones_profesional=""):
+    return agregar_solicitud(
+        id_interno=id_interno,
+        tipo="familiar",
+        motivo=f"Solicitud {estado} interno {id_interno}",
+        descripcion="Salida temporal por motivo familiar con toda la documentacion.",
+        urgencia="importante",
+        fecha_creacion=fecha_base,
+        fecha_inicio=fecha_base,
+        fecha_fin=fecha_base,
+        hora_salida="09:00",
+        hora_llegada="18:00",
+        destino="Huelva",
+        provincia="Huelva",
+        direccion="Calle Principal 10",
+        cod_pos="21001",
+        nombre_cp="Ana Contacto",
+        telf_cp="600123123",
+        relacion_cp="madre",
+        direccion_cp="Calle Principal 10",
+        nombre_cs="Juan Contacto",
+        telf_cs="600456456",
+        relacion_cs="padre",
+        docs=7,
+        compromiso=63,
+        observaciones=f"Observaciones para estado {estado}",
+        estado=estado,
+        id_profesional=id_profesional,
+        conclusiones_profesional=conclusiones_profesional,
+    )
+
+
+def _crear_respuestas_relleno(prefijo):
+    preguntas = []
     for i in range(1, 11):
-        # Instanciamos: ID (i) y Texto ("respuesta X")
-        nueva_pregunta = Pregunta(i, f"respuesta {i}")
-        lista_objetos_pregunta.append(nueva_pregunta)
+        p = Pregunta(i, f"{prefijo}: respuesta de la pregunta {i}")
+        p.archivo_audio = None
+        preguntas.append(p)
+    return preguntas
 
-    agregar_entrevista_y_respuestas("5", "2", "2020-11-22", lista_objetos_pregunta)
-    agregar_entrevista_y_respuestas("6", "3", "2026-03-10", lista_objetos_pregunta)
 
-def generar_comentarios_preguntas():
+def _crear_entrevista_con_respuestas(id_interno, id_solicitud, fecha, prefijo):
+    respuestas = _crear_respuestas_relleno(prefijo)
+    return agregar_entrevista_y_respuestas(id_interno, id_solicitud, fecha, respuestas)
+
+
+def _anadir_comentarios_preguntas(id_entrevista, id_profesional, fecha, prefijo):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
+    cursor.execute(
+        """
+        SELECT id, id_pregunta
+        FROM respuestas
+        WHERE id_entrevista = ?
+        ORDER BY id_pregunta
+        LIMIT 3
+        """,
+        (id_entrevista,),
+    )
+    filas = cursor.fetchall()
 
-    # Entrevistas generadas en generar_entrevista()
-    entrevistas_objetivo = [2, 3]
-
-    for id_entrevista in entrevistas_objetivo:
+    for id_respuesta, id_pregunta in filas:
         cursor.execute(
             """
-            SELECT id, id_pregunta
-            FROM respuestas
-            WHERE id_entrevista = ?
-            ORDER BY id_pregunta
+            INSERT INTO comentarios_pre (id_respuesta, id_profesional, comentario, fecha)
+            VALUES (?, ?, ?, ?)
             """,
-            (id_entrevista,),
+            (id_respuesta, id_profesional, f"{prefijo} - comentario pregunta {id_pregunta}", fecha),
         )
-        respuestas = cursor.fetchall()
-
-        for id_respuesta, id_pregunta in respuestas:
-            comentarios = [
-                (4, f"Comentario 1 - Entrevista {id_entrevista}, pregunta {id_pregunta}", "2026-03-12"),
-                (7, f"Comentario 2 - Entrevista {id_entrevista}, pregunta {id_pregunta}", "2026-03-13"),
-            ]
-
-            cursor.executemany(
-                """
-                INSERT INTO comentarios_pre (id_respuesta, id_profesional, comentario, fecha)
-                VALUES (?, ?, ?, ?)
-                """,
-                [(id_respuesta, id_profesional, texto, fecha) for id_profesional, texto, fecha in comentarios],
-            )
 
     conexion.commit()
     conexion.close()
+
+
+def generar_escenarios():
+    prof1_id, prof2_id = generar_profesionales()
+
+    # Interno 1: sin nada pendiente.
+    # No se crean solicitudes para interno 1.
+
+    # Interno 2: pendiente sin profesional asignado.
+    sol_i2_pend = _crear_solicitud_completa(2, "pendiente", "2026-03-01")
+    _crear_entrevista_con_respuestas(2, sol_i2_pend, "2026-03-01", "Interno 2 pendiente")
+
+    # Interno 2: aceptada con profesional 1, entrevista completa y comentarios.
+    sol_i2_acep = _crear_solicitud_completa(
+        2, "aceptada", "2025-02-10", id_profesional=prof1_id,
+        conclusiones_profesional="Aprobada tras evaluacion completa del caso.",
+    )
+    ent_i2_acep = _crear_entrevista_con_respuestas(2, sol_i2_acep, "2025-02-11", "Interno 2 aceptada")
+    agregar_comentario_ia(ent_i2_acep, prof1_id, "IA: riesgo bajo y buena coherencia narrativa.", "2025-02-12")
+    agregar_comentario_profesional(ent_i2_acep, prof1_id, "Profesional: apto para permiso solicitado.", "2025-02-12")
+    _anadir_comentarios_preguntas(ent_i2_acep, prof1_id, "2025-02-12", "Interno 2 aceptada")
+
+    # Interno 3: una pendiente con profesional 2 asignado.
+    sol_i3_pend = _crear_solicitud_completa(3, "pendiente", "2026-03-02", id_profesional=prof2_id)
+    _crear_entrevista_con_respuestas(3, sol_i3_pend, "2026-03-02", "Interno 3 pendiente")
+
+    # Interno 3: una rechazada con profesional 1, entrevista y comentarios.
+    sol_i3_rech = _crear_solicitud_completa(
+        3, "rechazada", "2026-02-05", id_profesional=prof1_id,
+        conclusiones_profesional="Rechazada por inconsistencias en la justificacion.",
+    )
+    ent_i3_rech = _crear_entrevista_con_respuestas(3, sol_i3_rech, "2026-02-06", "Interno 3 rechazada")
+    agregar_comentario_ia(ent_i3_rech, prof1_id, "IA: detecta contradicciones relevantes en respuestas.", "2026-02-07")
+    agregar_comentario_profesional(ent_i3_rech, prof1_id, "Profesional: no procede autorizacion.", "2026-02-07")
+    _anadir_comentarios_preguntas(ent_i3_rech, prof1_id, "2026-02-07", "Interno 3 rechazada")
+
+    # Interno 4: solicitud completa sin entrevista y sin profesional asignado.
+    _crear_solicitud_completa(
+        4, "iniciada", "2026-01-20", id_profesional=None,
+        conclusiones_profesional="",
+    )
+
 
 def reiniciar_base_de_datos():
-    
-
-    print("Borrando tablas antiguas...")    
+    print("Borrando tablas antiguas...")
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     cursor.execute("DROP TABLE IF EXISTS comentarios_pre")
@@ -137,84 +203,60 @@ def reiniciar_base_de_datos():
     borrar_solicitudes()
     eliminar_profesional()
     borrar_internos()
-    borrar_usuarios()    
-    
-    
-    print("Tablas borradas con éxito.")
+    borrar_usuarios()
+    print("Tablas borradas con exito.")
 
     print("Creando nuevas tablas...")
-    
-    crear_usuario()       #
-    crear_interno()       #
-    crear_profesional()   #
-    crear_respuesta()     #
-    crear_comentario_pre() #
-    crear_comentario_ent() #
-    crear_solicitud()     #
-    crear_entrevista()    #
-    crear_pregunta()      #
-    
-    print("Base de datos reconstruida completamente.")  
+    crear_usuario()
+    crear_interno()
+    crear_profesional()
+    crear_respuesta()
+    crear_comentario_pre()
+    crear_comentario_ent()
+    crear_solicitud()
+    crear_entrevista()
+    crear_pregunta()
+    print("Base de datos reconstruida completamente.")
 
-def ver_info_completa_por_solicitud(id_solicitud):
 
-    #Ver estado de soliciud
-    estado= obtener_estado_solicitud(id_solicitud)
-    print(f"Estado solicitud {estado}")
-    
-    #Buscar entrevista con id asociada
-    entrevista = None
-    datos_entrevista = encontrar_entrevista_por_solicitud(id_solicitud)
-    if datos_entrevista:
-        entrevista = Entrevista(
-                id_entrevista=datos_entrevista[0],
-                id_interno=datos_entrevista[1],
-                fecha=datos_entrevista[3]
-            )
+def imprimir_resumen_bd():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
 
-        entrevista.puntuacion = datos_entrevista[4]
+    print("\n===== RESUMEN BD =====")
+    for tabla in ["usuarios", "internos", "profesionales", "solicitudes", "entrevistas", "respuestas", "comentarios_ent", "comentarios_pre"]:
+        cursor.execute(f"SELECT COUNT(*) FROM {tabla}")
+        total = cursor.fetchone()[0]
+        print(f"{tabla}: {total}")
 
-    #Cargar respuestas de entrevista
-    datos_respuestas = obtener_respuestas_por_entrevista(entrevista.id_entrevista)
+    print("\nSolicitudes por interno y estado:")
+    cursor.execute(
+        """
+        SELECT id_interno, estado, COUNT(*)
+        FROM solicitudes
+        GROUP BY id_interno, estado
+        ORDER BY id_interno, estado
+        """
+    )
+    for fila in cursor.fetchall():
+        print(f"  interno {fila[0]} -> {fila[1]}: {fila[2]}")
 
-    for dato in datos_respuestas:
-    # A. Instanciamos la Pregunta con los datos obligatorios del __init__
-    # __init__(self, id_pregunta, respuesta)
-        nueva_pregunta = Pregunta(
-            id_pregunta=dato["id_pregunta"], 
-            respuesta=dato["texto_respuesta"]
-        )
-        
-        # B. Rellenamos los atributos opcionales que no están en el __init__
-        # pero que sí están en tu clase Pregunta y en la BD
-        if dato["nivel"] is not None:
-            nueva_pregunta.nivel = dato["nivel"]
-            
-        if dato["puntuacion_ia"] is not None:
-            nueva_pregunta.valoracion_ia = str(dato["puntuacion_ia"]) # Lo convierto a string si tu modelo lo espera así
-            
-        if dato["ruta_audio"] is not None:
-            nueva_pregunta.archivo_audio = dato["ruta_audio"]
+    print("\nUsuarios creados:")
+    cursor.execute("SELECT id, nombre, email, rol FROM usuarios ORDER BY id")
+    for fila in cursor.fetchall():
+        print(f"  id={fila[0]} | {fila[1]} | {fila[2]} | rol={fila[3]}")
 
-        # C. Añadimos el objeto Pregunta a la lista de respuestas de la Entrevista
-        entrevista.add_respuestas(nueva_pregunta)
+    conexion.close()
 
-    print(entrevista.to_json())
 
 def reiniciar_y_generar():
     reiniciar_base_de_datos()
     cargar_preguntas_desde_json()
-
-    generar_usuario()
+    generar_usuarios()
     generar_internos()
-    generar_solicitud()
-    generar_profesionales_y_asignaciones()
-    generar_entrevista()
-    generar_comentarios_preguntas()
+    generar_escenarios()
+    imprimir_resumen_bd()
+
 
 if __name__ == "__main__":
-    
     reiniciar_y_generar()
-    
-    #ver_info_completa_por_solicitud("1")                 
-    

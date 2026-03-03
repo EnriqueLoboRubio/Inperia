@@ -91,6 +91,12 @@ class ProfesionalController(QObject):
         self.ventana_profesional.pantalla_lista_solicitud.filtro_superior_cambiado.connect(
             self.gestionar_filtro_superior_lista
         )
+        self.ventana_profesional.pantalla_lista_solicitud.ver_perfil_interno.connect(
+            self.mostrar_perfil_interno
+        )
+        self.ventana_profesional.pantalla_perfil_interno.volver.connect(
+            self.recargar_lista_actual
+        )
         self.ventana_profesional.pantalla_lista_modificar_preguntas.grupo_botones_editar.idClicked.connect(
             self.mostrar_detalle_editar_pregunta
         )
@@ -212,12 +218,12 @@ class ProfesionalController(QObject):
 
         id_solicitud = getattr(solicitud, "id_solicitud", None)
         if id_solicitud is None:
-            self.msg.mostrar_advertencia("Atencion", "No se pudo identificar la solicitud.")
+            self.msg.mostrar_advertencia("Atención", "No se pudo identificar la solicitud.")
             return
 
         ok = asignar_profesional_a_solicitud(id_solicitud, self.profesional.id_usuario)
         if not ok:
-            self.msg.mostrar_advertencia("Atencion", "No se pudo asignar la solicitud.")
+            self.msg.mostrar_advertencia("Atención", "No se pudo asignar la solicitud.")
             return
 
         self.msg.mostrar_mensaje("Solicitud asignada", "Solicitud asignada correctamente")
@@ -283,7 +289,6 @@ class ProfesionalController(QObject):
         solicitud.conclusiones_profesional = datos_solicitud[25]
         solicitud.id_profesional = datos_solicitud[26]
         solicitud.estado = datos_solicitud[27]
-        solicitud.evaluacion_automatica = datos_solicitud[28] if len(datos_solicitud) > 28 else ""
         solicitud.entrevista = self.cargar_entrevista_solicitud(solicitud.id_solicitud)
         return solicitud
 
@@ -309,10 +314,26 @@ class ProfesionalController(QObject):
                 fecha_nac=dato[5],
                 condena=dato[4],
                 fecha_ingreso=dato[6],
-                modulo=dato[7]
+                modulo=dato[7],
+                lugar_nacimiento=dato[12] if len(dato) > 12 else "",
+                nombre_contacto_emergencia=dato[13] if len(dato) > 13 else "",
+                relacion_contacto_emergencia=dato[14] if len(dato) > 14 else "",
+                numero_contacto_emergencia=dato[15] if len(dato) > 15 else "",
             )
             internos.append(interno)
         return internos
+
+    def mostrar_perfil_interno(self, interno):
+        if interno is None:
+            return
+        entrevistas = listar_ultimas_entrevistas_por_interno(interno.num_RC, limite=5)
+        solicitudes = listar_solicitudes_por_interno(interno.num_RC)
+        self.ventana_profesional.pantalla_perfil_interno.cargar_perfil(
+            interno=interno,
+            entrevistas=entrevistas,
+            solicitudes=solicitudes,
+        )
+        self.ventana_profesional.mostrar_pantalla_perfil_interno()
 
     # Buscar entrevista de la solicitud
     def cargar_entrevista_solicitud(self, id_solicitud):
@@ -352,18 +373,18 @@ class ProfesionalController(QObject):
         password_confirm = datos["password_confirm"]
 
         if not nombre_nuevo:
-            self.msg.mostrar_advertencia("Atencion", "El nombre no puede estar vacio.")
+            self.msg.mostrar_advertencia("Atención", "El nombre no puede estar vacío.")
             return
 
         if password or password_confirm:
             if password != password_confirm:
-                self.msg.mostrar_advertencia("Atencion", "Las contraseñas no coinciden.")
+                self.msg.mostrar_advertencia("Atención", "Las contraseñas no coinciden.")
                 return
 
         cambio_nombre = nombre_nuevo != nombre_original
         cambio_password = bool(password)
         if not cambio_nombre and not cambio_password:
-            self.msg.mostrar_advertencia("Atencion", "No hay cambios para guardar.")
+            self.msg.mostrar_advertencia("Atención", "No hay cambios para guardar.")
             return
 
         ok = actualizar_usuario(
@@ -372,7 +393,7 @@ class ProfesionalController(QObject):
             contrasena=password if cambio_password else None
         )
         if not ok:
-            self.msg.mostrar_advertencia("Atencion", "No se pudo actualizar el perfil.")
+            self.msg.mostrar_advertencia("Atención", "No se pudo actualizar el perfil.")
             return
 
         self.profesional.nombre = nombre_nuevo

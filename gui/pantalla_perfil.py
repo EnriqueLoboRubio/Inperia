@@ -1,10 +1,9 @@
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFrame
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFrame
 )
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QFont
 
-from gui.estilos import ESTILO_BOTON_NEGRO
+from gui.estilos import *
 
 
 class PantallaPerfil(QWidget):
@@ -12,91 +11,100 @@ class PantallaPerfil(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._nombre_original = ""
+        self._iniciar_ui()
 
+    def _iniciar_ui(self):
         principal_layout = QVBoxLayout(self)
-        principal_layout.setContentsMargins(60, 30, 60, 30)
-        principal_layout.setSpacing(14)
-
-        self.titulo = QLabel("Mi perfil")
-        self.titulo.setFont(QFont("Arial", 22, QFont.Bold))
-        self.titulo.setAlignment(Qt.AlignLeft)
-        principal_layout.addWidget(self.titulo)
+        principal_layout.setContentsMargins(20, 20, 20, 20)
+        principal_layout.setSpacing(20)
+        self.setStyleSheet("QWidget { background-color: #f0f0f0; }")
 
         marco = QFrame()
-        marco.setStyleSheet(
-            """
-            QFrame {
-                background-color: #F0F0F0;
-                border: 2px solid #E0E0E0;
-                border-radius: 14px;
-            }
-            """
-        )
-        layout_form = QVBoxLayout(marco)
-        layout_form.setContentsMargins(30, 25, 30, 25)
-        layout_form.setSpacing(12)
+        marco.setObjectName("apartado")
+        marco.setStyleSheet(ESTILO_APARTADO_FRAME)
+        perfil_layout = QVBoxLayout(marco)
+        perfil_layout.setContentsMargins(30, 24, 30, 24)
+        perfil_layout.setSpacing(16)
+
+        self.titulo = QLabel("Mi perfil")
+        self.titulo.setStyleSheet(ESTILO_TITULO_PASO_ENCA)
+        perfil_layout.addWidget(self.titulo)
+
+        subtitulo = QLabel("Actualiza tus datos personales y de acceso")
+        subtitulo.setStyleSheet(ESTILO_SUBTITULO_SOLICITUD)
+        perfil_layout.addWidget(subtitulo)
+
+        separador = QFrame()
+        separador.setFrameShape(QFrame.HLine)
+        separador.setStyleSheet("background-color: #E0E0E0; max-height: 1px;")
+        perfil_layout.addWidget(separador)
+
+        cabecera_form = QHBoxLayout()
+        cabecera_form.setSpacing(20)
+
+        bloque_email = QVBoxLayout()
+        bloque_email.setSpacing(5)
+
+        lbl_email_titulo = QLabel("Correo de la cuenta")
+        lbl_email_titulo.setStyleSheet(ESTILO_TITULO_APARTADO)
+        bloque_email.addWidget(lbl_email_titulo)
 
         self.lbl_email = QLabel("")
-        self.lbl_email.setStyleSheet("color: #666; font-size: 11pt;")
-        layout_form.addWidget(self.lbl_email)
+        self.lbl_email.setStyleSheet(ESTILO_TEXTO)
+        self.lbl_email.setWordWrap(True)
+        bloque_email.addWidget(self.lbl_email)
 
+        cabecera_form.addLayout(bloque_email)
+        cabecera_form.addStretch()
+        perfil_layout.addLayout(cabecera_form)        
+
+        perfil_layout.addWidget(self._label_campo("Nombre completo"))
         self.input_nombre = QLineEdit()
         self.input_nombre.setPlaceholderText("Nombre completo")
-        self.input_nombre.setStyleSheet(self._estilo_input())
-        layout_form.addWidget(self._label_campo("Nombre"))
-        layout_form.addWidget(self.input_nombre)
+        self.input_nombre.setStyleSheet(ESTILO_INPUT)
+        perfil_layout.addWidget(self.input_nombre)
 
+        perfil_layout.addWidget(self._label_campo("Nueva contraseña"))
         self.input_pass = QLineEdit()
         self.input_pass.setPlaceholderText("Nueva contraseña (opcional)")
         self.input_pass.setEchoMode(QLineEdit.Password)
-        self.input_pass.setStyleSheet(self._estilo_input())
-        layout_form.addWidget(self._label_campo("Nueva contraseña"))
-        layout_form.addWidget(self.input_pass)
+        self.input_pass.setStyleSheet(ESTILO_INPUT)
+        perfil_layout.addWidget(self.input_pass)
 
+        perfil_layout.addWidget(self._label_campo("Confirmar nueva contraseña"))
         self.input_pass_2 = QLineEdit()
         self.input_pass_2.setPlaceholderText("Repetir nueva contraseña")
         self.input_pass_2.setEchoMode(QLineEdit.Password)
-        self.input_pass_2.setStyleSheet(self._estilo_input())
-        layout_form.addWidget(self._label_campo("Confirmar contraseña"))
-        layout_form.addWidget(self.input_pass_2)
+        self.input_pass_2.setStyleSheet(ESTILO_INPUT)
+        perfil_layout.addWidget(self.input_pass_2)
+
+        ayuda_password = QLabel("Si dejas vacíos los campos de contraseña, no se modificará.")
+        ayuda_password.setStyleSheet(ESTILO_TEXTO)
+        ayuda_password.setWordWrap(True)
+        perfil_layout.addWidget(ayuda_password)
 
         self.boton_guardar = QPushButton("Guardar cambios")
-        self.boton_guardar.setStyleSheet(ESTILO_BOTON_NEGRO)
+        self.boton_guardar.setFixedSize(200, 46)
+        self.boton_guardar.setStyleSheet(ESTILO_BOTON_SIG_ATR)
         self.boton_guardar.setCursor(Qt.PointingHandCursor)
         self.boton_guardar.clicked.connect(self.guardar_cambios.emit)
-        layout_form.addWidget(self.boton_guardar, alignment=Qt.AlignRight)
+        perfil_layout.addWidget(self.boton_guardar, alignment=Qt.AlignRight)
 
         principal_layout.addWidget(marco)
         principal_layout.addStretch(1)
 
-        self._nombre_original = ""
-
     def _label_campo(self, texto):
         lbl = QLabel(texto)
-        lbl.setStyleSheet("color: #444; font-size: 11pt; font-weight: bold;")
+        lbl.setStyleSheet(ESTILO_TITULO_APARTADO)
         return lbl
-
-    def _estilo_input(self):
-        return """
-            QLineEdit {
-                background-color: white;
-                border: 1px solid #D0D0D0;
-                border-radius: 8px;
-                padding: 9px 12px;
-                font-size: 11pt;
-                min-height: 24px;
-            }
-            QLineEdit:focus {
-                border: 1px solid #8A8A8A;
-            }
-        """
 
     def set_datos_usuario(self, usuario):
         self._nombre_original = str(usuario.nombre or "")
         self.input_nombre.setText(self._nombre_original)
         self.input_pass.clear()
         self.input_pass_2.clear()
-        self.lbl_email.setText(f"Correo: {usuario.email}")
+        self.lbl_email.setText(f"{usuario.email}")
 
     def get_datos_edicion(self):
         return {

@@ -162,9 +162,9 @@ class TarjetaSolicitud(QFrame):
         cabecera.addLayout(botones_superior)
         layout_principal.addLayout(cabecera)
 
-        # Texto de evaluación automática o conclusiones profesional
-        eval_auto, conc_prof = self._textos_evaluacion()
-        if eval_auto or conc_prof:
+        # Texto de conclusiones profesional
+        conc_prof = self._texto_conclusion_profesional()
+        if conc_prof:
             caja_eval = QFrame()
             caja_eval.setStyleSheet(
                 "QFrame { background-color: #E5E5E5; border: none; border-radius: 14px; }"
@@ -173,25 +173,14 @@ class TarjetaSolicitud(QFrame):
             eval_layout.setContentsMargins(16, 12, 16, 12)
             eval_layout.setSpacing(8)
 
-            if eval_auto:
-                lbl_titulo_auto = QLabel("Evaluación automática:")
-                lbl_titulo_auto.setStyleSheet("font-size: 12pt; font-weight: bold; color: #1A1A1A;")
-                eval_layout.addWidget(lbl_titulo_auto)
+            lbl_titulo_prof = QLabel("Conclusiones del profesional:")
+            lbl_titulo_prof.setStyleSheet("font-size: 12pt; font-weight: bold; color: #1A1A1A;")
+            eval_layout.addWidget(lbl_titulo_prof)
 
-                lbl_texto_auto = QLabel(eval_auto)
-                lbl_texto_auto.setWordWrap(True)
-                lbl_texto_auto.setStyleSheet("font-size: 11pt; color: #222222;")
-                eval_layout.addWidget(lbl_texto_auto)
-
-            if conc_prof:
-                lbl_titulo_prof = QLabel("Conclusiones del profesional:")
-                lbl_titulo_prof.setStyleSheet("font-size: 12pt; font-weight: bold; color: #1A1A1A;")
-                eval_layout.addWidget(lbl_titulo_prof)
-
-                lbl_texto_prof = QLabel(conc_prof)
-                lbl_texto_prof.setWordWrap(True)
-                lbl_texto_prof.setStyleSheet("font-size: 11pt; color: #222222;")
-                eval_layout.addWidget(lbl_texto_prof)
+            lbl_texto_prof = QLabel(conc_prof)
+            lbl_texto_prof.setWordWrap(True)
+            lbl_texto_prof.setStyleSheet("font-size: 11pt; color: #222222;")
+            eval_layout.addWidget(lbl_texto_prof)
 
             layout_principal.addWidget(caja_eval)
 
@@ -237,10 +226,9 @@ class TarjetaSolicitud(QFrame):
     def _sin_profesional_asignado(self):
         return getattr(self.solicitud, "id_profesional", None) is None
 
-    def _textos_evaluacion(self):
-        eval_auto = (getattr(self.solicitud, "evaluacion_automatica", "") or "").strip()
+    def _texto_conclusion_profesional(self):
         conc_prof = (getattr(self.solicitud, "conclusiones_profesional", "") or "").strip()
-        return eval_auto, conc_prof
+        return conc_prof
 
 
 class PantallaListaSolicitud(QWidget):
@@ -552,7 +540,6 @@ class PantallaListaSolicitud(QWidget):
     def _coincide_top_activo(self, solicitud):
         estado = str(getattr(solicitud, "estado", "")).lower()
         sin_profesional = getattr(solicitud, "id_profesional", None) is None
-        eval_auto = (getattr(solicitud, "evaluacion_automatica", "") or "").strip()
         conc_prof = (getattr(solicitud, "conclusiones_profesional", "") or "").strip()
 
         if self._top_activo == "nuevas":
@@ -562,7 +549,6 @@ class PantallaListaSolicitud(QWidget):
             return (
                 (not sin_profesional)
                 and estado in {"iniciada", "pendiente"}
-                and eval_auto == ""
                 and conc_prof == ""
             )
 

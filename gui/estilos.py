@@ -339,7 +339,8 @@ ESTILO_BOTON_ERROR = """
         """
 
 ESTILO_BOTON_PERFIL =  """
-            QPushButton {
+            
+            QLabel, QPushButton {
                 background-color: black;
                 color: white;
                 border: none;
@@ -579,6 +580,13 @@ ESTILO_TARJETA_PERMISO_NO ="""
                 }
                 QLabel { background: transparent; border: none; }
 """
+
+# --- TARJETA ENTREVISTA (perfil interno/profesional) ---
+ESTILO_TITULO_ENTREVISTA = "color: black; font-size: 12pt; font-weight: bold; border: none; background: transparent;"
+ESTILO_FECHA_ENTREVISTA = "color: black; font-size: 10pt; font-weight: 400; border: none; background: transparent;"
+ESTILO_AUTOR_ENTREVISTA = "color: #757575; font-size: 9pt; font-weight: 500; border: none; background: transparent;"
+ESTILO_COMENTARIO_ENTREVISTA = "color: #8A8A8A; font-size: 11pt; font-weight: 600; border: none; background: transparent;"
+ESTILO_PUNTUACION_ENTREVISTA = "color: #757575; font-size: 11pt; font-weight: 600; border: none; background: transparent;"
 
 
 # --- SCROLL / SLIDER ---

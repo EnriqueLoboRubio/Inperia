@@ -6,6 +6,21 @@ from db.fecha_utils import normalizar_fecha
 
 # -------------------------------- INTERNO ------------------------------- #
 
+
+def _asegurar_columnas_extra_interno(cursor):
+    columnas_nuevas = [
+        "lugar_nacimiento TEXT",
+        "nombre_contacto_emergencia TEXT",
+        "relacion_contacto_emergencia TEXT",
+        "numero_contacto_emergencia TEXT",
+    ]
+    for definicion in columnas_nuevas:
+        try:
+            cursor.execute(f"ALTER TABLE internos ADD COLUMN {definicion}")
+        except sqlite3.OperationalError:
+            # La columna ya existe.
+            pass
+
 # Función para crear la tabla de internos
 def crear_interno():
     conexion = obtener_conexion()
@@ -20,16 +35,35 @@ def crear_interno():
             condena REAL,       
             fecha_nac TEXT NOT NULL,                       
             fecha_ingreso TEXT, 
-            modulo TEXT,       
+            modulo TEXT,
+            lugar_nacimiento TEXT,
+            nombre_contacto_emergencia TEXT,
+            relacion_contacto_emergencia TEXT,
+            numero_contacto_emergencia TEXT,
             FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE       
         )
     ''')
+
+    _asegurar_columnas_extra_interno(cursor)
 
     conexion.commit()
     conexion.close()
 
 # Función para agregar un nuevo interno a la base de datos, vinculado a un usuario existente
-def agregar_interno(num_rc, id_usuario, situacion, delito, condena, fecha_nac, fecha_ingreso, modulo):
+def agregar_interno(
+    num_rc,
+    id_usuario,
+    situacion,
+    delito,
+    condena,
+    fecha_nac,
+    fecha_ingreso,
+    modulo,
+    lugar_nacimiento=None,
+    nombre_contacto_emergencia=None,
+    relacion_contacto_emergencia=None,
+    numero_contacto_emergencia=None,
+):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     
@@ -37,9 +71,17 @@ def agregar_interno(num_rc, id_usuario, situacion, delito, condena, fecha_nac, f
         fecha_nac = normalizar_fecha(fecha_nac)
         fecha_ingreso = normalizar_fecha(fecha_ingreso) if fecha_ingreso else None
         cursor.execute('''
-            INSERT INTO internos (num_RC, id_usuario, situacion_legal, delito, condena, fecha_nac, fecha_ingreso, modulo)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (num_rc, id_usuario, situacion, delito, condena, fecha_nac, fecha_ingreso, modulo))
+            INSERT INTO internos (
+                num_RC, id_usuario, situacion_legal, delito, condena,
+                fecha_nac, fecha_ingreso, modulo, lugar_nacimiento,
+                nombre_contacto_emergencia, relacion_contacto_emergencia, numero_contacto_emergencia
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            num_rc, id_usuario, situacion, delito, condena,
+            fecha_nac, fecha_ingreso, modulo, lugar_nacimiento,
+            nombre_contacto_emergencia, relacion_contacto_emergencia, numero_contacto_emergencia
+        ))
         conexion.commit()
         exito = True
     except sqlite3.IntegrityError as e:
@@ -90,7 +132,9 @@ def encontrar_internos_por_num_rc(lista_num_rc):
         query = f"""
             SELECT i.num_RC, i.id_usuario, i.situacion_legal, i.delito, i.condena,
                    i.fecha_nac, i.fecha_ingreso, i.modulo,
-                   u.nombre, u.email, u.contrasena, u.rol
+                   u.nombre, u.email, u.contrasena, u.rol,
+                   i.lugar_nacimiento, i.nombre_contacto_emergencia,
+                   i.relacion_contacto_emergencia, i.numero_contacto_emergencia
             FROM internos i
             INNER JOIN usuarios u ON u.id = i.id_usuario
             WHERE i.num_RC IN ({placeholders})

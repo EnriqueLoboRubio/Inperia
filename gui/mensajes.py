@@ -109,7 +109,7 @@ class Mensajes:
         layout_cabecera.setSpacing(10)
         
         lbl_icono = QLabel()
-        pixmap = QPixmap("assets/error.png").scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)     
+        pixmap = QPixmap("assets/info.png").scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)     
         lbl_icono.setPixmap(pixmap) 
         lbl_icono.setFixedSize(30, 30)
         lbl_icono.setStyleSheet("background: transparent; border: none;")
@@ -181,7 +181,7 @@ class Mensajes:
         layout_cabecera = QHBoxLayout()
 
         lbl_icono = QLabel()
-        pixmap = QPixmap("assets/error.png").scaled(
+        pixmap = QPixmap("assets/info.png").scaled(
             30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         lbl_icono.setPixmap(pixmap)

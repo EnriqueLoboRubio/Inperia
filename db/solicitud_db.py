@@ -132,7 +132,8 @@ def encontrar_solicitud_pendiente_por_interno(id_interno):
 def encontrar_ultima_solicitud_por_interno(id_interno):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
-    cursor.execute("SELECT * FROM solicitudes WHERE id_interno = ? ORDER BY id DESC LIMIT 1;",
+    cursor.execute(
+                   "SELECT * FROM solicitudes WHERE id_interno = ? ORDER BY fecha_creacion DESC, id DESC LIMIT 1;",
                    (id_interno,))
     solicitud = cursor.fetchone()
     conexion.close()
@@ -258,6 +259,24 @@ def listar_solicitudes_profesional(id_profesional):
             ORDER BY id DESC
             """,
             (id_profesional,)
+        )
+        return cursor.fetchall()
+    finally:
+        conexion.close()
+
+
+def listar_solicitudes_por_interno(id_interno):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT *
+            FROM solicitudes
+            WHERE id_interno = ?
+            ORDER BY fecha_creacion DESC, id DESC
+            """,
+            (id_interno,),
         )
         return cursor.fetchall()
     finally:
