@@ -1,7 +1,8 @@
 import sqlite3
 from db.conexion import obtener_conexion
+from db.fecha_utils import normalizar_fecha
 
-# NOTA: no existe el tipo Date, por lo que se usa TEXT. Fechas en formato 'DD-MM-YYYY'
+# NOTA: en SQLite no existe tipo DATE; se guarda como TEXT en formato YYYY-MM-DD.
 
 # -------------------------------- INTERNO ------------------------------- #
 
@@ -13,7 +14,7 @@ def crear_interno():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS internos (
             num_RC INTEGER PRIMARY KEY,
-            id_usuario INTEGER NOT NULL,       
+            id_usuario INTEGER NOT NULL UNIQUE,       
             situacion_legal TEXT CHECK(situacion_legal IN ('provisional', 'condenado', 'libertad_condicional')),
             delito TEXT,
             condena REAL,       
@@ -33,6 +34,8 @@ def agregar_interno(num_rc, id_usuario, situacion, delito, condena, fecha_nac, f
     cursor = conexion.cursor()
     
     try:
+        fecha_nac = normalizar_fecha(fecha_nac)
+        fecha_ingreso = normalizar_fecha(fecha_ingreso) if fecha_ingreso else None
         cursor.execute('''
             INSERT INTO internos (num_RC, id_usuario, situacion_legal, delito, condena, fecha_nac, fecha_ingreso, modulo)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)

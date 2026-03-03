@@ -16,8 +16,18 @@ def crear_respuesta():
             ruta_audio TEXT,
             puntuacion_ia REAL,
             nivel INTEGER,                          
-            FOREIGN KEY (id_entrevista) REFERENCES entrevistas(id) ON DELETE CASCADE
+            FOREIGN KEY (id_entrevista) REFERENCES entrevistas(id)
+            FOREIGN KEY (id_pregunta) REFERENCES preguntas(id)
         )
+    ''')
+
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_resp_entrevista_pregunta
+        ON respuestas(id_entrevista, id_pregunta)
+    ''')
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_resp_entrevista
+        ON respuestas(id_entrevista)
     ''')
 
     conexion.commit()

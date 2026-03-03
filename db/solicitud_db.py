@@ -1,5 +1,6 @@
 import sqlite3
 from db.conexion import obtener_conexion
+from db.fecha_utils import normalizar_fecha
 
 # -------------------------------- SOLICITUD ------------------------------- #
 
@@ -33,7 +34,7 @@ def crear_solicitud():
             nombre_cp TEXT NOT NULL,
             telf_cp TEXT NOT NULL,
             relacion_cp TEXT NOT NULL,
-            direccion_cp TEXTO NOT NULL,
+            direccion_cp TEXT NOT NULL,
             nombre_cs TEXT NOT NULL,
             telf_cs TEXT NOT NULL,
             relacion_cs TEXT NOT NULL,
@@ -45,12 +46,34 @@ def crear_solicitud():
             estado TEXT NOT NULL CHECK(estado IN ('iniciada', 'pendiente', 'aceptada', 'rechazada', 'cancelada')),
             evaluacion_automatica TEXT,
             FOREIGN KEY (id_interno) REFERENCES internos(num_RC),
-            FOREIGN KEY (id_profesional) REFERENCES usuarios(id)                          
+            FOREIGN KEY (id_profesional) REFERENCES profesionales(id_usuario)                          
         )
     ''')
 
     # Migracion simple para BD ya creadas sin la columna nueva.
     _asegurar_columna_evaluacion(cursor)
+
+    # Indices para acelerar filtros/ordenaciones frecuentes.
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_sol_prof_estado_id
+        ON solicitudes(id_profesional, estado, id DESC)
+    ''')
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_sol_prof_id
+        ON solicitudes(id_profesional, id DESC)
+    ''')
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_sol_interno_id
+        ON solicitudes(id_interno, id DESC)
+    ''')
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_sol_interno_estado
+        ON solicitudes(id_interno, estado)
+    ''')
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_sol_sin_prof_id
+        ON solicitudes(id DESC) WHERE id_profesional IS NULL
+    ''')
 
     conexion.commit()
     conexion.close()
@@ -65,6 +88,9 @@ def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_cre
     cursor = conexion.cursor()
     try:        
         _asegurar_columna_evaluacion(cursor)
+        fecha_creacion = normalizar_fecha(fecha_creacion)
+        fecha_inicio = normalizar_fecha(fecha_inicio)
+        fecha_fin = normalizar_fecha(fecha_fin)
         cursor.execute('''
             INSERT INTO solicitudes (id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                                     destino, provincia, direccion, cod_pos, 
@@ -79,7 +105,7 @@ def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_cre
 
         nuevo_id = cursor.lastrowid
 
-    except sqlite3.IntegrityError as e:
+    except (sqlite3.IntegrityError, ValueError) as e:
         print(f"Error: No se ha podido crear la solicitud. {e}")
         return None    
     finally:
@@ -317,4 +343,3 @@ def obtener_estado_solicitud(id_solicitud):
         return None
     finally:
         conexion.close()
-

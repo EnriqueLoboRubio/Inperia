@@ -18,5 +18,10 @@ def crear_comentario_pre():
         )
     ''')
 
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_coment_pre_respuesta
+        ON comentarios_pre(id_respuesta)
+    ''')
+
     conexion.commit()
     conexion.close()

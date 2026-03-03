@@ -25,23 +25,23 @@ def generar_usuario():
     agregar_usuario("profesional 2", "7@g.com", "7", "profesional") #7
 
 def generar_internos():
-    agregar_interno("2", "2", "condenado", "Robo", "5", "01/01/1980", "01/01/2025", "Módulo A")
-    agregar_interno("3", "3", "condenado", "Robo", "5", "01/01/1980", "01/01/2025", "Módulo A")
-    agregar_interno("5", "5", "condenado", "Robo", "5", "01/01/1980", "01/01/2025", "Módulo B")
-    agregar_interno("6", "6", "condenado", "Estafa", "4", "02/02/1980", "02/02/2025", "Módulo C")
+    agregar_interno("2", "2", "condenado", "Robo", "5", "1980-01-01", "2025-01-01", "Módulo A")
+    agregar_interno("3", "3", "condenado", "Robo", "5", "1980-01-01", "2025-01-01", "Módulo A")
+    agregar_interno("5", "5", "condenado", "Robo", "5", "1980-01-01", "2025-01-01", "Módulo B")
+    agregar_interno("6", "6", "condenado", "Estafa", "4", "1980-02-02", "2025-02-02", "Módulo C")
 
 def generar_solicitud():
-    agregar_solicitud("2", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "20/11/2020", "22/11/2020", "25/22/2020",
+    agregar_solicitud("2", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "2020-11-20", "2020-11-22", "2020-11-25",
                       "16:00", "10:00", "Moguer", "Moguer", "calle 123", "21", 
                       "pepa", "1233", "mujer", "calle 123",
                       "carmen", "2222", "madre",
                       "123", "123456", "nada", "iniciada") #1
-    agregar_solicitud("5", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "20/11/2020", "22/11/2020", "25/22/2020",
+    agregar_solicitud("5", "familiar", "cumpleaños hija", "finde en Moguer para celebrar cumpleaños", "importante", "2020-11-20", "2020-11-22", "2020-11-25",
                       "16:00", "10:00", "Moguer", "Moguer", "calle 123", "21", 
                       "pepa", "1233", "mujer", "calle 123",
                       "carmen", "2222", "madre",
                       "123", "123456", "nada", "pendiente") #2
-    agregar_solicitud("6", "juridico", "cita judicial", "salida para comparecencia en sede judicial", "normal", "09/03/2026", "10/03/2026", "10/03/2026",
+    agregar_solicitud("6", "juridico", "cita judicial", "salida para comparecencia en sede judicial", "normal", "2026-03-09", "2026-03-10", "2026-03-10",
                       "08:00", "14:00", "Juzgado Central", "Huelva", "Avenida Principal 45", "21001",
                       "Laura Perez", "600112233", "hermana", "Calle Real 10",
                       "Antonio Perez", "600445566", "padre",
@@ -82,8 +82,8 @@ def generar_entrevista():
         nueva_pregunta = Pregunta(i, f"respuesta {i}")
         lista_objetos_pregunta.append(nueva_pregunta)
 
-    agregar_entrevista_y_respuestas("5", "2", "22/11/2020", lista_objetos_pregunta)
-    agregar_entrevista_y_respuestas("6", "3", "10/03/2026", lista_objetos_pregunta)
+    agregar_entrevista_y_respuestas("5", "2", "2020-11-22", lista_objetos_pregunta)
+    agregar_entrevista_y_respuestas("6", "3", "2026-03-10", lista_objetos_pregunta)
 
 def generar_comentarios_preguntas():
     conexion = obtener_conexion()
@@ -106,8 +106,8 @@ def generar_comentarios_preguntas():
 
         for id_respuesta, id_pregunta in respuestas:
             comentarios = [
-                (4, f"Comentario 1 - Entrevista {id_entrevista}, pregunta {id_pregunta}", "12/03/2026"),
-                (1, f"Comentario 2 - Entrevista {id_entrevista}, pregunta {id_pregunta}", "13/03/2026"),
+                (4, f"Comentario 1 - Entrevista {id_entrevista}, pregunta {id_pregunta}", "2026-03-12"),
+                (1, f"Comentario 2 - Entrevista {id_entrevista}, pregunta {id_pregunta}", "2026-03-13"),
             ]
 
             cursor.executemany(

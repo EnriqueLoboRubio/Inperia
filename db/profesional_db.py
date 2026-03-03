@@ -10,7 +10,7 @@ def crear_profesional():
     cursor.execute('''
         CREATE TABLE profesionales (
             id_usuario INTEGER PRIMARY KEY,
-            num_colegiado TEXT,
+            num_colegiado INTEGER UNIQUE NOT NULL ,
             FOREIGN KEY (id_usuario) REFERENCES usuarios(id) ON DELETE CASCADE
         )
     ''')

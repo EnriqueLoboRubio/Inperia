@@ -18,5 +18,10 @@ def crear_comentario_ent():
         )
     ''')
 
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_coment_ent_entrevista
+        ON comentarios_ent(id_entrevista)
+    ''')
+
     conexion.commit()
     conexion.close()

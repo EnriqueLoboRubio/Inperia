@@ -1,6 +1,7 @@
 import sqlite3
 from db.conexion import obtener_conexion
 from db.respuesta_db import *
+from db.fecha_utils import normalizar_fecha
 
 # -------------------------------- ENTREVISTA ------------------------------- #
 
@@ -20,6 +21,11 @@ def crear_entrevista():
         )
     ''')
 
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_ent_solicitud
+        ON entrevistas(id_solicitud)
+    ''')
+
     conexion.commit()
     conexion.close()
 
@@ -28,6 +34,7 @@ def agregar_entrevista(id_interno, id_solicitud, fecha):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:        
+        fecha = normalizar_fecha(fecha)
         cursor.execute('''
             INSERT INTO entrevistas (id_interno, id_solicitud, fecha)
             VALUES (?, ?, ?)
@@ -35,8 +42,8 @@ def agregar_entrevista(id_interno, id_solicitud, fecha):
 
         id_entrevista = cursor.lastrowid       
 
-    except sqlite3.IntegrityError:
-        print("Error: No se ha podido crear la entrevista")
+    except (sqlite3.IntegrityError, ValueError) as e:
+        print(f"Error: No se ha podido crear la entrevista. {e}")
         return False
      
     
@@ -49,6 +56,7 @@ def agregar_entrevista_y_respuestas(id_interno, id_solicitud, fecha, lista_respu
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:        
+        fecha = normalizar_fecha(fecha)
         cursor.execute('''
             INSERT INTO entrevistas (id_interno, id_solicitud, fecha)
             VALUES (?, ?, ?)
