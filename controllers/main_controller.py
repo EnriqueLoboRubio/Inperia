@@ -30,7 +30,7 @@ class MainController:
         self.mostrar_splash_inicio()
 
     def mostrar_splash_inicio(self):
-        ruta_imagen = Path(__file__).resolve().parent.parent / "assets" / "inperiaNegro.png"
+        ruta_imagen = Path(__file__).resolve().parent.parent / "assets" / "inperiaBlanco.png"
 
         self.splash_widget = QWidget()
         self.splash_widget.setWindowFlags(

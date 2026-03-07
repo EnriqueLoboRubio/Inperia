@@ -90,19 +90,22 @@ class TarjetaSolicitud(QFrame):
         # Nombre interno
         lbl_nombre = QLabel(self._nombre_interno())
         lbl_nombre.setStyleSheet(ESTILO_NOMBRE_INTERNO)
+        # Columna fija para alinear el estado entre tarjetas.
+        lbl_nombre.setFixedWidth(300)
         fila_nombre.addWidget(lbl_nombre)
 
         #Estado
         estado_txt, estado_color = ESTADOS_SOLICITUD_COLOR.get(
             str(getattr(self.solicitud, "estado", "")).lower(),
-            ("Pendiente", "#DB9334"),
+            ("Pendiente", "#F4E29A"),
         )
+        estado_txt_color = color_texto_contraste(estado_color)
         lbl_estado = QLabel(estado_txt)
         lbl_estado.setStyleSheet(
             f"""
             QLabel {{
                 background-color: {estado_color};
-                color: #1A1A1A;
+                color: {estado_txt_color};
                 border-radius: 10px;
                 padding: 3px 10px;
                 font-size: 10pt;
@@ -247,11 +250,16 @@ class PantallaListaSolicitud(QWidget):
         super().__init__(parent)
 
         self._solicitudes = []
+        self._resultados_filtrados = []
         self._internos_por_rc = {}
         self._botones_top = {}
         self._top_activo = None
         self._sincronizando_filtros = False
         self._modo_historial = False
+        self._tam_lote = 12
+        self._num_visibles = 0
+        self._estado_lista = "ok"
+        self._mensaje_estado = ""
 
         self._iniciar_ui()
 
@@ -276,6 +284,7 @@ class PantallaListaSolicitud(QWidget):
         self.layout_lista.setAlignment(Qt.AlignTop)
 
         self.scroll.setWidget(self.contenedor)
+        self.scroll.verticalScrollBar().valueChanged.connect(self._al_scroll_lista)
         layout_principal.addWidget(self.scroll, 1)
 
     def _crear_fila_estados_superior(self):
@@ -325,12 +334,8 @@ class PantallaListaSolicitud(QWidget):
             """
         )
         tam_icono_busqueda = self.input_busqueda.fontMetrics().height() + 3
-        icono_busqueda = QIcon(QPixmap("assets/buscar.png").scaled(
-            tam_icono_busqueda,
-            tam_icono_busqueda,
-            Qt.KeepAspectRatio,
-            Qt.SmoothTransformation
-        ))
+        icono_busqueda_svg = QIcon("assets/buscar.svg")
+        icono_busqueda = QIcon(icono_busqueda_svg.pixmap(tam_icono_busqueda, tam_icono_busqueda))
         self.input_busqueda.addAction(icono_busqueda, QLineEdit.LeadingPosition)
         self.input_busqueda.textChanged.connect(self._actualizar_lista)
 
@@ -373,7 +378,23 @@ class PantallaListaSolicitud(QWidget):
     def cargar_datos(self, solicitudes, internos):
         self._solicitudes = list(solicitudes or [])
         self._internos_por_rc = self._normalizar_internos(internos)
+        self._estado_lista = "ok"
+        self._mensaje_estado = ""
         self._actualizar_lista()
+
+    def mostrar_error_carga(self, mensaje="Error al cargar las solicitudes. Intenta de nuevo."):
+        self._estado_lista = "error"
+        self._mensaje_estado = mensaje
+        self._resultados_filtrados = []
+        self._num_visibles = 0
+        self._render_lista()
+
+    def mostrar_sin_permiso(self, mensaje="No tienes permisos para ver esta lista."):
+        self._estado_lista = "sin_permiso"
+        self._mensaje_estado = mensaje
+        self._resultados_filtrados = []
+        self._num_visibles = 0
+        self._render_lista()
 
     def aplicar_filtro_inicial(self, top_activo=None, combo_texto="Todos", solo_sin_profesional=False, modo_historial=False):
         self._top_activo = top_activo
@@ -464,23 +485,50 @@ class PantallaListaSolicitud(QWidget):
                 )
 
     def _actualizar_lista(self):
+        self._resultados_filtrados = self._filtrar_solicitudes()
+        self._num_visibles = min(self._tam_lote, len(self._resultados_filtrados))
+        self._render_lista()
+
+    def _al_scroll_lista(self, valor):
+        barra = self.scroll.verticalScrollBar()
+        if valor < (barra.maximum() - 80):
+            return
+        self._cargar_siguiente_lote()
+
+    def _cargar_siguiente_lote(self):
+        if self._num_visibles >= len(self._resultados_filtrados):
+            return
+        self._num_visibles = min(self._num_visibles + self._tam_lote, len(self._resultados_filtrados))
+        self._render_lista()
+
+    def _limpiar_lista(self):
         while self.layout_lista.count():
             item = self.layout_lista.takeAt(0)
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
 
-        resultados = self._filtrar_solicitudes()
+    def _render_lista(self):
+        self._limpiar_lista()
 
-        if not resultados:
-            lbl_vacio = QLabel("No hay solicitudes con los filtros seleccionados")
-            lbl_vacio.setAlignment(Qt.AlignCenter)
-            lbl_vacio.setStyleSheet("font-size: 12pt; color: #7A7A7A;")
-            self.layout_lista.addWidget(lbl_vacio)
-            self.layout_lista.addStretch()
+        if self._estado_lista == "error":
+            self._mostrar_mensaje_lista(self._mensaje_estado or "Error al cargar las solicitudes.")
+            return
+        if self._estado_lista == "sin_permiso":
+            self._mostrar_mensaje_lista(self._mensaje_estado or "No tienes permisos para ver esta lista.")
             return
 
-        for solicitud, interno in resultados:
+        if not self._resultados_filtrados:
+            texto_busqueda = self.input_busqueda.text().strip()
+            if not self._solicitudes:
+                self._mostrar_mensaje_lista("No hay solicitudes disponibles.")
+            elif texto_busqueda:
+                self._mostrar_mensaje_lista("No hay resultados para la busqueda actual.")
+            else:
+                self._mostrar_mensaje_lista("No hay solicitudes con los filtros seleccionados.")
+            return
+
+        for solicitud, interno in self._resultados_filtrados[: self._num_visibles]:
             tarjeta = TarjetaSolicitud(solicitud, interno)
             tarjeta.ver_perfil_interno.connect(self.ver_perfil_interno.emit)
             tarjeta.ver_entrevista.connect(self.ver_entrevista.emit)
@@ -488,6 +536,22 @@ class PantallaListaSolicitud(QWidget):
             tarjeta.asignar_solicitud.connect(self.asignar_solicitud.emit)
             self.layout_lista.addWidget(tarjeta)
 
+        if self._num_visibles < len(self._resultados_filtrados):
+            lbl_mas = QLabel(
+                f"Mostrando {self._num_visibles} de {len(self._resultados_filtrados)} solicitudes. "
+                "Desplaza para cargar mas."
+            )
+            lbl_mas.setAlignment(Qt.AlignCenter)
+            lbl_mas.setStyleSheet("font-size: 10pt; color: #7A7A7A;")
+            self.layout_lista.addWidget(lbl_mas)
+
+        self.layout_lista.addStretch()
+
+    def _mostrar_mensaje_lista(self, texto):
+        lbl_vacio = QLabel(texto)
+        lbl_vacio.setAlignment(Qt.AlignCenter)
+        lbl_vacio.setStyleSheet("font-size: 12pt; color: #7A7A7A;")
+        self.layout_lista.addWidget(lbl_vacio)
         self.layout_lista.addStretch()
 
     def _filtrar_solicitudes(self):

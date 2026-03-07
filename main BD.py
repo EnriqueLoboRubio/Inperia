@@ -115,9 +115,12 @@ def _crear_respuestas_relleno(prefijo):
     return preguntas
 
 
-def _crear_entrevista_con_respuestas(id_interno, id_solicitud, fecha, prefijo):
+def _crear_entrevista_con_respuestas(id_interno, id_solicitud, fecha, prefijo, puntuacion_global=None):
     respuestas = _crear_respuestas_relleno(prefijo)
-    return agregar_entrevista_y_respuestas(id_interno, id_solicitud, fecha, respuestas)
+    id_entrevista = agregar_entrevista_y_respuestas(id_interno, id_solicitud, fecha, respuestas)
+    if id_entrevista and puntuacion_global is not None:
+        actualizar_puntuacion_entrevista(id_entrevista, puntuacion_global)
+    return id_entrevista
 
 
 def _anadir_comentarios_preguntas(id_entrevista, id_profesional, fecha, prefijo):
@@ -154,33 +157,39 @@ def generar_escenarios():
     # Interno 1: sin nada pendiente.
     # No se crean solicitudes para interno 1.
 
-    # Interno 2: pendiente sin profesional asignado.
-    sol_i2_pend = _crear_solicitud_completa(2, "pendiente", "2026-03-01")
-    _crear_entrevista_con_respuestas(2, sol_i2_pend, "2026-03-01", "Interno 2 pendiente")
-
-    # Interno 2: aceptada con profesional 1, entrevista completa y comentarios.
+    # Interno 2: primero caso antiguo (aceptada), luego el mas reciente (pendiente).
     sol_i2_acep = _crear_solicitud_completa(
         2, "aceptada", "2025-02-10", id_profesional=prof1_id,
         conclusiones_profesional="Aprobada tras evaluacion completa del caso.",
     )
-    ent_i2_acep = _crear_entrevista_con_respuestas(2, sol_i2_acep, "2025-02-11", "Interno 2 aceptada")
+    ent_i2_acep = _crear_entrevista_con_respuestas(
+        2, sol_i2_acep, "2025-02-11", "Interno 2 aceptada", puntuacion_global=944.0
+    )
     agregar_comentario_ia(ent_i2_acep, prof1_id, "IA: riesgo bajo y buena coherencia narrativa.", "2025-02-12")
     agregar_comentario_profesional(ent_i2_acep, prof1_id, "Profesional: apto para permiso solicitado.", "2025-02-12")
     _anadir_comentarios_preguntas(ent_i2_acep, prof1_id, "2025-02-12", "Interno 2 aceptada")
 
-    # Interno 3: una pendiente con profesional 2 asignado.
-    sol_i3_pend = _crear_solicitud_completa(3, "pendiente", "2026-03-02", id_profesional=prof2_id)
-    _crear_entrevista_con_respuestas(3, sol_i3_pend, "2026-03-02", "Interno 3 pendiente")
+    sol_i2_pend = _crear_solicitud_completa(2, "pendiente", "2026-03-01")
+    _crear_entrevista_con_respuestas(
+        2, sol_i2_pend, "2026-03-01", "Interno 2 pendiente", puntuacion_global=918.0
+    )
 
-    # Interno 3: una rechazada con profesional 1, entrevista y comentarios.
+    # Interno 3: primero caso antiguo (rechazada), luego el mas reciente (pendiente).
     sol_i3_rech = _crear_solicitud_completa(
         3, "rechazada", "2026-02-05", id_profesional=prof1_id,
         conclusiones_profesional="Rechazada por inconsistencias en la justificacion.",
     )
-    ent_i3_rech = _crear_entrevista_con_respuestas(3, sol_i3_rech, "2026-02-06", "Interno 3 rechazada")
+    ent_i3_rech = _crear_entrevista_con_respuestas(
+        3, sol_i3_rech, "2026-02-06", "Interno 3 rechazada", puntuacion_global=989.0
+    )
     agregar_comentario_ia(ent_i3_rech, prof1_id, "IA: detecta contradicciones relevantes en respuestas.", "2026-02-07")
     agregar_comentario_profesional(ent_i3_rech, prof1_id, "Profesional: no procede autorizacion.", "2026-02-07")
     _anadir_comentarios_preguntas(ent_i3_rech, prof1_id, "2026-02-07", "Interno 3 rechazada")
+
+    sol_i3_pend = _crear_solicitud_completa(3, "pendiente", "2026-03-02", id_profesional=prof2_id)
+    _crear_entrevista_con_respuestas(
+        3, sol_i3_pend, "2026-03-02", "Interno 3 pendiente", puntuacion_global=930.0
+    )
 
     # Interno 4: solicitud completa sin entrevista y sin profesional asignado.
     _crear_solicitud_completa(

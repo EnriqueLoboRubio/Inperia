@@ -122,7 +122,13 @@ def listar_ultimas_entrevistas_por_interno(id_interno, limite=5):
             LEFT JOIN usuarios u
               ON u.id = s.id_profesional
             WHERE e.id_interno = ?
-            ORDER BY e.fecha DESC, e.id DESC
+            ORDER BY
+              CASE
+                WHEN e.fecha GLOB '____-__-__' THEN e.fecha
+                WHEN e.fecha GLOB '__/__/____' THEN substr(e.fecha, 7, 4) || '-' || substr(e.fecha, 4, 2) || '-' || substr(e.fecha, 1, 2)
+                ELSE e.fecha
+              END DESC,
+              e.id DESC
             LIMIT ?
             """,
             (id_interno, limite),
@@ -144,12 +150,68 @@ def obtener_ultima_entrevista_interno_profesional(id_interno, id_profesional):
               ON s.id = e.id_solicitud
             WHERE e.id_interno = ?
               AND s.id_profesional = ?
-            ORDER BY e.fecha DESC, e.id DESC
+            ORDER BY
+              CASE
+                WHEN e.fecha GLOB '____-__-__' THEN e.fecha
+                WHEN e.fecha GLOB '__/__/____' THEN substr(e.fecha, 7, 4) || '-' || substr(e.fecha, 4, 2) || '-' || substr(e.fecha, 1, 2)
+                ELSE e.fecha
+              END DESC,
+              e.id DESC
             LIMIT 1
             """,
             (id_interno, id_profesional),
         )
         return cursor.fetchone()
+    finally:
+        conexion.close()
+
+
+def obtener_ultima_entrevista_interno(id_interno):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT e.id, e.fecha, e.puntuacion_global
+            FROM entrevistas e
+            WHERE e.id_interno = ?
+            ORDER BY
+              CASE
+                WHEN e.fecha GLOB '____-__-__' THEN e.fecha
+                WHEN e.fecha GLOB '__/__/____' THEN substr(e.fecha, 7, 4) || '-' || substr(e.fecha, 4, 2) || '-' || substr(e.fecha, 1, 2)
+                ELSE e.fecha
+              END DESC,
+              e.id DESC
+            LIMIT 1
+            """,
+            (id_interno,),
+        )
+        return cursor.fetchone()
+    finally:
+        conexion.close()
+
+
+def obtener_ultimas_entrevistas_interno(id_interno, limite=2):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute(
+            """
+            SELECT e.id, e.fecha, e.puntuacion_global
+            FROM entrevistas e
+            WHERE e.id_interno = ?
+            ORDER BY
+              CASE
+                WHEN e.fecha GLOB '____-__-__' THEN e.fecha
+                WHEN e.fecha GLOB '__/__/____' THEN substr(e.fecha, 7, 4) || '-' || substr(e.fecha, 4, 2) || '-' || substr(e.fecha, 1, 2)
+                ELSE e.fecha
+              END DESC,
+              e.id DESC
+            LIMIT ?
+            """,
+            (id_interno, limite),
+        )
+        return cursor.fetchall()
     finally:
         conexion.close()
 
@@ -168,7 +230,7 @@ def actualizar_puntuacion_entrevista(id, puntuacion_global):
     try:
         cursor.execute('''
             UPDATE entrevistas 
-            SET puntuacion_global = ?,                 
+            SET puntuacion_global = ?
             WHERE id = ?
         ''', (puntuacion_global, id))
         

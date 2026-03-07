@@ -9,6 +9,26 @@ COLOR_AZUL_CLARO = "#76bede"
 COLOR_AZUL_OSCURO = "#2196F3"
 COLOR_TEXTO_NEGRO = "#000000"
 
+def color_texto_contraste(color_hex):
+    """
+    Devuelve color de texto oscuro o claro segun el fondo para mantener contraste.
+    """
+    color = str(color_hex or "").strip().lstrip("#")
+    if len(color) == 3:
+        color = "".join(ch * 2 for ch in color)
+    if len(color) != 6:
+        return "#111111"
+
+    try:
+        r = int(color[0:2], 16)
+        g = int(color[2:4], 16)
+        b = int(color[4:6], 16)
+    except ValueError:
+        return "#111111"
+
+    luminancia = (0.299 * r) + (0.587 * g) + (0.114 * b)
+    return "#111111" if luminancia >= 160 else "#FFFFFF"
+
 
 # --- ESTRUCTURA / CONTENEDORES ---
 ESTILO_FRAME_BORDE = f"""
@@ -474,6 +494,12 @@ ESTILO_SUBTITULO_PERMISO = """
 ESTILO_TITULO_DETALLE_SOLICITUD = "color: #9E9E9E; font-size: 12pt; font-weight: 500;"
 ESTILO_DATO_PRINCIPAL_SOLICITUD = "color: black; font-size: 11pt; font-weight: bold;"
 ESTILO_DATO_SECUNDARIO_SOLICITUD = "color: #757575; font-size: 10pt; font-weight: 500;"
+
+ESTILO_TITULO_DETALLE_PERFIL = "color: #9A9A9A; font-size: 10pt; font-weight: 500;"
+ESTILO_DATO_PERFIL = "color: #6A6A6A; font-size: 12pt; font-weight: 500;"
+ESTILO_DATO_SECUNDARIO_PERFIL = "color: #808080; font-size: 10pt; font-weight: 500;"  
+
+
 ESTILO_TEXTO = "color: black; font-size: 20px;"
 
 ESTILO_CHECKBOX = """
@@ -533,13 +559,23 @@ ESTILO_ESTADO = """
     }
 """
 
+COLOR_RIESGO = {
+    "Riesgo muy bajo": "#DFF3C8",
+    "Riesgo bajo": "#CBE8B5",
+    "Riesgo normal": "#F4E29A",
+    "Riesgo elevado": "#F2C1C1",
+    "Riesgo bastante elevado": "#EEA8A8",
+    "Riesgo muy elevado": "#E98E8E",
+    "Riesgo maximo": "#D77272",
+}
+
 ESTADOS_SOLICITUD_COLOR = {
-            "iniciada": ("Iniciada", "#59A6D9"),
-            "pendiente": ("Pendiente", "#DB9334"),           
-            "aceptada": ("Aceptada", "#27AE5F"),
-            "rechazada": ("Rechazada", "#E74D3C"),
-            "cancelada": ("Cancelada", "#A5C0C2")
-        }
+    "iniciada": ("Iniciada", "#D6EBFA"),
+    "pendiente": ("Pendiente", "#F4E29A"),
+    "aceptada": ("Aceptada", "#CBE8B5"),
+    "rechazada": ("Rechazada", "#F2C1C1"),
+    "cancelada": ("Cancelada", "#E0E0E0"),
+}
 
 # --- TARJETAS ---
 ESTILO_TARJETA_RESUMEN = """

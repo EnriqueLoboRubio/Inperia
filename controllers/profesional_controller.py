@@ -411,17 +411,18 @@ class ProfesionalController(QObject):
         internos_ordenados = sorted(internos, key=lambda x: str(getattr(x, "nombre", "")).lower())
         datos_tarjetas = []
         for interno in internos_ordenados:
-            ultima_entrevista = obtener_ultima_entrevista_interno_profesional(
-                interno.num_RC,
-                self.profesional.id_usuario
-            )
+            entrevistas = obtener_ultimas_entrevistas_interno(interno.num_RC, limite=2)
+            ultima_entrevista = entrevistas[0] if entrevistas else None
+            entrevista_anterior = entrevistas[1] if len(entrevistas) > 1 else None
             fecha_ult = ultima_entrevista[1] if ultima_entrevista else "-"
             puntuacion = ultima_entrevista[2] if ultima_entrevista else None
+            puntuacion_anterior = entrevista_anterior[2] if entrevista_anterior else None
             datos_tarjetas.append(
                 {
                     "interno": interno,
                     "fecha_ultima_entrevista": fecha_ult,
                     "puntuacion_global": puntuacion,
+                    "tendencia_riesgo": self._calcular_tendencia_riesgo(puntuacion, puntuacion_anterior),
                 }
             )
 
@@ -429,6 +430,22 @@ class ProfesionalController(QObject):
         pantalla.cargar_datos(datos_tarjetas)
         self.ventana_profesional.stacked_widget.setCurrentWidget(pantalla)
         self.ventana_profesional.establecer_titulo_pantalla("Internos asignados")
+
+    @staticmethod
+    def _calcular_tendencia_riesgo(actual, anterior):
+        if actual is None or anterior is None:
+            return None
+        try:
+            v_actual = float(actual)
+            v_anterior = float(anterior)
+        except (TypeError, ValueError):
+            return None
+
+        if v_actual > v_anterior:
+            return "sube"
+        if v_actual < v_anterior:
+            return "baja"
+        return "igual"
 
     # Buscar entrevista de la solicitud
     def cargar_entrevista_solicitud(self, id_solicitud):
@@ -497,4 +514,3 @@ class ProfesionalController(QObject):
         self.msg.mostrar_mensaje("Perfil actualizado", "Cambios guardados correctamente.")
 
     
-

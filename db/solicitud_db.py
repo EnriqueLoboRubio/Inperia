@@ -215,7 +215,7 @@ def listar_solicitudes_nuevas_sin_profesional():
             SELECT *
             FROM solicitudes
             WHERE id_profesional IS NULL
-            ORDER BY id DESC
+            ORDER BY fecha_creacion DESC, id_interno ASC, id DESC
             """
         )
         return cursor.fetchall()
@@ -238,7 +238,7 @@ def listar_solicitudes_pendientes_profesional(id_profesional):
                   FROM entrevistas e
                   WHERE e.id_solicitud = s.id
               )
-            ORDER BY s.id DESC
+            ORDER BY s.fecha_creacion DESC, s.id_interno ASC, s.id DESC
             """,
             (id_profesional,)
         )
@@ -256,7 +256,7 @@ def listar_solicitudes_profesional(id_profesional):
             SELECT *
             FROM solicitudes
             WHERE id_profesional = ?
-            ORDER BY id DESC
+            ORDER BY fecha_creacion DESC, id_interno ASC, id DESC
             """,
             (id_profesional,)
         )
