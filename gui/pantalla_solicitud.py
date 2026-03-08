@@ -736,7 +736,7 @@ class PantallaSolicitudInterno(QWidget):
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame) 
-        scroll.setStyleSheet("background-color: transparent;")    
+     
         scroll.setStyleSheet(ESTILO_SCROLL)
 
         scroll_widget = QWidget()

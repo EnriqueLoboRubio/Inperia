@@ -1,22 +1,25 @@
-import sys
+﻿import sys
 import ctypes
 from pathlib import Path
 from PyQt5.QtCore import QEasingCurve, QPropertyAnimation, Qt
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QVBoxLayout
 from gui.login import VentanaLogin
+from db.data_seeding import ejecutar_data_seeding_inicial
 
-# CONTROLADORES ESPECÍFICOS
+# CONTROLADORES ESPECIFICOS
 from controllers.login_controller import LoginController
 from controllers.interno_controller import InternoController
 from controllers.profesional_controller import ProfesionalController
 
 class MainController:
     def __init__(self):
+        ejecutar_data_seeding_inicial()
+
         if sys.platform == "win32":
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Inperia.App")
 
-        # aplicación Qt
+        # aplicacion Qt
         self.app = QApplication(sys.argv)
         ruta_icono = Path(__file__).resolve().parent.parent / "assets" / "inperia.ico"
         self.app.setWindowIcon(QIcon(str(ruta_icono)))
@@ -88,7 +91,7 @@ class MainController:
             self.ventana_login.mostrar_mensaje_error
         )
 
-        # Controlador Login -> MainController (éxito)
+        # Controlador Login -> MainController (Ã©xito)
         self.login_controller.signal_login_exitoso.connect(
             self.manejar_login_exitoso
         )
@@ -97,7 +100,7 @@ class MainController:
 
     def manejar_login_exitoso(self, usuario, rol):
         """
-        Esta función se ejecuta cuando el Login emite la señal de éxito.
+        Esta funciÃ³n se ejecuta cuando el Login emite la seÃ±al de Ã©xito.
         Recibe el ID del usuario y su rol
         """
         # Cerramos el login
@@ -110,7 +113,7 @@ class MainController:
             self.iniciar_sesion_profesional(usuario)
         elif rol == "administrador":
             # implementar la vista del administrador
-            print("Inicio de sesión como Administrador - Funcionalidad no implementada")    
+            print("Inicio de sesiÃ³n como Administrador - Funcionalidad no implementada")    
         else:
             print(f"Rol desconocido: {rol}")            
 
@@ -136,3 +139,4 @@ class MainController:
 
         # crear el entorno de login
         self.mostrar_login()
+

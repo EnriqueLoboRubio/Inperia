@@ -10,6 +10,7 @@ from gui.pantalla_perfil import PantallaPerfil
 from gui.pantalla_lista_solicitud import PantallaListaSolicitud
 from gui.pantalla_lista_internos_profesional import PantallaListaInternosProfesional
 from gui.pantalla_lista_modificar_preguntas import PantallaListaModificarPreguntas
+from gui.pantalla_lista_modificar_prompt import PantallaListaModificarPrompt
 from gui.pantalla_perfil_interno_profesional import PantallaPerfilInternoProfesional
 from gui.estilos import *
 
@@ -241,12 +242,14 @@ class VentanaProfesional(QMainWindow):
         self.pantalla_lista_solicitud = PantallaListaSolicitud()
         self.pantalla_lista_internos = PantallaListaInternosProfesional()
         self.pantalla_lista_modificar_preguntas = PantallaListaModificarPreguntas()
+        self.pantalla_lista_modificar_prompt = PantallaListaModificarPrompt()
         self.pantalla_perfil_interno = PantallaPerfilInternoProfesional()
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                                  
         self.stacked_widget.addWidget(self.pantalla_lista_solicitud)
         self.stacked_widget.addWidget(self.pantalla_lista_internos)
         self.stacked_widget.addWidget(self.pantalla_lista_modificar_preguntas)
+        self.stacked_widget.addWidget(self.pantalla_lista_modificar_prompt)
         self.stacked_widget.addWidget(self.pantalla_perfil)
         self.stacked_widget.addWidget(self.pantalla_perfil_interno)
         # Aquí se pueden añadir más pantallas al stacked_widget según sea necesario
@@ -256,6 +259,7 @@ class VentanaProfesional(QMainWindow):
             self.pantalla_lista_solicitud: "Solicitudes",
             self.pantalla_lista_internos: "Internos asignados",
             self.pantalla_lista_modificar_preguntas: "Modificar preguntas",
+            self.pantalla_lista_modificar_prompt: "Ajustes del modelo",
             self.pantalla_perfil: "Perfil",
             self.pantalla_perfil_interno: "Perfil interno",
         }

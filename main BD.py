@@ -1,4 +1,4 @@
-from db.usuario_db import *
+﻿from db.usuario_db import *
 from db.interno_db import *
 from db.solicitud_db import *
 from db.entrevista_db import *
@@ -7,6 +7,9 @@ from db.comentario_pregunta_db import *
 from db.comentario_entrevista_db import *
 from db.profesional_db import *
 from db.pregunta_db import *
+from db.prompt_db import *
+from db.inicio_preguntas import iniciar_preguntas_seed
+from db.inicio_prompts import iniciar_prompts_seed
 from db.conexion import obtener_conexion
 
 from models.pregunta import Pregunta
@@ -203,6 +206,7 @@ def reiniciar_base_de_datos():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     cursor.execute("DROP TABLE IF EXISTS comentarios_pre")
+    cursor.execute("DROP TABLE IF EXISTS prompts")
     cursor.execute("DROP TABLE IF EXISTS comentarios_ent")
     conexion.commit()
     conexion.close()
@@ -225,6 +229,7 @@ def reiniciar_base_de_datos():
     crear_solicitud()
     crear_entrevista()
     crear_pregunta()
+    crear_prompt()
     print("Base de datos reconstruida completamente.")
 
 
@@ -233,7 +238,7 @@ def imprimir_resumen_bd():
     cursor = conexion.cursor()
 
     print("\n===== RESUMEN BD =====")
-    for tabla in ["usuarios", "internos", "profesionales", "solicitudes", "entrevistas", "respuestas", "comentarios_ent", "comentarios_pre"]:
+    for tabla in ["usuarios", "internos", "profesionales", "solicitudes", "entrevistas", "respuestas", "comentarios_ent", "comentarios_pre", "prompts"]:
         cursor.execute(f"SELECT COUNT(*) FROM {tabla}")
         total = cursor.fetchone()[0]
         print(f"{tabla}: {total}")
@@ -260,7 +265,8 @@ def imprimir_resumen_bd():
 
 def reiniciar_y_generar():
     reiniciar_base_de_datos()
-    cargar_preguntas_desde_json()
+    iniciar_preguntas_seed(force=True)
+    iniciar_prompts_seed(force=True)
     generar_usuarios()
     generar_internos()
     generar_escenarios()
@@ -269,3 +275,6 @@ def reiniciar_y_generar():
 
 if __name__ == "__main__":
     reiniciar_y_generar()
+
+
+
