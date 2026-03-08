@@ -37,6 +37,7 @@ class VentanaInterno(QMainWindow):
         self.menu_abierto = False
         self.submenu_abierto = False # Estado del submenú de preguntas
         self.ajustes_abierto = False
+        self._menu_toggle_token = 0
         
         self.initUI()
 
@@ -328,6 +329,8 @@ class VentanaInterno(QMainWindow):
 
     # ------------------- 5. Movimientos de Menú y Submenú -------------------    
     def movimiento_menu(self):
+        self._menu_toggle_token += 1
+        token_actual = self._menu_toggle_token
 
         if self.ajustes_abierto:
             if self.ajustes_menu_frame.width() > self.AJUSTES_ANCHURA_CERRADO:
@@ -357,7 +360,12 @@ class VentanaInterno(QMainWindow):
             for i, boton in enumerate(self.main_menu_widgets):
                 # Ocultar el widget del submenú, solo se muestra al hacer clic en "Preguntas"
                 if boton != self.submenu_preguntas_widget:
-                    QTimer.singleShot(i * 100, boton.show)  # Muestra cada botón con un retardo
+                    QTimer.singleShot(
+                        i * 100,
+                        lambda b=boton, t=token_actual: (
+                            b.show() if self.menu_abierto and t == self._menu_toggle_token else None
+                        ),
+                    )
                 else:
                     boton.hide()
                     

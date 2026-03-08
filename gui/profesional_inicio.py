@@ -36,6 +36,7 @@ class VentanaProfesional(QMainWindow):
         # Estados iniciales del menú y submenús
         self.menu_abierto = False
         self.ajustes_abierto = False
+        self._menu_toggle_token = 0
 
         self.init_ui()
 
@@ -359,6 +360,8 @@ class VentanaProfesional(QMainWindow):
             self.menu_widgets_visibles.append(boton)
 
     def movimiento_menu(self):   
+        self._menu_toggle_token += 1
+        token_actual = self._menu_toggle_token
 
         if self.ajustes_abierto:
             if self.ajustes_menu_frame.width() > self.AJUSTES_ANCHURA_CERRADO:
@@ -381,7 +384,12 @@ class VentanaProfesional(QMainWindow):
           
             # Mostrar botones con retardo para efecto escalonado
             for i, boton in enumerate(self.obtener_widgets_menu_visibles()):
-                QTimer.singleShot(i * 100, boton.show)  # Muestra cada botón con un retardo
+                QTimer.singleShot(
+                    i * 100,
+                    lambda b=boton, t=token_actual: (
+                        b.show() if self.menu_abierto and t == self._menu_toggle_token else None
+                    ),
+                )
             self.pie_menu_widget.show()  
             
         # Invertir el estado para el próximo clic
