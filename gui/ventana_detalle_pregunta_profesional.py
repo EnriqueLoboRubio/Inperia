@@ -37,7 +37,7 @@ class VentanaDetallePregunta(QDialog):
 
         top_layout.addStretch()
         
-        lbl_nivel = QLabel(f"Nivel: {pregunta.nivel}")
+        lbl_nivel = QLabel(f"Nivel: {pregunta.nivel_ia}")
         lbl_nivel.setFont(QFont("Arial", 11, QFont.Bold))
         lbl_nivel.setStyleSheet(ESTILO_NIVEL) 
         lbl_nivel.setFixedSize(110,50)

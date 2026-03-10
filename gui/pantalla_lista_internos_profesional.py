@@ -84,7 +84,7 @@ class TarjetaInternoAsignado(QFrame):
         lbl_nombre.setFixedWidth(300)
         fila_nombre.addWidget(lbl_nombre)
 
-        clasif, pct, color_bg, color_txt = self._clasificar_riesgo(self.dato.get("puntuacion_global"))
+        clasif, pct, color_bg, color_txt = self._clasificar_riesgo(self.dato.get("puntuacion_ia"))
         lbl_riesgo = QLabel(f"{clasif} ({pct})")
         lbl_riesgo.setStyleSheet(
             f"""
@@ -156,7 +156,7 @@ class TarjetaInternoAsignado(QFrame):
         )
 
         ultima_entrevista = self._fmt_fecha(self.dato.get("fecha_ultima_entrevista"))
-        puntuacion = self.dato.get("puntuacion_global")
+        puntuacion = self.dato.get("puntuacion_ia")
         if puntuacion is None:
             puntuacion_txt = "Puntuación directa: -"
         else:

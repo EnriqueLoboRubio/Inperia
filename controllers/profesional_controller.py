@@ -448,7 +448,7 @@ class ProfesionalController(QObject):
                 {
                     "interno": interno,
                     "fecha_ultima_entrevista": fecha_ult,
-                    "puntuacion_global": puntuacion,
+                    "puntuacion_ia": puntuacion,
                     "tendencia_riesgo": self._calcular_tendencia_riesgo(puntuacion, puntuacion_anterior),
                 }
             )
@@ -485,7 +485,9 @@ class ProfesionalController(QObject):
             id_interno=datos_entrevista[1],
             fecha=datos_entrevista[3]
         )
-        entrevista.puntuacion = datos_entrevista[4]
+        entrevista.puntuacion_ia = datos_entrevista[4]
+        entrevista.puntuacion_profesional = datos_entrevista[5] if len(datos_entrevista) > 5 else -1
+        entrevista.estado_evaluacion_ia = datos_entrevista[6] if len(datos_entrevista) > 6 else "sin evaluación"
         return entrevista
 
     def cerrar_sesion(self):

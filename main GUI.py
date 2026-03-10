@@ -37,7 +37,7 @@ def main():
 
     for c in lista_comentarios:
         pregunta.add_comentario(c)
-    pregunta.nivel = 1
+    pregunta.nivel_ia = 1
     pregunta.valoracion_ia = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     pregunta.set_archivo_audio(r"C:\Users\Enrique\Downloads\ROSALÍA\LUX\ROSALÍA-LUX-02-Reliquia.wav")
 

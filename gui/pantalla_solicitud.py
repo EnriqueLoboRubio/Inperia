@@ -488,7 +488,7 @@ class Paso3Widget(QWidget):
         self.relacion_prin_combo = QComboBox()
         self.relacion_prin_combo.addItems(["Seleccionar...", "Padre/Madre", "Hermano/a", 
                                        "Esposo/a", "Hijo/a", "Otro"])
-        self.relacion_prin_combo.setStyleSheet(ESTILO_COMBOBOX)
+        self.relacion_prin_combo.setStyleSheet(ESTILO_INPUT)
         relacion_prin_layout.addWidget(relacion_prin_label)
         relacion_prin_layout.addWidget(self.relacion_prin_combo)
 

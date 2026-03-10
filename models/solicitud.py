@@ -31,7 +31,6 @@ class Solicitud:
         self.compromisos = 0
         self.observaciones = ""
         self.conclusiones_profesional = ""
-        self.evaluacion_automatica = ""
         self.id_profesional = None
 
         self.estado = Tipo_estado_solicitud.INICIADA
@@ -174,7 +173,6 @@ class Solicitud:
         self.compromisos = []
         self.observaciones = ""
         self.conclusiones_profesional = ""
-        self.evaluacion_automatica = ""
         self.id_profesional = None
 
     def get_resumen(self):

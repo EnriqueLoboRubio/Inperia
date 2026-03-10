@@ -126,7 +126,6 @@ class InternoController(QObject):
             solicitud.conclusiones_profesional = datos_solicitud[25]
             solicitud.id_profesional = datos_solicitud[26]
             solicitud.estado = datos_solicitud[27]
-            solicitud.evaluacion_automatica = datos_solicitud[28] if len(datos_solicitud) > 28 else ""
             solicitud.entrevista = self.cargar_entrevista_solicitud(solicitud.id_solicitud)                                                   
 
             return solicitud
@@ -144,7 +143,9 @@ class InternoController(QObject):
                 fecha=datos_entrevista[3]
             )
 
-            entrevista.puntuacion = datos_entrevista[4]
+            entrevista.puntuacion_ia = datos_entrevista[4]
+            entrevista.puntuacion_profesional = datos_entrevista[5] if len(datos_entrevista) > 5 else -1
+            entrevista.estado_evaluacion_ia = datos_entrevista[6] if len(datos_entrevista) > 6 else "sin evaluación"
 
             # Cargar respuestas de entrevista
             if entrevista:

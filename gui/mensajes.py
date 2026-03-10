@@ -186,7 +186,7 @@ class Mensajes:
         )
         lbl_icono.setPixmap(pixmap)
 
-        titulo = QLabel("Cerrar sesión")
+        titulo = QLabel(titulo)
         titulo.setObjectName("TituloError")
 
         layout_cabecera.addWidget(lbl_icono)

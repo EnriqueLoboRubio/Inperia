@@ -4,45 +4,74 @@ from db.fecha_utils import normalizar_fecha
 
 # -------------------------------- SOLICITUD ------------------------------- #
 
-# Función para crear la tabla de solicitud
-def crear_solicitud():
-    conexion = obtener_conexion()
-    cursor = conexion.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS solicitudes (
-            id INTEGER PRIMARY KEY,
-            id_interno INTEGER NOT NULL,            
-            tipo TEXT NOT NULL CHECK(tipo IN ('familiar', 'medico', 'educativo', 'laboral', 'defuncion', 'juridico')),
-            motivo TEXT NOT NULL,
-            descripcion TEXT NOT NULL,
-            urgencia TEXT NOT NULL CHECK(urgencia IN ('normal','importante','urgente')),
-            fecha_creacion TEXT NOT NULL,
-            fecha_inicio TEXT NOT NULL,                                
-            fecha_fin TEXT NOT NULL,        
-            hora_salida TEXT NOT NULL, 
-            hora_llegada TEXT NOT NULL,
-            destino TEXT NOT NULL,
-            provincia TEXT NOT NULL,
-            direccion TEXT NOT NULL,
-            cod_pos TEXT NOT NULL,
-            nombre_cp TEXT NOT NULL,
-            telf_cp TEXT NOT NULL,
-            relacion_cp TEXT NOT NULL,
-            direccion_cp TEXT NOT NULL,
-            nombre_cs TEXT NOT NULL,
-            telf_cs TEXT NOT NULL,
-            relacion_cs TEXT NOT NULL,
-            docs INTEGER NOT NULL,
-            compromiso INTEGER NOT NULL,
-            observaciones TEXT NOT NULL,
-            conclusiones_profesional TEXT,
-            id_profesional INTEGER,
-            estado TEXT NOT NULL CHECK(estado IN ('iniciada', 'pendiente', 'aceptada', 'rechazada', 'cancelada')),
-            FOREIGN KEY (id_interno) REFERENCES internos(num_RC) ON DELETE CASCADE,
-            FOREIGN KEY (id_profesional) REFERENCES profesionales(id_usuario) ON DELETE SET NULL                          
-        )
-    ''')
+_COLUMNAS_SOLICITUD = [
+    "id",
+    "id_interno",
+    "tipo",
+    "motivo",
+    "descripcion",
+    "urgencia",
+    "fecha_creacion",
+    "fecha_inicio",
+    "fecha_fin",
+    "hora_salida",
+    "hora_llegada",
+    "destino",
+    "provincia",
+    "direccion",
+    "cod_pos",
+    "nombre_cp",
+    "telf_cp",
+    "relacion_cp",
+    "direccion_cp",
+    "nombre_cs",
+    "telf_cs",
+    "relacion_cs",
+    "docs",
+    "compromiso",
+    "observaciones",
+    "conclusiones_profesional",
+    "id_profesional",
+    "estado",
+]
 
+_DDL_SOLICITUDES = '''
+    CREATE TABLE IF NOT EXISTS solicitudes (
+        id INTEGER PRIMARY KEY,
+        id_interno INTEGER NOT NULL,
+        tipo TEXT NOT NULL CHECK(tipo IN ('familiar', 'medico', 'educativo', 'laboral', 'defuncion', 'juridico')),
+        motivo TEXT NOT NULL,
+        descripcion TEXT NOT NULL,
+        urgencia TEXT NOT NULL CHECK(urgencia IN ('normal','importante','urgente')),
+        fecha_creacion TEXT NOT NULL,
+        fecha_inicio TEXT NOT NULL,
+        fecha_fin TEXT NOT NULL,
+        hora_salida TEXT NOT NULL,
+        hora_llegada TEXT NOT NULL,
+        destino TEXT NOT NULL,
+        provincia TEXT NOT NULL,
+        direccion TEXT NOT NULL,
+        cod_pos TEXT NOT NULL,
+        nombre_cp TEXT NOT NULL,
+        telf_cp TEXT NOT NULL,
+        relacion_cp TEXT NOT NULL,
+        direccion_cp TEXT NOT NULL,
+        nombre_cs TEXT NOT NULL,
+        telf_cs TEXT NOT NULL,
+        relacion_cs TEXT NOT NULL,
+        docs INTEGER NOT NULL,
+        compromiso INTEGER NOT NULL,
+        observaciones TEXT NOT NULL,
+        conclusiones_profesional TEXT,
+        id_profesional INTEGER,
+        estado TEXT NOT NULL CHECK(estado IN ('iniciada', 'pendiente', 'aceptada', 'rechazada', 'cancelada')),
+        FOREIGN KEY (id_interno) REFERENCES internos(num_RC) ON DELETE CASCADE,
+        FOREIGN KEY (id_profesional) REFERENCES profesionales(id_usuario) ON DELETE SET NULL
+    )
+'''
+
+
+def _crear_indices_solicitudes(cursor):
     # Indices para acelerar filtros/ordenaciones frecuentes.
     cursor.execute('''
         CREATE INDEX IF NOT EXISTS idx_sol_prof_estado_id
@@ -64,6 +93,33 @@ def crear_solicitud():
         CREATE INDEX IF NOT EXISTS idx_sol_sin_prof_id
         ON solicitudes(id DESC) WHERE id_profesional IS NULL
     ''')
+
+
+def _migrar_eliminar_conclusiones_ia_si_existe(cursor):
+    cursor.execute("PRAGMA table_info(solicitudes)")
+    columnas_actuales = [fila[1] for fila in cursor.fetchall()]
+    if "conclusiones_ia" not in columnas_actuales:
+        return
+
+    columnas_txt = ", ".join(_COLUMNAS_SOLICITUD)
+    cursor.execute("ALTER TABLE solicitudes RENAME TO solicitudes_vieja")
+    cursor.execute(_DDL_SOLICITUDES)
+    cursor.execute(
+        f"""
+        INSERT INTO solicitudes ({columnas_txt})
+        SELECT {columnas_txt}
+        FROM solicitudes_vieja
+        """
+    )
+    cursor.execute("DROP TABLE solicitudes_vieja")
+
+# Función para crear la tabla de solicitud
+def crear_solicitud():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute(_DDL_SOLICITUDES)
+    _migrar_eliminar_conclusiones_ia_si_existe(cursor)
+    _crear_indices_solicitudes(cursor)
 
     conexion.commit()
     conexion.close()
@@ -186,17 +242,11 @@ def contar_solicitudes_por_evaluar_profesional(id_profesional):
     try:
         cursor.execute(
             """
-            SELECT COUNT(DISTINCT s.id)
-            FROM solicitudes s
-            LEFT JOIN entrevistas e
-              ON e.id_solicitud = s.id
-            LEFT JOIN comentarios_ent ce
-              ON ce.id_entrevista = e.id
-             AND ce.id_profesional = s.id_profesional
-            WHERE s.id_profesional = ?
-              AND s.estado IN ('iniciada', 'pendiente')
-              AND TRIM(COALESCE(ce.comentario_ia, '')) = ''
-              AND TRIM(COALESCE(ce.comentario_profesional, '')) = ''
+            SELECT COUNT(*)
+            FROM solicitudes
+            WHERE id_profesional = ?
+              AND estado IN ('iniciada', 'pendiente')
+              AND TRIM(COALESCE(conclusiones_profesional, '')) = ''
             """,
             (id_profesional,)
         )

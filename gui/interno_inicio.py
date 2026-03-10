@@ -312,6 +312,9 @@ class VentanaInterno(QMainWindow):
                 background-color: "#F3292B"; 
             }""")
 
+        # Empujar acciones al final del menú de ajustes
+        self.ajustes_menu_layout.addStretch(1)
+
         # Añadir botones al layout de ajustes
         self.ajustes_menu_layout.addWidget(self.boton_perfil_menu)
         self.ajustes_menu_layout.addWidget(self.boton_cerrar_sesion)

@@ -118,11 +118,11 @@ def _crear_respuestas_relleno(prefijo):
     return preguntas
 
 
-def _crear_entrevista_con_respuestas(id_interno, id_solicitud, fecha, prefijo, puntuacion_global=None):
+def _crear_entrevista_con_respuestas(id_interno, id_solicitud, fecha, prefijo, puntuacion_ia=None):
     respuestas = _crear_respuestas_relleno(prefijo)
     id_entrevista = agregar_entrevista_y_respuestas(id_interno, id_solicitud, fecha, respuestas)
-    if id_entrevista and puntuacion_global is not None:
-        actualizar_puntuacion_entrevista(id_entrevista, puntuacion_global)
+    if id_entrevista and puntuacion_ia is not None:
+        actualizar_puntuacion_entrevista(id_entrevista, puntuacion_ia)
     return id_entrevista
 
 
@@ -166,7 +166,7 @@ def generar_escenarios():
         conclusiones_profesional="Aprobada tras evaluacion completa del caso.",
     )
     ent_i2_acep = _crear_entrevista_con_respuestas(
-        2, sol_i2_acep, "2025-02-11", "Interno 2 aceptada", puntuacion_global=944.0
+        2, sol_i2_acep, "2025-02-11", "Interno 2 aceptada", puntuacion_ia=944.0
     )
     agregar_comentario_ia(ent_i2_acep, prof1_id, "IA: riesgo bajo y buena coherencia narrativa.", "2025-02-12")
     agregar_comentario_profesional(ent_i2_acep, prof1_id, "Profesional: apto para permiso solicitado.", "2025-02-12")
@@ -174,7 +174,7 @@ def generar_escenarios():
 
     sol_i2_pend = _crear_solicitud_completa(2, "pendiente", "2026-03-01")
     _crear_entrevista_con_respuestas(
-        2, sol_i2_pend, "2026-03-01", "Interno 2 pendiente", puntuacion_global=918.0
+        2, sol_i2_pend, "2026-03-01", "Interno 2 pendiente", puntuacion_ia=918.0
     )
 
     # Interno 3: primero caso antiguo (rechazada), luego el mas reciente (pendiente).
@@ -183,7 +183,7 @@ def generar_escenarios():
         conclusiones_profesional="Rechazada por inconsistencias en la justificacion.",
     )
     ent_i3_rech = _crear_entrevista_con_respuestas(
-        3, sol_i3_rech, "2026-02-06", "Interno 3 rechazada", puntuacion_global=989.0
+        3, sol_i3_rech, "2026-02-06", "Interno 3 rechazada", puntuacion_ia=989.0
     )
     agregar_comentario_ia(ent_i3_rech, prof1_id, "IA: detecta contradicciones relevantes en respuestas.", "2026-02-07")
     agregar_comentario_profesional(ent_i3_rech, prof1_id, "Profesional: no procede autorizacion.", "2026-02-07")
@@ -191,7 +191,7 @@ def generar_escenarios():
 
     sol_i3_pend = _crear_solicitud_completa(3, "pendiente", "2026-03-02", id_profesional=prof2_id)
     _crear_entrevista_con_respuestas(
-        3, sol_i3_pend, "2026-03-02", "Interno 3 pendiente", puntuacion_global=930.0
+        3, sol_i3_pend, "2026-03-02", "Interno 3 pendiente", puntuacion_ia=930.0
     )
 
     # Interno 4: solicitud completa sin entrevista y sin profesional asignado.

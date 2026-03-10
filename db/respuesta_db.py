@@ -15,7 +15,8 @@ def crear_respuesta():
             texto_respuesta TEXT,            
             ruta_audio TEXT,
             puntuacion_ia REAL,
-            nivel INTEGER,                          
+            nivel_ia INTEGER,
+            nivel_profesional INTEGER,
             FOREIGN KEY (id_entrevista) REFERENCES entrevistas(id) ON DELETE CASCADE,
             FOREIGN KEY (id_pregunta) REFERENCES preguntas(id) ON DELETE RESTRICT
         )
@@ -40,7 +41,7 @@ def agregar_respuesta(id_entrevista, id_pregunta, texto_respuesta, ruta_audio, p
     try:
         cursor.execute('''
             INSERT INTO respuestas (id_entrevista, id_pregunta, texto_respuesta, ruta_audio, puntuacion_ia)
-            VALUES (?,?,?,?)
+            VALUES (?,?,?,?,?)
         ''', (id_entrevista, id_pregunta, texto_respuesta, ruta_audio, puntuacion_ia))
     except sqlite3.IntegrityError:
         print("ERror: No se ha podido crear la respuesta")
@@ -50,7 +51,7 @@ def agregar_respuesta(id_entrevista, id_pregunta, texto_respuesta, ruta_audio, p
     conexion.close()
     return True
 
-def actualizar_puntuacion_respuesta(id_entrevista, id_pregunta, puntuacion_ia, nivel):
+def actualizar_puntuacion_respuesta(id_entrevista, id_pregunta, puntuacion_ia, nivel_ia):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     
@@ -58,9 +59,9 @@ def actualizar_puntuacion_respuesta(id_entrevista, id_pregunta, puntuacion_ia, n
         cursor.execute('''
             UPDATE respuestas 
             SET puntuacion_ia = ?, 
-                nivel = ?
+                nivel_ia = ?
             WHERE id_entrevista = ? AND id_pregunta = ?
-        ''', (puntuacion_ia, nivel, id_entrevista, id_pregunta))
+        ''', (puntuacion_ia, nivel_ia, id_entrevista, id_pregunta))
         
         conexion.commit()
         return True
@@ -80,7 +81,7 @@ def obtener_respuestas_por_entrevista(id_entrevista):
     
     try:      
         cursor.execute('''
-            SELECT id_pregunta, texto_respuesta, ruta_audio, puntuacion_ia, nivel 
+            SELECT id_pregunta, texto_respuesta, ruta_audio, puntuacion_ia, nivel_ia, nivel_profesional
             FROM respuestas 
             WHERE id_entrevista = ?
         ''', (id_entrevista,))
@@ -95,7 +96,8 @@ def obtener_respuestas_por_entrevista(id_entrevista):
                 "texto_respuesta": fila[1],
                 "ruta_audio": fila[2],
                 "puntuacion_ia": fila[3],
-                "nivel": fila[4]
+                "nivel_ia": fila[4],
+                "nivel_profesional": fila[5],
             }
             lista_respuestas.append(datos)
             

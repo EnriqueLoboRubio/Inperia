@@ -152,6 +152,13 @@ class ProgresoController(QObject):
         if not self.solicitud:
             return
 
+        confirmado = self.msg.mostrar_confirmacion(
+            "Cancelar solicitud",
+            "¿Desea cancelar esta solicitud?\n\nEsta acción cambiará su estado a cancelada."
+        )
+        if not confirmado:
+            return
+
         self.solicitud.estado = "cancelada"
         self.cargar_datos()
 

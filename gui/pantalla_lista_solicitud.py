@@ -165,7 +165,7 @@ class TarjetaSolicitud(QFrame):
         cabecera.addLayout(botones_superior)
         layout_principal.addLayout(cabecera)
 
-        # Texto de conclusiones profesional
+        # Texto de conclusiones del profesional
         conc_prof = self._texto_conclusion_profesional()
         if conc_prof:
             caja_eval = QFrame()

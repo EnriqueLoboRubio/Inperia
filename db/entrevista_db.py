@@ -15,7 +15,10 @@ def crear_entrevista():
             id_interno INTEGER NOT NULL, 
             id_solicitud INTEGER NOT NULL,           
             fecha TEXT NOT NULL,
-            puntuacion_global REAL,          
+            puntuacion_ia REAL,
+            puntuacion_profesional REAL,
+            estado_evaluacion_ia TEXT NOT NULL DEFAULT 'sin evaluación'
+                CHECK(estado_evaluacion_ia IN ('sin evaluación', 'evaluando', 'evaluada')),
             FOREIGN KEY (id_interno) REFERENCES internos(num_RC) ON DELETE CASCADE,
             FOREIGN KEY (id_solicitud) REFERENCES solicitudes(id) ON DELETE CASCADE                     
         )
@@ -110,7 +113,7 @@ def listar_ultimas_entrevistas_por_interno(id_interno, limite=5):
                 e.id,
                 e.id_solicitud,
                 e.fecha,
-                e.puntuacion_global,
+                e.puntuacion_ia,
                 s.tipo,
                 COALESCE(ce.comentario_profesional, ''),
                 COALESCE(u.nombre, '')
@@ -144,7 +147,7 @@ def obtener_ultima_entrevista_interno_profesional(id_interno, id_profesional):
     try:
         cursor.execute(
             """
-            SELECT e.id, e.fecha, e.puntuacion_global
+            SELECT e.id, e.fecha, e.puntuacion_ia
             FROM entrevistas e
             INNER JOIN solicitudes s
               ON s.id = e.id_solicitud
@@ -172,7 +175,7 @@ def obtener_ultima_entrevista_interno(id_interno):
     try:
         cursor.execute(
             """
-            SELECT e.id, e.fecha, e.puntuacion_global
+            SELECT e.id, e.fecha, e.puntuacion_ia
             FROM entrevistas e
             WHERE e.id_interno = ?
             ORDER BY
@@ -197,7 +200,7 @@ def obtener_ultimas_entrevistas_interno(id_interno, limite=2):
     try:
         cursor.execute(
             """
-            SELECT e.id, e.fecha, e.puntuacion_global
+            SELECT e.id, e.fecha, e.puntuacion_ia
             FROM entrevistas e
             WHERE e.id_interno = ?
             ORDER BY
@@ -223,16 +226,16 @@ def borrar_entrevistas():
     conexion.commit()
     conexion.close()
 
-def actualizar_puntuacion_entrevista(id, puntuacion_global):
+def actualizar_puntuacion_entrevista(id, puntuacion_ia):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     
     try:
         cursor.execute('''
             UPDATE entrevistas 
-            SET puntuacion_global = ?
+            SET puntuacion_ia = ?
             WHERE id = ?
-        ''', (puntuacion_global, id))
+        ''', (puntuacion_ia, id))
         
         conexion.commit()
         return True
@@ -240,4 +243,48 @@ def actualizar_puntuacion_entrevista(id, puntuacion_global):
         print(f"Error al actualizar: {e}")
         return False
     finally:
-        conexion.close()    
+        conexion.close()
+
+
+def actualizar_puntuacion_profesional_entrevista(id, puntuacion_profesional):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+
+    try:
+        cursor.execute(
+            '''
+            UPDATE entrevistas
+            SET puntuacion_profesional = ?
+            WHERE id = ?
+            ''',
+            (puntuacion_profesional, id),
+        )
+        conexion.commit()
+        return True
+    except Exception as e:
+        print(f"Error al actualizar puntuacion profesional: {e}")
+        return False
+    finally:
+        conexion.close()
+
+
+def actualizar_estado_evaluacion_ia_entrevista(id, estado_evaluacion_ia):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+
+    try:
+        cursor.execute(
+            '''
+            UPDATE entrevistas
+            SET estado_evaluacion_ia = ?
+            WHERE id = ?
+            ''',
+            (estado_evaluacion_ia, id),
+        )
+        conexion.commit()
+        return True
+    except Exception as e:
+        print(f"Error al actualizar estado de evaluacion IA: {e}")
+        return False
+    finally:
+        conexion.close()
