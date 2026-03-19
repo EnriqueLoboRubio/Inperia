@@ -2,9 +2,9 @@ from datetime import datetime
 
 from PyQt5.QtCore import Qt, QEvent, QSize
 from PyQt5.QtGui import QFont, QPixmap, QTextCharFormat, QIcon, QColor
-from PyQt5.QtWidgets import (QComboBox, QDialog, QFrame, QHBoxLayout, QLabel, QPushButton, QScrollArea, QSizePolicy, QTextEdit, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QComboBox, QDialog, QFrame, QHBoxLayout, QLabel, QPushButton, QScrollArea, QSizePolicy, QTextEdit, QVBoxLayout, QWidget, QSpinBox)
 
-from db.pregunta_db import obtener_preguntas_como_diccionario
+from db.pregunta_db import obtener_preguntas_como_diccionario, actualizar_cantidad_niveles_pregunta
 from db.prompt_db import guardar_prompt_version, obtener_versiones_prompt_por_pregunta
 from gui.estilos import *
 
@@ -170,7 +170,9 @@ class VentanaDetallePromptEditProfesional(QDialog):
         self._altura_inicial_aplicada = False
 
         preguntas = obtener_preguntas_como_diccionario()
-        self._texto_pregunta = str(preguntas.get(str(self.numero_pregunta), {}).get("texto", "")).rstrip()
+        self._datos_pregunta = preguntas.get(str(self.numero_pregunta), {})
+        self._texto_pregunta = str(self._datos_pregunta.get("texto", "")).rstrip()
+        self._cantidad_niveles = int(self._datos_pregunta.get("cantidad_niveles", 0) or 0)
         self._versiones = obtener_versiones_prompt_por_pregunta(self.numero_pregunta) or [self._version_vacia()]
 
         self._build_ui()
@@ -239,6 +241,29 @@ class VentanaDetallePromptEditProfesional(QDialog):
         l.addWidget(self.combo_version)
         l.addWidget(self.boton_nueva_version)
         l.addWidget(self.lbl_ultima_edicion)
+        self.boton_cerrar = QPushButton("✕")
+        self.boton_cerrar.setCursor(Qt.PointingHandCursor)
+        self.boton_cerrar.setFixedSize(24, 24)
+        self.boton_cerrar.setToolTip("Cerrar ventana")
+        self.boton_cerrar.setStyleSheet(
+            """
+            QPushButton {
+                background: transparent;
+                border: none;
+                color: #666666;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #F1F1F1;
+                border: 1px solid #E0E0E0;
+                border-radius: 12px;
+                color: #111111;
+            }
+            """
+        )
+        self.boton_cerrar.clicked.connect(self.cerrar_ventana)
+        l.addWidget(self.boton_cerrar)
         return l
 
     def _label_titulo(self):
@@ -263,6 +288,36 @@ class VentanaDetallePromptEditProfesional(QDialog):
         self.txt_titulo = self._crear_textedit(min_height=58)
         self.txt_plantilla = self._crear_textedit(min_height=260, plantilla=True)
         self.txt_descripcion = self._crear_textedit(min_height=95)
+        self.input_cantidad_niveles = QSpinBox()
+        self.input_cantidad_niveles.setStyleSheet(
+            """
+            QSpinBox {
+                background-color: #FFFFFF;
+                border: 1px solid #CFCFCF;
+                border-radius: 10px;
+                padding-left: 12px;
+                padding-right: 34px;
+                font-size: 20px;
+                color: #111111;
+            }
+            QSpinBox:focus {
+                border: 1px solid #1F3B5B;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                width: 18px;
+                border: none;
+                subcontrol-origin: border;
+                right: 8px;
+            }
+            QSpinBox::up-button { subcontrol-position: top right; }
+            QSpinBox::down-button { subcontrol-position: bottom right; }
+            QSpinBox::up-arrow { image: url(assets/flecha_arriba.png); width: 10px; height: 10px; }
+            QSpinBox::down-arrow { image: url(assets/flecha_abajo.png); width: 10px; height: 10px; }
+            """
+        )
+        self.input_cantidad_niveles.setFixedHeight(58)
+        self.input_cantidad_niveles.setRange(0, 99)
+        self.input_cantidad_niveles.setValue(self._cantidad_niveles)
         self._crear_boton_info_inline_en_plantilla()
 
         self.scroll_layout.addWidget(self._label_campo("<b>Título (Editable):</b>"))
@@ -271,6 +326,8 @@ class VentanaDetallePromptEditProfesional(QDialog):
         self.scroll_layout.addWidget(self.txt_plantilla)
         self.scroll_layout.addWidget(self._label_campo("<b>Descripción (Editable):</b>"))
         self.scroll_layout.addWidget(self.txt_descripcion)
+        self.scroll_layout.addWidget(self._label_campo("<b>Cantidad de niveles:</b>"))
+        self.scroll_layout.addWidget(self.input_cantidad_niveles)
         self.scroll_layout.addStretch(1)
 
         self.scroll_area.setWidget(self.scroll_widget)
@@ -330,7 +387,6 @@ class VentanaDetallePromptEditProfesional(QDialog):
         l = QHBoxLayout()
         l.setContentsMargins(0, 0, 0, 0)
 
-        self.boton_cerrar = self._crear_boton("Cerrar", ESTILO_BOTON_SIG_ATR, self.cerrar_ventana)
         self.boton_guardar = self._crear_boton(
             "Guardar",
             ESTILO_BOTON_SIG_ATR.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930"),
@@ -338,7 +394,6 @@ class VentanaDetallePromptEditProfesional(QDialog):
         )
         self.boton_guardar.setToolTip("Guardar prompt")
 
-        l.addWidget(self.boton_cerrar)
         l.addStretch()
         l.addWidget(self.boton_guardar)
         return l
@@ -470,7 +525,10 @@ class VentanaDetallePromptEditProfesional(QDialog):
                 int(v.get("activo", 0)),
             )
             for v in self._versiones
-        )
+        ) + (self._cantidad_niveles_actual(),)
+
+    def _cantidad_niveles_actual(self):
+        return int(self.input_cantidad_niveles.value())
 
     @staticmethod
     def _formatear_fecha(fecha_raw):
@@ -490,6 +548,7 @@ class VentanaDetallePromptEditProfesional(QDialog):
     def guardar_datos(self):
         self._volcar_form_en_version(self._index_version_actual)
         v = self._versiones[self._index_version_actual]
+        cantidad_niveles = self._cantidad_niveles_actual()
         prompt_id = guardar_prompt_version(
             id_pregunta=self.numero_pregunta,
             titulo=v.get("titulo", ""),
@@ -499,7 +558,8 @@ class VentanaDetallePromptEditProfesional(QDialog):
             id_prompt=v.get("id"),
             activar=True,
         )
-        if prompt_id is not None:
+        if prompt_id is not None and actualizar_cantidad_niveles_pregunta(self.numero_pregunta, cantidad_niveles):
+            self._cantidad_niveles = cantidad_niveles
             self.accept()
 
     def mostrar_confirmacion_cerrar(self):

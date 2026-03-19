@@ -85,12 +85,15 @@ class IndicadorProgreso(QWidget):
         if self.estado == "pendiente":
             self.titulo_3_lbl.setText("Evaluación en curso")
             self.subtitulo_3_lbl.setText("Análisis inteligente y valoración personal en curso")
+            self.subtitulo_3_lbl.setStyleSheet(f"color: {COLOR_IA_MORADO}; font-size: 20px;")
         elif self.estado in ["aceptada", "rechazada", "cancelada"]:
             self.titulo_3_lbl.setText("Evaluación finalizada")
             self.subtitulo_3_lbl.setText("Evaluación completada por el equipo profesional")
+            self.subtitulo_3_lbl.setStyleSheet(ESTILO_TEXTO)
         else:
             self.titulo_3_lbl.setText("Evaluación pendiente")
             self.subtitulo_3_lbl.setText("")
+            self.subtitulo_3_lbl.setStyleSheet(ESTILO_TEXTO)
 
     def actualizar_linea(self, linea, activa):
         if activa:
@@ -247,7 +250,9 @@ class IndicadorProgreso(QWidget):
         else:
             sub = ""         
         self.subtitulo_3_lbl = QLabel(sub)
-        self.subtitulo_3_lbl.setStyleSheet(ESTILO_TEXTO)
+        self.subtitulo_3_lbl.setStyleSheet(
+            f"color: {COLOR_IA_MORADO}; font-size: 20px;" if sub else ESTILO_TEXTO
+        )
 
         texto_3.addWidget(self.titulo_3_lbl)
         texto_3.addWidget(self.subtitulo_3_lbl)
@@ -562,19 +567,21 @@ class PantallaProgresoInterno(QWidget):
         #Botones
         botones_layout = QHBoxLayout()       
 
-        self.boton_solicitud = QPushButton("Descargar Solicitud")
+        self.boton_solicitud = QPushButton("Descargar solicitud")
         self.boton_solicitud.setFixedSize(250, 45) 
         self.boton_solicitud.setStyleSheet(ESTILO_BOTON_SIG_ATR)
         self.boton_solicitud.setCursor(Qt.PointingHandCursor)
 
-        self.boton_entrevista = QPushButton("Ver Entrevista")
+        self.boton_entrevista = QPushButton("Ver entrevista")
         self.boton_entrevista.setFixedSize(250, 45) 
         self.boton_entrevista.setStyleSheet(ESTILO_BOTON_SIG_ATR)
         self.boton_entrevista.setCursor(Qt.PointingHandCursor)
 
-        self.boton_cancelar = QPushButton("Cancelar Solicitud")
+        self.boton_cancelar = QPushButton("Cancelar solicitud")
         self.boton_cancelar.setFixedSize(250, 45) 
-        self.boton_cancelar.setStyleSheet(ESTILO_BOTON_SIG_ATR)
+        self.boton_cancelar.setStyleSheet(
+            ESTILO_BOTON_SIG_ATR.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930")
+        )
         self.boton_cancelar.setCursor(Qt.PointingHandCursor)
 
         botones_layout.addWidget(self.boton_solicitud)
@@ -650,12 +657,12 @@ class PantallaProgresoInterno(QWidget):
 
             # Título pequeño
             widget.lbl_titulo = QLabel(titulo)
-            widget.lbl_titulo.setStyleSheet(ESTILO_TITULO_DETALLE_SOLICITUD)
+            widget.lbl_titulo.setStyleSheet(ESTILO_DATO_PRINCIPAL_SOLICITUD)
             columna_texto.addWidget(widget.lbl_titulo)
 
             # Dato Principal
             widget.lbl_l1 = QLabel(linea1)
-            widget.lbl_l1.setStyleSheet(ESTILO_DATO_PRINCIPAL_SOLICITUD)
+            widget.lbl_l1.setStyleSheet(ESTILO_TEXTO)
             columna_texto.addWidget(widget.lbl_l1)
 
             # Dato Secundario

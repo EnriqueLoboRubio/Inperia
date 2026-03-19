@@ -16,7 +16,7 @@ class PantallaPerfil(QWidget):
 
     def _iniciar_ui(self):
         principal_layout = QVBoxLayout(self)
-        principal_layout.setContentsMargins(20, 20, 20, 20)
+        principal_layout.setContentsMargins(20, 20, 60, 20)
         principal_layout.setSpacing(20)
         self.setStyleSheet("QWidget { background-color: #f0f0f0; }")
 

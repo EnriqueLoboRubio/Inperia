@@ -17,6 +17,29 @@ from gui.estilos import *
 
 class PantallaPerfilInternoProfesional(QWidget):
     volver = pyqtSignal()
+    ver_entrevista = pyqtSignal(int)
+    ver_solicitud = pyqtSignal(int)
+
+    class TarjetaEntrevista(QFrame):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+            self._boton_accion = None
+            self.setMouseTracking(True)
+
+        def set_boton_accion(self, boton):
+            self._boton_accion = boton
+            if self._boton_accion is not None:
+                self._boton_accion.setVisible(False)
+
+        def enterEvent(self, event):
+            if self._boton_accion is not None:
+                self._boton_accion.setVisible(True)
+            super().enterEvent(event)
+
+        def leaveEvent(self, event):
+            if self._boton_accion is not None:
+                self._boton_accion.setVisible(False)
+            super().leaveEvent(event)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -47,12 +70,12 @@ class PantallaPerfilInternoProfesional(QWidget):
         layout_principal.addWidget(scroll, 1)
 
         fila_inferior = QHBoxLayout()
-        fila_inferior.addStretch()
         self.boton_volver = QPushButton("Volver")
         self.boton_volver.setCursor(Qt.PointingHandCursor)
         self.boton_volver.setStyleSheet(ESTILO_BOTON_SIG_ATR)
         self.boton_volver.clicked.connect(self.volver.emit)
         fila_inferior.addWidget(self.boton_volver)
+        fila_inferior.addStretch()
         layout_principal.addLayout(fila_inferior)
 
     def _crear_bloque_cabecera(self):
@@ -69,10 +92,11 @@ class PantallaPerfilInternoProfesional(QWidget):
         layout.addWidget(self.lbl_avatar, alignment=Qt.AlignTop)
 
         bloque = QVBoxLayout()
+        bloque.setSpacing(3)
         self.lbl_nombre = QLabel("-")
-        self.lbl_nombre.setStyleSheet(ESTILO_TITULO_PASO_ENCA)
+        self.lbl_nombre.setStyleSheet(ESTILO_NOMBRE_INTERNO)
         self.lbl_rc = QLabel("-")
-        self.lbl_rc.setStyleSheet(ESTILO_SUBTITULO_SOLICITUD)
+        self.lbl_rc.setStyleSheet(ESTILO_NUM_RC)
         bloque.addWidget(self.lbl_nombre)
         bloque.addWidget(self.lbl_rc)
         layout.addLayout(bloque, 1)
@@ -285,6 +309,8 @@ class PantallaPerfilInternoProfesional(QWidget):
         return texto.capitalize() if texto else "-"
 
     def cargar_perfil(self, interno, entrevistas, solicitudes):
+        self._interno_actual = interno
+        self._solicitudes_actuales = list(solicitudes or [])
         self.lbl_nombre.setText(str(getattr(interno, "nombre", "") or "-"))
         self.lbl_rc.setText(f"RC-{getattr(interno, 'num_RC', '-')}")
         self.lbl_avatar.setText(self._iniciales(getattr(interno, "nombre", "")))
@@ -324,9 +350,8 @@ class PantallaPerfilInternoProfesional(QWidget):
 
         for entrevista in entrevistas:            
             id_entrevista, _, fecha, puntuacion, _ = entrevista[:5]
-            comentario_prof = entrevista[5] if len(entrevista) > 5 else ""
-            nombre_prof = entrevista[6] if len(entrevista) > 6 else ""
-            card = QFrame()
+            comentario_ia = entrevista[5] if len(entrevista) > 5 else ""
+            card = self.TarjetaEntrevista()
             card.setStyleSheet(
                 "QFrame { background-color: #F5F5F5; border: 1px solid #D9D9D9; border-radius: 10px; }"
             )
@@ -344,26 +369,59 @@ class PantallaPerfilInternoProfesional(QWidget):
             fila_cabecera.addStretch()
             fila_cabecera.addWidget(fecha_lbl)
 
-            autor_texto = f"Dr. {nombre_prof}" if str(nombre_prof or "").strip() else "Profesional no asignado"
-            autor_lbl = QLabel(autor_texto)
-            autor_lbl.setStyleSheet(ESTILO_AUTOR_ENTREVISTA)
-
-            comentario_texto = str(comentario_prof or "").strip() or "Sin comentario de entrevista disponible."
-            texto_lbl = QLabel(comentario_texto)
-            texto_lbl.setStyleSheet(ESTILO_COMENTARIO_ENTREVISTA)
-            texto_lbl.setWordWrap(True)
+            comentario_texto = str(comentario_ia or "").strip()
 
             fila_pie = QHBoxLayout()
             fila_pie.setContentsMargins(0, 0, 0, 0)
             fila_pie.addStretch()
+            boton_ver = QPushButton("Ver")
+            boton_ver.setCursor(Qt.PointingHandCursor)
+            boton_ver.setFixedHeight(26)
+            boton_ver.setStyleSheet(
+                """
+                QPushButton {
+                    background-color: #2B2A2A;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 3px 10px;
+                    font-size: 8.5pt;
+                }
+                QPushButton:hover { background-color: #464545; }
+                """
+            )
+            boton_ver.setToolTip("Ver entrevista en modo lectura")
+            boton_ver.clicked.connect(
+                lambda _checked=False, id_ent=int(id_entrevista): self.ver_entrevista.emit(id_ent)
+            )
+            card.set_boton_accion(boton_ver)
+            fila_pie.addWidget(boton_ver)
+            fila_pie.addSpacing(8)
             puntuacion_txt = "0000" if puntuacion is None else str(puntuacion)
             puntuacion_lbl = QLabel(f"Puntuación: {puntuacion_txt}")
             puntuacion_lbl.setStyleSheet(ESTILO_PUNTUACION_ENTREVISTA)
             fila_pie.addWidget(puntuacion_lbl)
 
             layout.addLayout(fila_cabecera)
-            layout.addWidget(autor_lbl)
-            layout.addWidget(texto_lbl)
+            if comentario_texto:
+                caja_eval = QFrame()
+                caja_eval.setStyleSheet(
+                    "QFrame { background-color: #E5E5E5; border: none; border-radius: 14px; }"
+                )
+                eval_layout = QVBoxLayout(caja_eval)
+                eval_layout.setContentsMargins(16, 12, 16, 12)
+                eval_layout.setSpacing(8)
+
+                lbl_titulo_eval = QLabel("Conclusión IA:")
+                lbl_titulo_eval.setStyleSheet("font-size: 12pt; font-weight: bold; color: #1A1A1A;")
+                eval_layout.addWidget(lbl_titulo_eval)
+
+                lbl_texto_eval = QLabel(comentario_texto)
+                lbl_texto_eval.setWordWrap(True)
+                lbl_texto_eval.setStyleSheet("font-size: 11pt; color: #222222;")
+                eval_layout.addWidget(lbl_texto_eval)
+
+                layout.addWidget(caja_eval)
             layout.addLayout(fila_pie)
             self.layout_entrevistas.addWidget(card)
 
@@ -383,7 +441,7 @@ class PantallaPerfilInternoProfesional(QWidget):
             motivo = str(fila[3] or "-")
             fecha = str(fila[6] or "-")
 
-            card = QFrame()
+            card = self.TarjetaEntrevista()
             card.setStyleSheet(
                 "QFrame { background-color: #F5F5F5; border: 1px solid #D9D9D9; border-radius: 10px; }"
             )
@@ -418,6 +476,29 @@ class PantallaPerfilInternoProfesional(QWidget):
             lateral.addWidget(lbl_fecha)
             lateral.addWidget(badge)
             lateral.addStretch()
+
+            boton_ver_solicitud = QPushButton("Ver solicitud")
+            boton_ver_solicitud.setCursor(Qt.PointingHandCursor)
+            boton_ver_solicitud.setFixedHeight(26)
+            boton_ver_solicitud.setStyleSheet(
+                """
+                QPushButton {
+                    background-color: #2B2A2A;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 3px 10px;
+                    font-size: 8.5pt;
+                }
+                QPushButton:hover { background-color: #464545; }
+                """
+            )
+            boton_ver_solicitud.setToolTip("Ver solicitud en modo lectura")
+            boton_ver_solicitud.clicked.connect(
+                lambda _checked=False, id_sol=int(id_solicitud): self.ver_solicitud.emit(id_sol)
+            )
+            card.set_boton_accion(boton_ver_solicitud)
+            lateral.addWidget(boton_ver_solicitud, alignment=Qt.AlignRight)
 
             lay.addLayout(texto, 1)
             lay.addLayout(lateral)

@@ -1,52 +1,62 @@
 {
     "1": {
-        "titulo": "Extranjería",
-        "texto": "¿Usted reside en España? ¿Tiene residencia legal?\n¿Tiene determinada la expulsión judicial de España?\n¿Tiene usted algún vínculo personal, familiar o profesional con personas españolas o residentes en España?\n¿Puede detallarlo?",
-        "ayuda": "Aclare su situación administrativa (NIE, DNI, irregular). Es fundamental detallar el arraigo familiar o laboral en España"
+        "titulo": "Extranjeria",
+        "texto": "¿Usted reside en España? ¿Tiene residencia legal?\n¿Tiene determinada la expulsión judicial de España?\n¿Tiene usted algún vinculo personal, familiar o profesional con personas españolas o residentes en España?\n¿Puede detallarlo?",
+        "ayuda": "Aclare su situación administrativa (NIE, DNI, irregular). Es fundamental detallar el arraigo familiar o laboral en España.",
+        "cantidad_niveles": 4
     },
     "2": {
         "titulo": "Drogodependencias",
-        "texto": "¿Usted ha consumido drogas a lo largo de su vida? ¿Qué ha consumido?\n¿Cuándo se inició en dichos consumos?\n¿Ha participado usted en programas de deshabituación en los centros penitenciarios o en centros externos?\n¿Cuándo ha sido su último consumo? ¿Sigue consumiendo en la actualidad? ¿Ha tenido recaídas en consumos?",
-        "ayuda": "La sinceridad es clave para valorar su tratamiento. Indique fechas aproximadas y, sobre todo, su voluntad actual de participar en programas de desintoxicación."
+        "texto": "¿Usted ha consumido drogas a lo largo de su vida? ¿Que ha consumido?\n¿Cuándo se inició en dichos consumos?\n¿Ha participado usted en programas de deshabituación en los centros penitenciarios o en centros externos?\n¿Cuándo ha sido su último consumo? ¿Sigue consumiendo en la actualidad? ¿Ha tenido recaídas en consumos?",
+        "ayuda": "La sinceridad es clave para valorar su tratamiento. Indique fechas aproximadas y, sobre todo, su voluntad actual de participar en programas de desintoxicación.",
+        "cantidad_niveles": 3
     },
     "3": {
         "titulo": "Profesionalidad",
         "texto": "¿Por qué cometió los delitos que figuran en su expediente? ¿Fue algo puntual o ha reincidido en su vida?",
-        "ayuda": "Explique si el delito fue un error aislado o parte de un estilo de vida anterior."
+        "ayuda": "Explique si el delito fue un error aislado o parte de un estilo de vida anterior.",
+        "cantidad_niveles": 2
     },
     "4": {
         "titulo": "Reincidencia",
         "texto": "¿Este es su primer ingreso en prisión o ha tenido otras condenas anteriormente?\n¿El cumplimiento de la condena actual es por delitos cometidos recientemente o\npor delitos cometidos hace tiempo y que estaban recurridos judicialmente?",
-        "ayuda": "Especifique si tiene antecedentes penales o policiales previos. Diferencie entre hechos recientes y condenas antiguas que acaban de ejecutarse."
+        "ayuda": "Especifique si tiene antecedentes penales o policiales previos. Diferencie entre hechos recientes y condenas antiguas que acaban de ejecutarse.",
+        "cantidad_niveles": 2
     },
     "5": {
         "titulo": "Quebrantamiento",
         "texto": "¿En algún momento ha intentado evitar el cumplimiento de una condena o fugarte? ¿Por qué?",
-        "ayuda": "Si hubo intentos de fuga o no regresó de un permiso, explique las circunstancias. Asumir la responsabilidad ayuda a valorar su fiabilidad actual."
+        "ayuda": "Si hubo intentos de fuga o no regreso de un permiso, explique las circunstancias. Asumir la responsabilidad ayuda a valorar su fiabilidad actual.",
+        "cantidad_niveles": 4
     },
     "6": {
         "titulo": "Artículo 10 LOGP",
         "texto": "¿Alguna vez ha estado clasificado en primer grado o se le ha aplicado el artículo 10 de la LOGP?\n¿Qué recuerda de esa etapa?",
-        "ayuda": "Mencione si ha estado en régimen cerrado o aislamiento y cómo ha evolucionado su comportamiento desde entonces para pasar a régimen ordinario."
+        "ayuda": "Mencione si ha estado en régimen cerrado o aislamiento y como ha evolucionado su comportamiento desde entonces para pasar a régimen ordinario.",
+        "cantidad_niveles": 2
     },
     "7": {
         "titulo": "Ausencia de permisos",
         "texto": "¿Ha tenido acceso a permisos penitenciarios?\n¿Qué impacto han tenido o cree que tendrían en usted? ¿Ha quebrantado algún permiso? ¿Por qué?",
-        "ayuda": "Indique si ha disfrutado de salidas sin incidentes. Si no ha tenido permisos, explique por qué cree que se le denegaron y qué haría diferente ahora."
+        "ayuda": "Indique si ha disfrutado de salidas sin incidentes. Si no ha tenido permisos, explique por qué cree que se le denegaron y qué haría diferente ahora.",
+        "cantidad_niveles": 2
     },
     "8": {
         "titulo": "Deficiencia convivencial",
         "texto": "¿Cómo describiría la relación con su familia u otras personas cercanas desde que está en prisión?\n¿Qué rol tiene en su familia? ¿Recibe visitas o apoyo externo?\n¿Su familia o amigos le ingresan dinero en su cuenta de peculio?",
-        "ayuda": "Detalle su red de apoyo exterior (visitas, llamadas, peculio). Es vital saber quién le apoyará en su reinserción o durante los permisos."
+        "ayuda": "Detalle su red de apoyo exterior (visitas, llamadas, peculio). Es vital saber quien le apoyara en su reinserción o durante los permisos.",
+        "cantidad_niveles": 2
     },
     "9": {
         "titulo": "Lejanía",
-        "texto": "¿Dónde le gustaría disfrutar del permiso en caso de ser concedido? ¿Por qué ha elegido ese lugar?\nEn caso de no tener familiares o amigos que los acojan:\n¿Tiene acogida por alguna ONG? ¿Cuál y dónde? ¿Se ha comprometido al cumplimiento de las normas de acogida de dicha ONG?",
-        "ayuda": "Debe aportar una dirección concreta y verificable. Si es una ONG o recurso externo, confirme que ha sido aceptado y conoce sus normas."
+        "texto": "¿Donde le gustaría disfrutar del permiso en caso de ser concedido? ¿Por qué ha elegido ese lugar?\nEn caso de no tener familiares o amigos que los acojan:\n¿Tiene acogida por alguna ONG? ¿Cuál y dónde? ¿Se ha comprometido al cumplimiento de las normas de acogida de dicha ONG?",
+        "ayuda": "Debe aportar una dirección concreta y verificable. Si es una ONG o recurso externo, confirme que ha sido aceptado y conoce sus normas.",
+        "cantidad_niveles": 2
     },
     "10": {
         "titulo": "Presiones internas",
         "texto": "¿Cómo es su relación con otros internos y con el personal del centro? ¿Ha vivido situaciones conflictivas? ¿Cuáles?\n¿Cómo es su cumplimiento de las normas de convivencia de su módulo?\n¿En qué actividades participa y qué destinos desempeña en el módulo?",
-        "ayuda": "Describa su conducta en el módulo, si tiene partes disciplinarios y si participa en actividades (escuela, talleres, destinos) que demuestren buena actitud."
+        "ayuda": "Describa su conducta en el módulo, si tiene partes disciplinarios y si participa en actividades (escuela, talleres, destinos) que demuestren buena actitud.",
+        "cantidad_niveles": 2
     }
 }

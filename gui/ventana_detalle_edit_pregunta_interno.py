@@ -79,7 +79,30 @@ class VentanaDetallePreguntaEdit(QDialog):
         lbl_titulo.setAlignment(Qt.AlignLeft)
         top_layout.addWidget(lbl_titulo)
 
-        top_layout.addStretch()              
+        top_layout.addStretch()
+        self.boton_cerrar = QPushButton("✕")
+        self.boton_cerrar.clicked.connect(self.cerrar_ventana)
+        self.boton_cerrar.setFixedSize(24, 24)
+        self.boton_cerrar.setToolTip("Cerrar ventana")
+        self.boton_cerrar.setStyleSheet(
+            """
+            QPushButton {
+                background: transparent;
+                border: none;
+                color: #666666;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #F1F1F1;
+                border: 1px solid #E0E0E0;
+                border-radius: 12px;
+                color: #111111;
+            }
+            """
+        )
+        self.boton_cerrar.setCursor(Qt.PointingHandCursor)
+        top_layout.addWidget(self.boton_cerrar)
         
         principal_layout.addLayout(top_layout)   
 
@@ -178,12 +201,27 @@ class VentanaDetallePreguntaEdit(QDialog):
         boton_layout.setContentsMargins(0, 0, 0, 0)
 
         # Botón Cerrar
-        self.boton_cerrar = QPushButton("Cerrar")
+        self.boton_cerrar = QPushButton("✕")
         self.boton_cerrar.clicked.connect(self.cerrar_ventana) 
-        self.boton_cerrar.setFont(QFont("Arial", 11))   
-        self.boton_cerrar.setFixedSize(110,40)
+        self.boton_cerrar.setFixedSize(24, 24)
         self.boton_cerrar.setToolTip("Cerrar ventana")
-        self.boton_cerrar.setStyleSheet(ESTILO_BOTON_SIG_ATR)
+        self.boton_cerrar.setStyleSheet(
+            """
+            QPushButton {
+                background: transparent;
+                border: none;
+                color: #666666;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #F1F1F1;
+                border: 1px solid #E0E0E0;
+                border-radius: 12px;
+                color: #111111;
+            }
+            """
+        )
         self.boton_cerrar.setCursor(Qt.PointingHandCursor)
 
         # Botón Guardar
@@ -195,7 +233,6 @@ class VentanaDetallePreguntaEdit(QDialog):
         self.boton_guardar.setCursor(Qt.PointingHandCursor)
         self.boton_guardar.clicked.connect(self.guardar_datos)
 
-        boton_layout.addWidget(self.boton_cerrar)
         boton_layout.addStretch() 
         boton_layout.addWidget(self.boton_guardar)
 
@@ -237,12 +274,15 @@ class VentanaDetallePreguntaEdit(QDialog):
 
             #Bloquear botones cerrar y guardar
             self.boton_cerrar.setEnabled(False) 
+            self.boton_cerrar.setToolTip("Desactivado: no puede cerrar mientras graba audio.")
             self.boton_guardar.setEnabled(False)  
+            self.boton_guardar.setToolTip("Desactivado: no puede guardar mientras graba audio.")
 
             # Bloquear reproducción
             self.player.stop()
             self.player.setMedia(QMediaContent())
             self.boton_play.setEnabled(False) # No reproducir mientras grabas      
+            self.boton_play.setToolTip("Desactivado: no puede reproducir mientras graba audio.")
 
             # Si habia un temporal sin guardar, eliminarlo antes de grabar de nuevo
             self.eliminar_audio_temporal()
@@ -294,8 +334,11 @@ class VentanaDetallePreguntaEdit(QDialog):
             
             # Desbloquear botones
             self.boton_play.setEnabled(True)
+            self.boton_play.setToolTip("Reproducir grabacion")
             self.boton_cerrar.setEnabled(True)
+            self.boton_cerrar.setToolTip("Cerrar ventana")
             self.boton_guardar.setEnabled(True)
+            self.boton_guardar.setToolTip("Guardar datos")
             
             # Feedback
             self.lbl_estado_grabacion.setText("✅ Audio listo")
@@ -413,16 +456,19 @@ class VentanaDetallePreguntaEdit(QDialog):
             self.lbl_estado_grabacion.setText("Reproduciendo...")
             self.lbl_estado_grabacion.setStyleSheet("color: green;")
             self.boton_grabar.setEnabled(False)
+            self.boton_grabar.setToolTip("Desactivado: no puede grabar mientras se reproduce audio.")
         elif estado == QMediaPlayer.PausedState:
             self.boton_play.setIcon(QIcon("assets/play.png"))
             self.lbl_estado_grabacion.setText("Pausado")
             self.lbl_estado_grabacion.setStyleSheet("color: orange;")
             self.boton_grabar.setEnabled(True)
+            self.boton_grabar.setToolTip("Responder por voz")
         else: # StoppedState
             self.boton_play.setIcon(QIcon("assets/play.png"))
             if not self.grabando:
                 self.lbl_estado_grabacion.setText("Listo")
                 self.boton_grabar.setEnabled(True)
+                self.boton_grabar.setToolTip("Responder por voz")
 
     def actualizar_posicion(self, posicion):
         self.slider_audio.setValue(posicion)

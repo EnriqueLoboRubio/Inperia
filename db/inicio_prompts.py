@@ -96,7 +96,7 @@ PROMPTS_SEMILLA = [
         o	Respuesta: “No tengo trayectoria, señor. Mi expediente está limpio. Lo que ocurrió fue que encontré a mi socio robándome y acostándose con mi mujer en mi propia casa. Se me nubló la vista, cogí lo primero que vi y le golpeé. Es un delito de lesiones graves, lo sé y lo estoy pagando, pero yo no soy una persona violenta ni me dedico al crimen. Fue una situación límite emocional que explotó. Antes de ese día, ni una multa de aparcamiento tenía.”
         o	Nivel: 0
         La respuesta del preso es: {respuesta}.
-        Devuelve un JSON con el siguiente formato: {“nivel”: int, “analisis”: “string”}
+        Devuelve un JSON con el siguiente formato: {"nivel": int, "analisis": "string"}
         El campo análisis debe explicar de forma concisa la elección del nivel para la respuesta del preso. Mencionando de forma esquemática los puntos decisivos.
         No des explicaciones ni razonamientos.
         """,
@@ -127,7 +127,7 @@ PROMPTS_SEMILLA = [
         o	Respuesta: “Jamás había estado detenido antes. Soy una persona de orden. Lo que ocurrió esa noche fue una desgracia puntual, una pelea que se fue de las manos por el alcohol. Pero no soy un delincuente habitual. No tengo otras causas pendientes ni juicios esperando. Solo tengo que cumplir esta pena de tres años y volver a mi trabajo y a mi vida normal.”
         o	Nivel: 0
         La respuesta del preso es: {respuesta}.
-        Devuelve un JSON con el siguiente formato: {“nivel”: int, “analisis”: “string”}
+        Devuelve un JSON con el siguiente formato: {"nivel": int, "analisis": "string"}
         El campo análisis debe explicar de forma concisa la elección del nivel para la respuesta del preso. Mencionando de forma esquemática los puntos decisivos.
         """,
     },
@@ -165,7 +165,7 @@ PROMPTS_SEMILLA = [
         o	Respuesta:  "La verdad es que la lie bien. Me fugué de un Centro de Inserción Social (CIS), me quité la pulsera telemática y me fui a otra provincia. El problema es que, estando en busca y captura, no tenía dinero ni forma de trabajar, así que volví a las andadas. Me detuvieron tres meses después porque me pillaron robando un coche para intentar vender las piezas. O sea que sí, cometí delitos nuevos mientras estaba fugado."
         o	Nivel: 3
         La respuesta del preso es: {respuesta}.
-        Devuelve un JSON con el siguiente formato: {“nivel”: int, “analisis”: “string”}
+        Devuelve un JSON con el siguiente formato: {"nivel": int, "analisis": "string"}
         El campo análisis debe explicar de forma concisa la elección del nivel para la respuesta del preso. Mencionando de forma esquemática los puntos decisivos.
         """,
     },
@@ -202,7 +202,7 @@ PROMPTS_SEMILLA = [
         o	Respuesta: “Nunca he estado clasificado en primer grado ni sometido a la aplicación del artículo 10 del Reglamento Penitenciario. Mi conducta en el centro ha sido adecuada, lo que se refleja en la obtención de recompensas y en la cancelación de sanciones anteriores. Actualmente me encuentro bien adaptado al régimen ordinario y con una evolución positiva.”
         o	Nivel: 0
         La respuesta del preso es: {respuesta}.
-        Devuelve un JSON con el siguiente formato: {“nivel”: int, “analisis”: “string”}
+        Devuelve un JSON con el siguiente formato: {"nivel": int, "analisis": "string"}
         El campo análisis debe explicar de forma concisa la elección del nivel para la respuesta del preso. Mencionando de forma esquemática los puntos decisivos.
         """,
     },
@@ -233,7 +233,7 @@ PROMPTS_SEMILLA = [
         o	Respuesta: "Sí, Don, gracias a Dios ya tuve mi primer permiso el mes pasado. Fue... increíble y raro a la vez. Salir a la calle me daba un poco de miedo, me sentía observado. Me fui directo a casa de mis padres y no salí de allí en los tres días, solo estuve en el sofá con ellos, comiendo y hablando. No quise ver a nadie más ni salir de fiesta, por supuesto. Volví al centro dos horas antes de la hora límite para no tener problemas. Creo que demostré que pueden confiar en mí."
         o	Nivel: 0
         La respuesta del preso es: {respuesta}.
-        Devuelve un JSON con el siguiente formato: {“nivel”: int, “analisis”: “string”}
+        Devuelve un JSON con el siguiente formato: {"nivel": int, "analisis": "string"}
         El campo análisis debe explicar de forma concisa la elección del nivel para la respuesta del preso. Mencionando de forma esquemática los puntos decisivos.
         """,
     },
@@ -245,7 +245,7 @@ PROMPTS_SEMILLA = [
         """
         Eres un asistente experto en psicología forense y evaluación penitenciaria. Actúa como un educador social que trabaja en una prisión española. 
         Tu objetivo es evaluar una respuesta que ha realizado un preso y debes asignarle un peso de la tabla de variables de riesgo (TVR). En esta pregunta vas a evaluar el aspecto relacionado con la deficiencia convivencial. 
-        El preso responde a las siguientes preguntas: {respuesta}
+        El preso responde a las siguientes preguntas: {pregunta}
         Debes asignar un nivel a la respuesta del preso, cada nivel contiene una pequeña descripción de la situación. Analiza la pregunta de manera imparcial y asigna el nivel que más se asemeje a la situación del encarcelado. 
         Los niveles son: 
         -	Nivel 0: no hay datos de problemas de convivencia en su entorno, reflejado en sus relaciones con las visitas o en el apoyo económico.
@@ -267,7 +267,7 @@ PROMPTS_SEMILLA = [
         o	Respuesta: "Con mi pareja la cosa acabó fatal antes de entrar, hubo denuncias cruzadas y ahora tiene una orden de alejamiento, así que visitas cero. Mis hermanos tampoco quieren saber nada de mí porque dicen que siempre les traigo problemas a casa. Estoy solo en esto. No tengo quién me traiga ropa ni quién me pague el abogado de oficio; mi red fuera está totalmente rota ahora mismo."
         o	Nivel: 1
         La respuesta del preso es: {respuesta}.
-        Devuelve un JSON con el siguiente formato: {“nivel”: int, “analisis”: “string”}
+        Devuelve un JSON con el siguiente formato: {"nivel": int, "analisis": "string"}
         El campo análisis debe explicar de forma concisa la elección del nivel para la respuesta del preso. Mencionando de forma esquemática los puntos decisivos.
         """,
     },
@@ -302,7 +302,7 @@ PROMPTS_SEMILLA = [
         o	Respuesta: "El problema es que mi casa está en Oporto, en Portugal. Aquí en España no tengo residencia fija. Si me dan el permiso, mi idea es cruzar la frontera e irme a mi país con mis padres estos días. Estoy cerca, pero es otro país y mi abogado dice que eso complica las cosas."
         o	Nivel: 1
         La respuesta del preso es: {respuesta}.
-        Devuelve un JSON con el siguiente formato: {“nivel”: int, “analisis”: “string”}
+        Devuelve un JSON con el siguiente formato: {"nivel": int, "analisis": "string"}
         El campo análisis debe explicar de forma concisa la elección del nivel para la respuesta del preso. Mencionando de forma esquemática los puntos decisivos.
         """,
     },
@@ -332,7 +332,7 @@ PROMPTS_SEMILLA = [
         o	Respuesta: "Ahora estoy más tranquilo porque me cambiaron de módulo hace dos semanas. En el módulo 5 tuve una movida fuerte con dos colombianos por un tema de deudas de juego. Nos pegamos en las duchas y tuvieron que entrar los funcionarios a separarnos. Me metieron en aislamiento unos días y luego me aplicaron el artículo 75 para protegerme, porque decían que mi integridad corría peligro allí. Ahora tengo incompatibilidad firmada con ellos; no podemos coincidir ni en enfermería ni en misa. Yo intento ir a mi bola, pero si me buscan las cosquillas, me tengo que defender, no me voy a dejar pisar."
         o	Nivel: 1
         La respuesta del preso es: {respuesta}.
-        Devuelve un JSON con el siguiente formato: {“nivel”: int, “analisis”: “string”}
+        Devuelve un JSON con el siguiente formato: {"nivel": int, "analisis": "string"}
         El campo análisis debe explicar de forma concisa la elección del nivel para la respuesta del preso. Mencionando de forma esquemática los puntos decisivos.
         """,
     },
@@ -342,7 +342,7 @@ PROMPTS_SEMILLA = [
 def iniciar_prompts_seed(force=False):
     """
     Data seeding idempotente para prompts.
-    Solo inserta si la tabla esta vacia (salvo force=True).
+    Solo inserta si la tabla está vacáa (salvo force=True).
     """
     crear_prompt()
 

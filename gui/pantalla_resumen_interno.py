@@ -25,13 +25,8 @@ class PantallaResumen(QWidget):
         self.grupo_botones_entrar = QButtonGroup(self)
 
         # --- Configuración del layout principal ---
-        principal_layout = QVBoxLayout(self)       
-
-        # ------------------- 1. Título Superior -------------------
-        titulo_pantalla = QLabel("Entrevista de interno X")
-        titulo_pantalla.setFont(QFont("Arial", 20, QFont.Bold))
-        titulo_pantalla.setAlignment(Qt.AlignLeft)
-        principal_layout.addWidget(titulo_pantalla)
+        principal_layout = QVBoxLayout(self)
+        principal_layout.setContentsMargins(0, 0, 0, 0)
 
         # ------------------- 2. Área de Scroll -------------------
         
@@ -45,7 +40,7 @@ class PantallaResumen(QWidget):
         self.scroll_content_layout = QVBoxLayout(self.scroll_content_widget)       
         self.scroll_content_layout.setAlignment(Qt.AlignTop)
         self.scroll_content_layout.setSpacing(20) # Espacio entre tarjetas
-        self.scroll_content_layout.setContentsMargins(50, 20, 50, 0)
+        self.scroll_content_layout.setContentsMargins(0, 20, 60, 0)
 
         self.scroll_area.setWidget(self.scroll_content_widget)                
         
@@ -54,12 +49,10 @@ class PantallaResumen(QWidget):
         # ------------------- 3. Botón Atrás Inferior -------------------
         boton_layout = QHBoxLayout()
         
-        self.boton_atras = QPushButton("Atrás")
-        self.boton_atras.setFont(QFont("Arial", 12))
-        self.boton_atras.setFixedSize(150, 50)
+        self.boton_atras = QPushButton("Volver")
         self.boton_atras.setCursor(Qt.PointingHandCursor)
         self.boton_atras.setStyleSheet(ESTILO_BOTON_SIG_ATR)
-        self.boton_atras.setToolTip("Volver a la pantalla de preguntas")
+        self.boton_atras.setToolTip("Volver")
         
         boton_layout.addWidget(self.boton_atras)
         boton_layout.addStretch() # botón a la izquierda

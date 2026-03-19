@@ -35,7 +35,8 @@ class PantallaPreguntas(QWidget):
         if not os.path.exists(self.carpeta_audios):
             os.makedirs(self.carpeta_audios)     
             
-        principal_layout = QVBoxLayout(self)                     
+        principal_layout = QVBoxLayout(self)
+        principal_layout.setContentsMargins(0, 0, 60, 0)
         
         # ------------------- 1. Título pregunta con botón de información -------------------
         self.pregunta_widget = QWidget()
@@ -137,22 +138,25 @@ class PantallaPreguntas(QWidget):
         self.botones_layout = QHBoxLayout(self.botones_widget)
         self.botones_layout.addStretch(1)
        
-        estilo_finalizar = ESTILO_BOTON_SIG_ATR.replace("black", "#1E5631").replace("rgba(71, 70, 70, 0.7)", "#3A9D5A")    
+        estilo_finalizar = ESTILO_BOTON_SIG_ATR.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930")
 
         self.boton_atras = QPushButton("Atrás")
         self.boton_atras.setStyleSheet(ESTILO_BOTON_SIG_ATR)
         self.boton_atras.setFont(QFont("Arial", 12))
         self.boton_atras.setFixedSize(150,50)
+        self.boton_atras.setToolTip("Ir a la pregunta anterior")
         self.boton_atras.hide()
 
         self.boton_siguiente = QPushButton("Siguiente")                 
         self.boton_siguiente.setStyleSheet(ESTILO_BOTON_SIG_ATR)
-        self.boton_siguiente.setFixedSize(150,50)   
+        self.boton_siguiente.setFixedSize(150,50)
+        self.boton_siguiente.setToolTip("Ir a la siguiente pregunta")
 
         self.boton_finalizar = QPushButton("Finalizar")       
         self.boton_finalizar.setStyleSheet(estilo_finalizar)
         self.boton_finalizar.setFont(QFont("Arial", 12))
         self.boton_finalizar.setFixedSize(150,50)
+        self.boton_finalizar.setToolTip("Finalizar entrevista")
         self.boton_finalizar.hide()
 
         self.botones_layout.addWidget(self.boton_atras)
@@ -196,8 +200,11 @@ class PantallaPreguntas(QWidget):
 
             # BLOQUEAR botones de navegación
             self.boton_atras.setEnabled(False)
+            self.boton_atras.setToolTip("Desactivado: no puede navegar mientras graba audio.")
             self.boton_siguiente.setEnabled(False)
+            self.boton_siguiente.setToolTip("Desactivado: no puede navegar mientras graba audio.")
             self.boton_finalizar.setEnabled(False)
+            self.boton_finalizar.setToolTip("Desactivado: no puede finalizar mientras graba audio.")
             
             # Cambios visuales
             self.boton_grabar.setProperty("grabando", True)
@@ -268,8 +275,11 @@ class PantallaPreguntas(QWidget):
 
             # DESBLOQUEAR botones de navegación
             self.boton_atras.setEnabled(True)
+            self.boton_atras.setToolTip("Ir a la pregunta anterior")
             self.boton_siguiente.setEnabled(True)
+            self.boton_siguiente.setToolTip("Ir a la siguiente pregunta")
             self.boton_finalizar.setEnabled(True)
+            self.boton_finalizar.setToolTip("Finalizar entrevista")
 
     def actualizar_texto_final(self, texto):
         """Recibe el texto del hilo y lo añade al cuadro de texto"""

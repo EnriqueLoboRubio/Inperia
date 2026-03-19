@@ -74,12 +74,13 @@ class TarjetaSolicitud(QFrame):
         cabecera.setSpacing(12)
     
         # Perfil
-        boton_perfil = QPushButton(self._iniciales_interno())
-        boton_perfil.setCursor(Qt.PointingHandCursor)
-        boton_perfil.setFixedSize(52, 52)
-        boton_perfil.setStyleSheet(ESTILO_BOTON_PERFIL)
-        boton_perfil.clicked.connect(lambda: self.ver_perfil_interno.emit(self.interno))
-        cabecera.addWidget(boton_perfil, alignment=Qt.AlignTop)
+        boton_perfil_avatar = QPushButton(self._iniciales_interno())
+        boton_perfil_avatar.setCursor(Qt.PointingHandCursor)
+        boton_perfil_avatar.setFixedSize(52, 52)
+        boton_perfil_avatar.setStyleSheet(ESTILO_BOTON_PERFIL)
+        boton_perfil_avatar.setToolTip("Ver perfil del interno")
+        boton_perfil_avatar.clicked.connect(lambda _=False: self.ver_perfil_interno.emit(self.interno))
+        cabecera.addWidget(boton_perfil_avatar, alignment=Qt.AlignTop)
 
         bloque_info = QVBoxLayout()
         bloque_info.setSpacing(4)
@@ -114,6 +115,12 @@ class TarjetaSolicitud(QFrame):
             """
         )
         fila_nombre.addWidget(lbl_estado, alignment=Qt.AlignVCenter)
+
+        estado_ia_txt, estado_ia_color = self._estado_ia_visual()
+        lbl_estado_ia = QLabel(f"IA: {estado_ia_txt}")
+        lbl_estado_ia.setStyleSheet(f"QLabel {{ {estilo_chip_estado(estado_ia_color)} }}")
+        fila_nombre.addWidget(lbl_estado_ia, alignment=Qt.AlignVCenter)
+
         fila_nombre.addStretch()
 
         bloque_info.addLayout(fila_nombre)
@@ -151,16 +158,28 @@ class TarjetaSolicitud(QFrame):
         botones_superior = QHBoxLayout()
         botones_superior.setSpacing(8)
 
-        #Boton de entrevista solo si tiene entrevista completa
-        if self._tiene_entrevista_completa():
-            boton_entrevista = self._crear_boton_accion("Ver entrevista")
-            boton_entrevista.clicked.connect(lambda: self.ver_entrevista.emit(self.solicitud.entrevista))
-            botones_superior.addWidget(boton_entrevista)
+        # Boton de entrevista: visible siempre, deshabilitado si no hay entrevista.
+        boton_entrevista = self._crear_boton_accion("Ver entrevista")
+        tiene_entrevista = self._tiene_entrevista_completa()
+        boton_entrevista.setEnabled(tiene_entrevista)
+        if tiene_entrevista:
+            boton_entrevista.setToolTip("Ver entrevista del interno")
+        else:
+            boton_entrevista.setToolTip("Desactivado: esta solicitud aun no tiene entrevista.")
+        if tiene_entrevista:
+            boton_entrevista.clicked.connect(lambda _=False: self.ver_entrevista.emit(self.solicitud))
+        botones_superior.addWidget(boton_entrevista)
 
         # Boton de solicitud
         boton_solicitud = self._crear_boton_accion("Ver solicitud")
-        boton_solicitud.clicked.connect(lambda: self.ver_solicitud.emit(self.solicitud))
+        boton_solicitud.clicked.connect(lambda _=False: self.ver_solicitud.emit(self.solicitud))
         botones_superior.addWidget(boton_solicitud)
+
+        # Boton de perfil
+        boton_perfil = self._crear_boton_accion("Ver perfil")
+        boton_perfil.setToolTip("Ver perfil del interno")
+        boton_perfil.clicked.connect(lambda _=False: self.ver_perfil_interno.emit(self.interno))
+        botones_superior.addWidget(boton_perfil)
 
         cabecera.addLayout(botones_superior)
         layout_principal.addLayout(cabecera)
@@ -192,7 +211,7 @@ class TarjetaSolicitud(QFrame):
 
         if self._sin_profesional_asignado():
             boton_asignar = self._crear_boton_accion("Asignar")
-            boton_asignar.clicked.connect(lambda: self.asignar_solicitud.emit(self.solicitud))
+            boton_asignar.clicked.connect(lambda _=False: self.asignar_solicitud.emit(self.solicitud))
             fila_inferior.addWidget(boton_asignar)
 
         layout_principal.addLayout(fila_inferior)
@@ -201,7 +220,10 @@ class TarjetaSolicitud(QFrame):
         boton = QPushButton(texto)
         boton.setCursor(Qt.PointingHandCursor)
         boton.setFixedHeight(34)
-        boton.setStyleSheet(ESTILO_BOTON_SOLICITUD)
+        boton.setStyleSheet(
+            ESTILO_BOTON_SOLICITUD
+            + "\nQPushButton:disabled { background-color: #E0E0E0; opacity: 0.5; }"
+        )
         return boton
 
     def _nombre_interno(self):
@@ -224,6 +246,9 @@ class TarjetaSolicitud(QFrame):
         return str(getattr(self.solicitud, "fecha_creacion", ""))
 
     def _tiene_entrevista_completa(self):
+        estado = str(getattr(self.solicitud, "estado", "") or "").strip().lower()
+        if estado == "iniciada":
+            return False
         return getattr(self.solicitud, "entrevista", None) is not None
 
     def _sin_profesional_asignado(self):
@@ -232,6 +257,12 @@ class TarjetaSolicitud(QFrame):
     def _texto_conclusion_profesional(self):
         conc_prof = (getattr(self.solicitud, "conclusiones_profesional", "") or "").strip()
         return conc_prof
+
+    def _estado_ia_visual(self):
+        entrevista = getattr(self.solicitud, "entrevista", None)
+        if entrevista is None:
+            return obtener_estado_ia_visual("sin evaluacion")
+        return obtener_estado_ia_visual(getattr(entrevista, "estado_evaluacion_ia", "sin evaluacion"))
 
 
 class PantallaListaSolicitud(QWidget):
@@ -265,7 +296,7 @@ class PantallaListaSolicitud(QWidget):
 
     def _iniciar_ui(self):
         layout_principal = QVBoxLayout(self)
-        layout_principal.setContentsMargins(35, 20, 35, 15)
+        layout_principal.setContentsMargins(35, 20, 60, 15)
         layout_principal.setSpacing(14)
 
         layout_principal.addLayout(self._crear_fila_estados_superior())
@@ -343,7 +374,7 @@ class PantallaListaSolicitud(QWidget):
         self.boton_filtros.setFixedSize(180, 40)
         self.boton_filtros.setCursor(Qt.PointingHandCursor)
         self.boton_filtros.setEnabled(False)
-        self.boton_filtros.setToolTip("Se habilitara cuando se implemente el filtrado avanzado")
+        self.boton_filtros.setToolTip("Desactivado: el filtrado avanzado aun no esta disponible.")
         tam_icono_filtros = self.boton_filtros.fontMetrics().height() + 3
         self.boton_filtros.setIcon(QIcon("assets/filtros.png"))
         self.boton_filtros.setIconSize(QSize(tam_icono_filtros, tam_icono_filtros))
@@ -403,6 +434,11 @@ class PantallaListaSolicitud(QWidget):
         self._configurar_combo_para_top(self._top_activo, combo_texto)
         self.input_busqueda.clear()
         self._actualizar_lista()
+
+    def refrescar_tarjetas(self):
+        if self._estado_lista != "ok":
+            return
+        self._render_lista()
 
     def _normalizar_internos(self, internos):
         if isinstance(internos, dict):
@@ -620,3 +656,4 @@ class PantallaListaSolicitud(QWidget):
             return estado in {"aceptada", "rechazada", "cancelada"}
 
         return True
+

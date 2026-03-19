@@ -1,5 +1,7 @@
 # gui/estilos.py
 
+from unicodedata import normalize
+
 # --- PALETA DE COLORES ---
 COLOR_FONDO_APP = "#F5F5F5"
 COLOR_BLANCO = "white"
@@ -8,6 +10,10 @@ COLOR_GRIS_TEXTO = "#666666"
 COLOR_AZUL_CLARO = "#76bede"
 COLOR_AZUL_OSCURO = "#2196F3"
 COLOR_TEXTO_NEGRO = "#000000"
+COLOR_IA_MORADO = "#7B2CBF"
+COLOR_IA_MORADO_2 = "#9556cc"
+COLOR_IA_MORADO_HOVER = "#6A1FB0"
+COLOR_IA_MORADO_SUAVE = "#EFE6F8"
 
 def color_texto_contraste(color_hex):
     """
@@ -386,6 +392,25 @@ ESTILO_BOTON_SOLICITUD = """
             QPushButton:hover { background-color: #464545; }
             """
 
+ESTILO_BOTON_IA = f"""
+            QPushButton {{
+                color: white;
+                border: none;
+                padding: 6px 14px;
+                text-align: center;
+                background-color: {COLOR_IA_MORADO};
+                border-radius: 10px;
+                font-family: 'Arial';
+                font-size: 10pt;
+                font-weight: 600;
+            }}
+            QPushButton:hover {{ background-color: {COLOR_IA_MORADO_HOVER}; }}
+            QPushButton:disabled {{
+                background-color: #CDB8DF;
+                color: #F7F2FB;
+            }}
+            """
+
 
 # --- TEXTOS Y ETIQUETAS ---
 ESTILO_TITULO_PASO_ENCA = """
@@ -454,7 +479,7 @@ ESTILO_SUBTITULO_PASO = """
 ESTILO_TITULO_APARTADO = """
     QLabel {
     font-family: 'Arial';
-    font-size: 10pt; 
+    font-size: 20px; 
     font-weight: bold; 
     border: none; 
     background-color: transparent;
@@ -577,6 +602,54 @@ ESTADOS_SOLICITUD_COLOR = {
     "cancelada": ("Cancelada", "#E0E0E0"),
 }
 
+ESTADOS_PREGUNTA_IA_COLOR = {
+    "sin_analizar": ESTADOS_SOLICITUD_COLOR["cancelada"][1],
+    "analizando": ESTADOS_SOLICITUD_COLOR["pendiente"][1],
+    "analizada": ESTADOS_SOLICITUD_COLOR["aceptada"][1],
+    "error": ESTADOS_SOLICITUD_COLOR["rechazada"][1],
+}
+
+ESTADOS_ENTREVISTA_IA_COLOR = {
+    "sin analizar": ("Sin analizar", ESTADOS_PREGUNTA_IA_COLOR["sin_analizar"]),
+    "analizada": ("Analizada", ESTADOS_PREGUNTA_IA_COLOR["analizada"]),
+    "en cola": ("En cola", ESTADOS_PREGUNTA_IA_COLOR["analizando"]),
+    "preparando": ("Preparando", ESTADOS_PREGUNTA_IA_COLOR["analizando"]),
+    "error": ("Error", ESTADOS_PREGUNTA_IA_COLOR["error"]),
+    "evaluada": ("Analizada", ESTADOS_PREGUNTA_IA_COLOR["analizada"]),
+    "sin evaluación": ("Sin analizar", "#EFE6F8"),
+    "sin evaluacion": ("Sin analizar", ESTADOS_PREGUNTA_IA_COLOR["sin_analizar"]),
+    "evaluando": ("Analizando", ESTADOS_PREGUNTA_IA_COLOR["analizando"]),
+    "analizando": ("Analizando", ESTADOS_PREGUNTA_IA_COLOR["analizando"]),
+    "en cola...": ("En cola", ESTADOS_PREGUNTA_IA_COLOR["analizando"]),
+    "preparando analisis...": ("Preparando", ESTADOS_PREGUNTA_IA_COLOR["analizando"]),
+    "análisis completado.": ("Analizada", "#D9C4F1"),
+    "analisis completado.": ("Analizada", ESTADOS_PREGUNTA_IA_COLOR["analizada"]),
+    "error en el análisis.": ("Error", "#F2C1C1"),
+    "error en el analisis.": ("Error", ESTADOS_PREGUNTA_IA_COLOR["error"]),
+}
+
+
+def obtener_estado_ia_visual(estado):
+    clave = normalize("NFKD", str(estado or "")).encode("ascii", "ignore").decode("ascii")
+    clave = " ".join(clave.strip().lower().split())
+    if not clave:
+        clave = "sin evaluacion"
+    if clave in ESTADOS_ENTREVISTA_IA_COLOR:
+        return ESTADOS_ENTREVISTA_IA_COLOR[clave]
+    return str(estado or "").strip(), "#E0E0E0"
+
+
+def estilo_chip_estado(color_fondo, font_size="10pt", border_radius="10px", padding="3px 10px"):
+    return (
+        f"background-color: {color_fondo}; "
+        f"color: {color_texto_contraste(color_fondo)}; "
+        f"border-radius: {border_radius}; "
+        f"padding: {padding}; "
+        f"font-size: {font_size}; "
+        "font-weight: 500; "
+        "border: none;"
+    )
+
 # --- TARJETAS ---
 ESTILO_TARJETA_RESUMEN = """
             QFrame {
@@ -596,6 +669,14 @@ ESTILO_NIVEL = """
             border: 1.5px solid #808080; 
             color: #555555;
             border-radius: 10px; 
+            padding: 2px 12px;
+        """
+
+ESTILO_NIVEL_IA = f"""
+            background-color: {COLOR_IA_MORADO_SUAVE};
+            border: 1.5px solid {COLOR_IA_MORADO};
+            color: {COLOR_IA_MORADO};
+            border-radius: 10px;
             padding: 2px 12px;
         """
 
@@ -723,3 +804,4 @@ ESTILO_DIALOGO_ERROR = """
 ESTILO_NOMBRE_INTERNO = "color: black; font-size: 20px; font-weight: bold;"
 
 ESTILO_NUM_RC = "color: #666666; font-size: 11pt;"
+

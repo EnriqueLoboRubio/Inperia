@@ -12,6 +12,7 @@ from gui.pantalla_resumen_interno import PantallaResumen
 from gui.pantalla_progreso import PantallaProgresoInterno as PantallaProgreso
 from gui.pantalla_solicitud import PantallaSolicitudInterno as PantallaSolicitud
 from gui.pantalla_perfil import PantallaPerfil
+from gui.ventana_acerca_inperia import VentanaAcercaInperia
 
 from gui.estilos import *
 
@@ -291,6 +292,11 @@ class VentanaInterno(QMainWindow):
         self.ajustes_menu_layout.setAlignment(Qt.AlignTop)
 
         # Botones de Ajustes
+        self.boton_acerca = QPushButton("Acerca de Inperia")
+        self.boton_acerca.setToolTip("Información de INPERIA")
+        self.boton_acerca.setFont(QFont("Arial", 10))
+        self.boton_acerca.setStyleSheet(self.boton_estilo)
+
         self.boton_perfil_menu = QPushButton("Perfil")
         self.boton_perfil_menu.setToolTip("Ver y editar perfil")
         self.boton_perfil_menu.setFont(QFont("Arial", 10))
@@ -316,6 +322,7 @@ class VentanaInterno(QMainWindow):
         self.ajustes_menu_layout.addStretch(1)
 
         # Añadir botones al layout de ajustes
+        self.ajustes_menu_layout.addWidget(self.boton_acerca)
         self.ajustes_menu_layout.addWidget(self.boton_perfil_menu)
         self.ajustes_menu_layout.addWidget(self.boton_cerrar_sesion)
 
@@ -327,6 +334,7 @@ class VentanaInterno(QMainWindow):
         # ------------------- 4. Conexiones de botones -------------------
         self.boton_hamburguesa.clicked.connect(self.movimiento_menu)
         self.boton_ajustes.clicked.connect(self.movimiento_menu_ajustes)
+        self.boton_acerca.clicked.connect(self.mostrar_acerca_inperia)
         for i, boton in enumerate(self.botones_sub):
             boton.clicked.connect(lambda checked, num=i+1: self.abrir_pregunta(num))                       
 
@@ -456,6 +464,9 @@ class VentanaInterno(QMainWindow):
 
     def mostrar_pantalla_perfil(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_perfil)
+
+    def mostrar_acerca_inperia(self):
+        VentanaAcercaInperia(self).exec_()
 
     def _actualizar_titulo_pantalla(self, _index=None):
         actual = self.stacked_widget.currentWidget()

@@ -1,3 +1,13 @@
 utils/vosk-es/
 utils/whisper-small/
 data/grabaciones/
+.vscode/
+__pycache__/
+controllers/__pycache__/
+gui/__pycache__/
+models/__pycache__/
+db/__pycache__/
+utils/__pycache__/
+ia/__pycache__/
+**/__pycache__/
+*.py[cod]

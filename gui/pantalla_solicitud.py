@@ -683,7 +683,7 @@ class PantallaSolicitudInterno(QWidget):
 
     def iniciar_ui(self):
         principal_layout = QVBoxLayout(self)
-        principal_layout.setContentsMargins(20, 20, 20, 20)
+        principal_layout.setContentsMargins(20, 20, 60, 20)
         principal_layout.setSpacing(0)
 
         # --- ENCABEZADO --- 
@@ -805,8 +805,12 @@ class PantallaSolicitudInterno(QWidget):
         self.boton_anterior.setVisible(paso > 1)
         if paso == 4:
             self.boton_siguiente.setText("Enviar")
+            self.boton_siguiente.setStyleSheet(
+                ESTILO_BOTON_SIG_ATR.replace("black", "#792A24").replace("rgba(71, 70, 70, 0.7)", "#C03930")
+            )
         else:
             self.boton_siguiente.setText("Siguiente")
+            self.boton_siguiente.setStyleSheet(ESTILO_BOTON_SIG_ATR)
 
         # Actualizar descripción
         descripciones = [

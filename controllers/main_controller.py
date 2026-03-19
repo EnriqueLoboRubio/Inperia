@@ -9,6 +9,7 @@ from db.data_seeding import ejecutar_data_seeding_inicial
 
 # CONTROLADORES ESPECIFICOS
 from controllers.login_controller import LoginController
+from controllers.administrador_controller import AdministradorController
 from controllers.interno_controller import InternoController
 from controllers.profesional_controller import ProfesionalController
 
@@ -28,6 +29,7 @@ class MainController:
         
         self.ventana_actual = None
         self.controlador_interno = None
+        self.controlador_administrador = None
         self.login_controller = None                 
 
         self.mostrar_splash_inicio()
@@ -112,8 +114,7 @@ class MainController:
         elif rol == "profesional":
             self.iniciar_sesion_profesional(usuario)
         elif rol == "administrador":
-            # implementar la vista del administrador
-            print("Inicio de sesiÃ³n como Administrador - Funcionalidad no implementada")    
+            self.iniciar_sesion_administrador(usuario)
         else:
             print(f"Rol desconocido: {rol}")            
 
@@ -124,6 +125,10 @@ class MainController:
     def iniciar_sesion_profesional(self, usuario):
         self.controlador_profesional = ProfesionalController(usuario)
         self.controlador_profesional.logout_signal.connect(self.regresar_login)    
+
+    def iniciar_sesion_administrador(self, usuario):
+        self.controlador_administrador = AdministradorController(usuario)
+        self.controlador_administrador.logout_signal.connect(self.regresar_login)
 
     def ejecutar(self):
         sys.exit(self.app.exec_())
@@ -136,6 +141,22 @@ class MainController:
             except:
                 pass
                 self.controlador_interno = None
+
+        if getattr(self, "controlador_profesional", None):
+            try:
+                self.controlador_profesional.logout_signal.disconnect()
+                self.controlador_profesional.ventana_profesional.close()
+            except:
+                pass
+            self.controlador_profesional = None
+
+        if self.controlador_administrador:
+            try:
+                self.controlador_administrador.logout_signal.disconnect()
+                self.controlador_administrador.ventana_administrador.close()
+            except:
+                pass
+            self.controlador_administrador = None
 
         # crear el entorno de login
         self.mostrar_login()

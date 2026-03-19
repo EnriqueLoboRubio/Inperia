@@ -1,4 +1,4 @@
-import sqlite3
+﻿import sqlite3
 from db.conexion import obtener_conexion
 from db.fecha_utils import normalizar_fecha
 
@@ -7,21 +7,7 @@ from db.fecha_utils import normalizar_fecha
 # -------------------------------- INTERNO ------------------------------- #
 
 
-def _asegurar_columnas_extra_interno(cursor):
-    columnas_nuevas = [
-        "lugar_nacimiento TEXT",
-        "nombre_contacto_emergencia TEXT",
-        "relacion_contacto_emergencia TEXT",
-        "numero_contacto_emergencia TEXT",
-    ]
-    for definicion in columnas_nuevas:
-        try:
-            cursor.execute(f"ALTER TABLE internos ADD COLUMN {definicion}")
-        except sqlite3.OperationalError:
-            # La columna ya existe.
-            pass
-
-# Función para crear la tabla de internos
+# FunciÃ³n para crear la tabla de internos
 def crear_interno():
     conexion = obtener_conexion()
     cursor = conexion.cursor()   
@@ -44,12 +30,10 @@ def crear_interno():
         )
     ''')
 
-    _asegurar_columnas_extra_interno(cursor)
-
     conexion.commit()
     conexion.close()
 
-# Función para agregar un nuevo interno a la base de datos, vinculado a un usuario existente
+# FunciÃ³n para agregar un nuevo interno a la base de datos, vinculado a un usuario existente
 def agregar_interno(
     num_rc,
     id_usuario,
@@ -92,7 +76,7 @@ def agregar_interno(
     return exito
 
 
-# Función para eliminar un interno de la base de datos
+# FunciÃ³n para eliminar un interno de la base de datos
 def eliminar_interno_por_id(id_usuario):
 
     conexion = obtener_conexion()
@@ -111,7 +95,7 @@ def eliminar_interno_por_id(id_usuario):
         conexion.close()
     
 
-# Función para encontrar interno por id de usuario
+# FunciÃ³n para encontrar interno por id de usuario
 def encontrar_interno_por_id(id_usuario):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
@@ -144,10 +128,11 @@ def encontrar_internos_por_num_rc(lista_num_rc):
     finally:
         conexion.close()
 
-# Función para borrar la tabla de internos (para pruebas)
+# FunciÃ³n para borrar la tabla de internos (para pruebas)
 def borrar_internos():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     cursor.execute('DROP TABLE IF EXISTS internos')
     conexion.commit()
     conexion.close()
+

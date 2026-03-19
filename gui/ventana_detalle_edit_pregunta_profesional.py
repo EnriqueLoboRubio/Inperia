@@ -41,6 +41,30 @@ class VentanaDetallePreguntaEditProfesional(QDialog):
         lbl_titulo.setAlignment(Qt.AlignLeft)
         top_layout.addWidget(lbl_titulo)
         top_layout.addStretch()
+
+        self.boton_cerrar = QPushButton("✕")
+        self.boton_cerrar.clicked.connect(self.cerrar_ventana)
+        self.boton_cerrar.setFixedSize(24, 24)
+        self.boton_cerrar.setToolTip("Cerrar ventana")
+        self.boton_cerrar.setStyleSheet(
+            """
+            QPushButton {
+                background: transparent;
+                border: none;
+                color: #666666;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #F1F1F1;
+                border: 1px solid #E0E0E0;
+                border-radius: 12px;
+                color: #111111;
+            }
+            """
+        )
+        self.boton_cerrar.setCursor(Qt.PointingHandCursor)
+        top_layout.addWidget(self.boton_cerrar)
         principal_layout.addLayout(top_layout)
 
         lbl_titulo_edit = QLabel("<b>Título (Editable):</b>")
@@ -68,14 +92,6 @@ class VentanaDetallePreguntaEditProfesional(QDialog):
         boton_layout = QHBoxLayout()
         boton_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.boton_cerrar = QPushButton("Cerrar")
-        self.boton_cerrar.clicked.connect(self.cerrar_ventana)
-        self.boton_cerrar.setFont(QFont("Arial", 11))
-        self.boton_cerrar.setFixedSize(110, 40)
-        self.boton_cerrar.setToolTip("Cerrar ventana")
-        self.boton_cerrar.setStyleSheet(ESTILO_BOTON_SIG_ATR)
-        self.boton_cerrar.setCursor(Qt.PointingHandCursor)
-
         self.boton_guardar = QPushButton("Guardar")
         self.boton_guardar.setFont(QFont("Arial", 11))
         self.boton_guardar.setFixedSize(110, 40)
@@ -86,7 +102,6 @@ class VentanaDetallePreguntaEditProfesional(QDialog):
         self.boton_guardar.setCursor(Qt.PointingHandCursor)
         self.boton_guardar.clicked.connect(self.guardar_datos)
 
-        boton_layout.addWidget(self.boton_cerrar)
         boton_layout.addStretch()
         boton_layout.addWidget(self.boton_guardar)
         principal_layout.addLayout(boton_layout)

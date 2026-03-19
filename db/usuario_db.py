@@ -1,6 +1,8 @@
 import sqlite3
-from utils.encriptar import encriptar_contrasena, verificar_contrasena
+
 from db.conexion import obtener_conexion
+from db.fecha_utils import normalizar_fecha
+from utils.encriptar import encriptar_contrasena, verificar_contrasena
 
 # -------------------------------- USUARIO ------------------------------- #
 
@@ -110,6 +112,168 @@ def actualizar_usuario(id_usuario, nombre=None, contrasena=None):
         conexion.close()
 
 # Función para borrar la tabla de usuarios (para pruebas)
+def listar_usuarios_admin(filtro_rol=None, texto_busqueda=None):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        query = """
+            SELECT
+                u.id,
+                u.nombre,
+                u.email,
+                u.rol,
+                p.num_colegiado,
+                i.num_RC,
+                i.fecha_nac,
+                i.modulo,
+                i.situacion_legal
+            FROM usuarios u
+            LEFT JOIN profesionales p ON p.id_usuario = u.id
+            LEFT JOIN internos i ON i.id_usuario = u.id
+            WHERE 1 = 1
+        """
+        parametros = []
+
+        rol = str(filtro_rol or "").strip().lower()
+        if rol and rol != "todos":
+            query += " AND u.rol = ?"
+            parametros.append(rol)
+
+        texto = str(texto_busqueda or "").strip().lower()
+        if texto:
+            like = f"%{texto}%"
+            query += """
+                AND (
+                    LOWER(u.nombre) LIKE ?
+                    OR LOWER(u.email) LIKE ?
+                    OR CAST(COALESCE(p.num_colegiado, '') AS TEXT) LIKE ?
+                    OR CAST(COALESCE(i.num_RC, '') AS TEXT) LIKE ?
+                )
+            """
+            parametros.extend([like, like, like, like])
+
+        query += " ORDER BY LOWER(u.nombre) ASC, u.id ASC"
+        cursor.execute(query, tuple(parametros))
+        return cursor.fetchall()
+    finally:
+        conexion.close()
+
+
+def agregar_usuario_admin(
+    nombre,
+    email,
+    contrasena,
+    rol,
+    num_colegiado=None,
+    num_rc=None,
+    fecha_nac=None,
+):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        rol_norm = str(rol or "").strip().lower()
+        cursor.execute(
+            """
+            INSERT INTO usuarios (nombre, email, contrasena, rol)
+            VALUES (?, ?, ?, ?)
+            """,
+            (nombre, email, encriptar_contrasena(contrasena), rol_norm),
+        )
+        id_usuario = cursor.lastrowid
+
+        if rol_norm == "profesional":
+            cursor.execute(
+                """
+                INSERT INTO profesionales (id_usuario, num_colegiado)
+                VALUES (?, ?)
+                """,
+                (id_usuario, num_colegiado),
+            )
+        elif rol_norm == "interno":
+            cursor.execute(
+                """
+                INSERT INTO internos (
+                    num_RC, id_usuario, situacion_legal, delito, condena,
+                    fecha_nac, fecha_ingreso, modulo, lugar_nacimiento,
+                    nombre_contacto_emergencia, relacion_contacto_emergencia, numero_contacto_emergencia
+                )
+                VALUES (?, ?, NULL, NULL, NULL, ?, NULL, NULL, NULL, NULL, NULL, NULL)
+                """,
+                (num_rc, id_usuario, normalizar_fecha(fecha_nac)),
+            )
+
+        conexion.commit()
+        return id_usuario
+    except Exception:
+        conexion.rollback()
+        raise
+    finally:
+        conexion.close()
+
+
+def actualizar_usuario_admin(
+    id_usuario,
+    nombre,
+    email,
+    rol,
+    contrasena=None,
+    num_colegiado=None,
+    num_rc=None,
+    fecha_nac=None,
+):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute("SELECT rol FROM usuarios WHERE id = ?", (id_usuario,))
+        fila = cursor.fetchone()
+        if not fila:
+            return False
+
+        rol_actual = str(fila[0] or "").strip().lower()
+        if rol_actual != str(rol or "").strip().lower():
+            raise ValueError("No se permite cambiar el rol de un usuario existente.")
+
+        campos = ["nombre = ?", "email = ?"]
+        valores = [nombre, email]
+
+        if contrasena:
+            campos.append("contrasena = ?")
+            valores.append(encriptar_contrasena(contrasena))
+
+        valores.append(id_usuario)
+        cursor.execute(
+            f"UPDATE usuarios SET {', '.join(campos)} WHERE id = ?",
+            tuple(valores),
+        )
+
+        if rol_actual == "profesional":
+            cursor.execute(
+                """
+                UPDATE profesionales
+                SET num_colegiado = ?
+                WHERE id_usuario = ?
+                """,
+                (num_colegiado, id_usuario),
+            )
+        elif rol_actual == "interno":
+            cursor.execute(
+                """
+                UPDATE internos
+                SET num_RC = ?, fecha_nac = ?
+                WHERE id_usuario = ?
+                """,
+                (num_rc, normalizar_fecha(fecha_nac), id_usuario),
+            )
+
+        conexion.commit()
+        return True
+    except Exception:
+        conexion.rollback()
+        raise
+    finally:
+        conexion.close()
+
+
 def borrar_usuarios():
     conexion = obtener_conexion()
     cursor = conexion.cursor()

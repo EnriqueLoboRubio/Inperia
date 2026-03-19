@@ -1,4 +1,4 @@
-﻿import json
+import json
 from pathlib import Path
 
 from db.conexion import obtener_conexion
@@ -19,7 +19,8 @@ def _cargar_preguntas_desde_json(ruta_json=RUTA_PREGUNTAS_JSON):
         id_pregunta = int(clave)
         titulo = str(contenido.get("titulo", f"Pregunta {id_pregunta}"))
         texto = str(contenido.get("texto", ""))
-        preguntas.append((id_pregunta, titulo, texto))
+        cantidad_niveles = int(contenido.get("cantidad_niveles", 0) or 0)
+        preguntas.append((id_pregunta, titulo, texto, cantidad_niveles))
     return preguntas
 
 
@@ -43,11 +44,12 @@ def iniciar_preguntas_seed(force=False):
 
     cursor.executemany(
         """
-        INSERT INTO preguntas (id, titulo, texto)
-        VALUES (?, ?, ?)
+        INSERT INTO preguntas (id, titulo, texto, cantidad_niveles)
+        VALUES (?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             titulo = excluded.titulo,
-            texto = excluded.texto
+            texto = excluded.texto,
+            cantidad_niveles = excluded.cantidad_niveles
         """,
         preguntas,
     )

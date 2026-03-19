@@ -1,5 +1,6 @@
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, QStandardPaths
 from PyQt5.QtWidgets import QFileDialog
+import os
 from models.solicitud import Solicitud
 from gui.mensajes import Mensajes
 from utils.documentoPDF import DocumentoPDF
@@ -60,8 +61,11 @@ class ProgresoController(QObject):
                 self.interno.num_RC
             )
             self.vista.boton_solicitud.setEnabled(False)
+            self.vista.boton_solicitud.setToolTip("Desactivado: no hay solicitud para descargar.")
             self.vista.boton_entrevista.setEnabled(False)
+            self.vista.boton_entrevista.setToolTip("Desactivado: no hay solicitud asociada.")
             self.vista.boton_cancelar.setEnabled(False)
+            self.vista.boton_cancelar.setToolTip("Desactivado: no hay solicitud asociada.")
             return
 
         self.vista.cargar_datos_solicitud(
@@ -71,15 +75,29 @@ class ProgresoController(QObject):
         )
 
         self.vista.boton_solicitud.setEnabled(True)
+        self.vista.boton_solicitud.setToolTip("Descargar solicitud en PDF")
         self.vista.boton_cancelar.setEnabled(
             self.solicitud.estado not in ["aceptada", "rechazada", "cancelada"]
         )
+        if self.solicitud.estado in ["aceptada", "rechazada", "cancelada"]:
+            self.vista.boton_cancelar.setToolTip(
+                "Desactivado: la solicitud ya está finalizada y no puede cancelarse."
+            )
+        else:
+            self.vista.boton_cancelar.setToolTip("Cancelar solicitud")
 
         # Habilitar / deshabilitar botón de entrevista si hay o la solicitud está iniciada
         if self.solicitud.entrevista or self.solicitud.estado == "iniciada":
             self.vista.boton_entrevista.setEnabled(True)
+            if self.solicitud.estado == "iniciada":
+                self.vista.boton_entrevista.setToolTip("Realizar entrevista")
+            else:
+                self.vista.boton_entrevista.setToolTip("Ver entrevista")
         else:
             self.vista.boton_entrevista.setEnabled(False)
+            self.vista.boton_entrevista.setToolTip(
+                "Desactivado: aun no hay entrevista disponible."
+            )
 
     def ver_entrevista(self):
         """
@@ -120,7 +138,10 @@ class ProgresoController(QObject):
             ruta_guardado, _ = QFileDialog.getSaveFileName(
                 self.vista,
                 "Guardar Solicitud",
-                f"Solicitud_{self.solicitud.id_solicitud}.pdf",
+                os.path.join(
+                    QStandardPaths.writableLocation(QStandardPaths.DesktopLocation),
+                    f"Solicitud_{self.solicitud.id_solicitud}.pdf",
+                ),
                 "PDF Files (*.pdf)"
             )
             
@@ -172,6 +193,9 @@ class ProgresoController(QObject):
 
         # Deshabilitar botón de entrevista al cancelar
         self.vista.boton_entrevista.setEnabled(False)
+        self.vista.boton_entrevista.setToolTip(
+            "Desactivado: la solicitud está cancelada."
+        )
 
 
 

@@ -4,7 +4,7 @@ from db.solicitud_db import *
 from db.entrevista_db import *
 from db.respuesta_db import *
 from db.comentario_pregunta_db import *
-from db.comentario_entrevista_db import *
+from db.comentario_ia_entrevista_db import *
 from db.profesional_db import *
 from db.pregunta_db import *
 from db.prompt_db import *
@@ -22,6 +22,7 @@ def generar_usuarios():
     agregar_usuario("Interno 4", "interno4@g.com", "4", "interno")
     agregar_usuario("Profesional 1", "prof1@g.com", "1", "profesional")
     agregar_usuario("Profesional 2", "prof2@g.com", "2", "profesional")
+    agregar_usuario("Admin", "admin@g.com", "admin", "administrador")
 
 
 def generar_internos():
@@ -118,27 +119,26 @@ def _crear_respuestas_relleno(prefijo):
     return preguntas
 
 
-def _crear_entrevista_con_respuestas(id_interno, id_solicitud, fecha, prefijo, puntuacion_ia=None):
-    respuestas = _crear_respuestas_relleno(prefijo)
+def _crear_entrevista_con_respuestas(id_interno, id_solicitud, fecha, prefijo, puntuacion_ia=None, respuestas=None):
+    respuestas = respuestas if respuestas is not None else _crear_respuestas_relleno(prefijo)
     id_entrevista = agregar_entrevista_y_respuestas(id_interno, id_solicitud, fecha, respuestas)
     if id_entrevista and puntuacion_ia is not None:
         actualizar_puntuacion_entrevista(id_entrevista, puntuacion_ia)
     return id_entrevista
 
 
-def _anadir_comentarios_preguntas(id_entrevista, id_profesional, fecha, prefijo):
+def _anadir_comentarios_preguntas(id_entrevista, id_profesional, fecha, prefijo, limite=3):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
-    cursor.execute(
-        """
+    query = """
         SELECT id, id_pregunta
         FROM respuestas
         WHERE id_entrevista = ?
         ORDER BY id_pregunta
-        LIMIT 3
-        """,
-        (id_entrevista,),
-    )
+    """
+    if limite is not None:
+        query += f" LIMIT {int(limite)}"
+    cursor.execute(query, (id_entrevista,))
     filas = cursor.fetchall()
 
     for id_respuesta, id_pregunta in filas:
@@ -154,11 +154,84 @@ def _anadir_comentarios_preguntas(id_entrevista, id_profesional, fecha, prefijo)
     conexion.close()
 
 
+def _actualizar_niveles_respuestas(id_entrevista, niveles_ia, niveles_prof):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        for id_pregunta in range(1, 11):
+            nivel_ia = niveles_ia[id_pregunta - 1]
+            nivel_prof = niveles_prof[id_pregunta - 1]
+            cursor.execute(
+                """
+                UPDATE respuestas
+                SET nivel_ia = ?, nivel_profesional = ?
+                WHERE id_entrevista = ? AND id_pregunta = ?
+                """,
+                (nivel_ia, nivel_prof, id_entrevista, id_pregunta),
+            )
+        conexion.commit()
+    finally:
+        conexion.close()
+
+
+def _respuestas_realistas_interno1_rechazada():
+    textos = [
+        "Llevo tiempo sin conflictos y quiero salir para ver a mi hijo, pero no he podido traer todos los justificantes originales.",
+        "Me comprometo a volver a las 18:00, aunque reconozco que otras veces llegué con retraso por problemas de transporte.",
+        "El domicilio de destino es el de mi primo en Huelva, pero no tengo contrato de alquiler ni autorización firmada del propietario.",
+        "Mi contacto principal es mi hermana, pero actualmente está fuera de España y no puede acompañarme durante el permiso.",
+        "No tengo cita médica oficial para ese día; quería aprovechar para resolver asuntos personales y familiares.",
+        "La documentación laboral está en trámite, todavía no me han entregado el certificado final de la empresa.",
+        "Durante la entrevista me he puesto nervioso y no recordé fechas exactas de permisos anteriores.",
+        "Admito que en un permiso anterior consumí alcohol, aunque no cometí ninguna infracción grave según mi versión.",
+        "Estoy dispuesto a cumplir condiciones estrictas, pero no puedo asegurar contacto telefónico continuo durante toda la salida.",
+        "Mi objetivo es retomar la relación familiar, pero entiendo que faltan garantías y pruebas suficientes para autorizar la salida.",
+    ]
+    respuestas = []
+    for i, texto in enumerate(textos, start=1):
+        p = Pregunta(i, texto)
+        p.archivo_audio = None
+        respuestas.append(p)
+    return respuestas
+
+
 def generar_escenarios():
     prof1_id, prof2_id = generar_profesionales()
 
-    # Interno 1: sin nada pendiente.
-    # No se crean solicitudes para interno 1.
+    # Interno 1: solicitud rechazada completa, asignada al profesional 1, con entrevista y comentarios.
+    sol_i1_rech = _crear_solicitud_completa(
+        1, "rechazada", "2026-02-18", id_profesional=prof1_id,
+        conclusiones_profesional=(
+            "Solicitud rechazada por inconsistencias relevantes entre declaración y documentos aportados, "
+            "falta de acreditación del destino y ausencia de garantías de control durante la salida."
+        ),
+    )
+    ent_i1_rech = _crear_entrevista_con_respuestas(
+        1,
+        sol_i1_rech,
+        "2026-02-19",
+        "Interno 1 rechazada",
+        puntuacion_ia=987.4,
+        respuestas=_respuestas_realistas_interno1_rechazada(),
+    )
+    # Niveles de IA y profesional para las 10 preguntas.
+    _actualizar_niveles_respuestas(
+        ent_i1_rech,
+        niveles_ia=[3, 2, 1, 1, 3, 1, 1, 1, 1, 1],
+        niveles_prof=[2, 2, 1, 1, 2, 1, 1, 1, 1, 1],
+    )
+    agregar_comentario_ia(
+        ent_i1_rech,
+        "IA: patrón de riesgo alto por contradicciones, soporte documental insuficiente y baja fiabilidad en compromisos operativos.",
+        "2026-02-20",
+    )
+    _anadir_comentarios_preguntas(
+        ent_i1_rech,
+        prof1_id,
+        "2026-02-20",
+        "Interno 1 rechazada",
+        limite=10,
+    )
 
     # Interno 2: primero caso antiguo (aceptada), luego el mas reciente (pendiente).
     sol_i2_acep = _crear_solicitud_completa(
@@ -168,8 +241,7 @@ def generar_escenarios():
     ent_i2_acep = _crear_entrevista_con_respuestas(
         2, sol_i2_acep, "2025-02-11", "Interno 2 aceptada", puntuacion_ia=944.0
     )
-    agregar_comentario_ia(ent_i2_acep, prof1_id, "IA: riesgo bajo y buena coherencia narrativa.", "2025-02-12")
-    agregar_comentario_profesional(ent_i2_acep, prof1_id, "Profesional: apto para permiso solicitado.", "2025-02-12")
+    agregar_comentario_ia(ent_i2_acep, "IA: riesgo bajo y buena coherencia narrativa.", "2025-02-12")
     _anadir_comentarios_preguntas(ent_i2_acep, prof1_id, "2025-02-12", "Interno 2 aceptada")
 
     sol_i2_pend = _crear_solicitud_completa(2, "pendiente", "2026-03-01")
@@ -185,8 +257,7 @@ def generar_escenarios():
     ent_i3_rech = _crear_entrevista_con_respuestas(
         3, sol_i3_rech, "2026-02-06", "Interno 3 rechazada", puntuacion_ia=989.0
     )
-    agregar_comentario_ia(ent_i3_rech, prof1_id, "IA: detecta contradicciones relevantes en respuestas.", "2026-02-07")
-    agregar_comentario_profesional(ent_i3_rech, prof1_id, "Profesional: no procede autorizacion.", "2026-02-07")
+    agregar_comentario_ia(ent_i3_rech, "IA: detecta contradicciones relevantes en respuestas.", "2026-02-07")
     _anadir_comentarios_preguntas(ent_i3_rech, prof1_id, "2026-02-07", "Interno 3 rechazada")
 
     sol_i3_pend = _crear_solicitud_completa(3, "pendiente", "2026-03-02", id_profesional=prof2_id)
@@ -208,6 +279,7 @@ def reiniciar_base_de_datos():
     cursor.execute("DROP TABLE IF EXISTS comentarios_pre")
     cursor.execute("DROP TABLE IF EXISTS prompts")
     cursor.execute("DROP TABLE IF EXISTS comentarios_ent")
+    cursor.execute("DROP TABLE IF EXISTS comentarios_ia_ent")
     conexion.commit()
     conexion.close()
 
@@ -225,7 +297,7 @@ def reiniciar_base_de_datos():
     crear_profesional()
     crear_respuesta()
     crear_comentario_pre()
-    crear_comentario_ent()
+    crear_tabla_comentarios_ia_entrevista()
     crear_solicitud()
     crear_entrevista()
     crear_pregunta()
@@ -238,7 +310,7 @@ def imprimir_resumen_bd():
     cursor = conexion.cursor()
 
     print("\n===== RESUMEN BD =====")
-    for tabla in ["usuarios", "internos", "profesionales", "solicitudes", "entrevistas", "respuestas", "comentarios_ent", "comentarios_pre", "prompts"]:
+    for tabla in ["usuarios", "internos", "profesionales", "solicitudes", "entrevistas", "respuestas", "comentarios_ia_ent", "comentarios_pre", "prompts"]:
         cursor.execute(f"SELECT COUNT(*) FROM {tabla}")
         total = cursor.fetchone()[0]
         print(f"{tabla}: {total}")
@@ -268,6 +340,7 @@ def reiniciar_y_generar():
     iniciar_preguntas_seed(force=True)
     iniciar_prompts_seed(force=True)
     generar_usuarios()
+    generar_profesionales()
     generar_internos()
     generar_escenarios()
     imprimir_resumen_bd()
@@ -275,6 +348,5 @@ def reiniciar_y_generar():
 
 if __name__ == "__main__":
     reiniciar_y_generar()
-
 
 

@@ -5,6 +5,7 @@ class Pregunta():
     def __init__(self, id_pregunta, respuesta):
         self.id_pregunta = id_pregunta
         self.respuesta = respuesta
+        self.id_respuesta = None
         self.nivel_ia = -1
         self.nivel_profesional = -1
         self.valoracion_ia = ""

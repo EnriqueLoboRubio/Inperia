@@ -431,8 +431,8 @@ class Mensajes:
         btn_si.setFixedSize(120, 35)
         btn_si.setCursor(Qt.PointingHandCursor)
         btn_si.setStyleSheet(estilo_btn + """
-            QPushButton { background-color: #000; }
-            QPushButton:hover { background-color: #333; }
+            QPushButton { background-color: #792A24; }
+            QPushButton:hover { background-color: #C03930; }
         """)
         btn_si.clicked.connect(dialogo.accept) # Devuelve True (1)
 

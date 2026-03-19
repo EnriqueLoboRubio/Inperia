@@ -2,6 +2,7 @@ import sqlite3
 from db.conexion import obtener_conexion
 from db.respuesta_db import *
 from db.fecha_utils import normalizar_fecha
+from db.comentario_ia_entrevista_db import crear_tabla_comentarios_ia_entrevista
 
 # -------------------------------- ENTREVISTA ------------------------------- #
 
@@ -103,7 +104,18 @@ def encontrar_entrevista_por_solicitud(id_solicitud):
     return entrevista
 
 
+def encontrar_entrevista_por_id(id_entrevista):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT * FROM entrevistas WHERE id=?", (id_entrevista,))
+    entrevista = cursor.fetchone()
+    conexion.commit()
+    conexion.close()
+    return entrevista
+
+
 def listar_ultimas_entrevistas_por_interno(id_interno, limite=5):
+    crear_tabla_comentarios_ia_entrevista()
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     try:
@@ -115,15 +127,12 @@ def listar_ultimas_entrevistas_por_interno(id_interno, limite=5):
                 e.fecha,
                 e.puntuacion_ia,
                 s.tipo,
-                COALESCE(ce.comentario_profesional, ''),
-                COALESCE(u.nombre, '')
+                COALESCE(cie.comentario_ia, ''),
+                'IA'
             FROM entrevistas e
             LEFT JOIN solicitudes s ON s.id = e.id_solicitud
-            LEFT JOIN comentarios_ent ce
-              ON ce.id_entrevista = e.id
-             AND ce.id_profesional = s.id_profesional
-            LEFT JOIN usuarios u
-              ON u.id = s.id_profesional
+            LEFT JOIN comentarios_ia_ent cie
+              ON cie.id_entrevista = e.id
             WHERE e.id_interno = ?
             ORDER BY
               CASE

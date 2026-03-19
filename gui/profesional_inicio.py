@@ -12,6 +12,10 @@ from gui.pantalla_lista_internos_profesional import PantallaListaInternosProfesi
 from gui.pantalla_lista_modificar_preguntas import PantallaListaModificarPreguntas
 from gui.pantalla_lista_modificar_prompt import PantallaListaModificarPrompt
 from gui.pantalla_perfil_interno_profesional import PantallaPerfilInternoProfesional
+from gui.pantalla_detalle_solicitud_profesional import PantallaDetalleSolicitudProfesional
+from gui.pantalla_resumen_profesional import PantallaResumen as PantallaResumenProfesional
+from gui.pantalla_datos_admin import PantallaDatosAdmin
+from gui.ventana_acerca_inperia import VentanaAcercaInperia
 from gui.estilos import *
 
 
@@ -101,13 +105,6 @@ class VentanaProfesional(QMainWindow):
         """        
         # --- Botones del Menú Principal ---
 
-        # Botón Estadísticas
-        self.boton_estadisticas = QPushButton("Estadísticas de entrevistas")
-        self.boton_estadisticas.setToolTip("Ver estadísticas de entrevistas realizadas")
-        self.boton_estadisticas.setStyleSheet(self.boton_estilo)
-        self.boton_estadisticas.setFont(QFont("Arial", 10))
-        self.boton_estadisticas.hide() # Ocultar por defecto
-
         # Botón nueva
         self.boton_nueva = QPushButton("Nueva solicitud")
         self.boton_nueva.setToolTip("Asignar nueva solicitud")
@@ -129,9 +126,15 @@ class VentanaProfesional(QMainWindow):
         self.boton_historial.setFont(QFont("Arial", 10))
         self.boton_historial.hide()
 
+        self.boton_internos = QPushButton("Internos asignados")
+        self.boton_internos.setToolTip("Ver datos de internos asignados")
+        self.boton_internos.setStyleSheet(self.boton_estilo)
+        self.boton_internos.setFont(QFont("Arial", 10))
+        self.boton_internos.hide()
+
         # Botón Datos
-        self.boton_datos = QPushButton("Datos de internos")
-        self.boton_datos.setToolTip("Ver datos de internos asignados")
+        self.boton_datos = QPushButton("Datos")
+        self.boton_datos.setToolTip("Importar o exportar la base de datos en CSV")
         self.boton_datos.setStyleSheet(self.boton_estilo)
         self.boton_datos.setFont(QFont("Arial", 10))
         self.boton_datos.hide()
@@ -150,24 +153,13 @@ class VentanaProfesional(QMainWindow):
         self.boton_ajustes_modelo.setFont(QFont("Arial", 10))
         self.boton_ajustes_modelo.hide()
 
-        # Botón Casos Críticos
-        self.boton_casos_criticos = QPushButton("Casos críticos")
-        self.boton_casos_criticos.setToolTip("Ver casos críticos detectados")
-        self.boton_casos_criticos.setStyleSheet(self.boton_estilo)
-        self.boton_casos_criticos.setFont(QFont("Arial", 10))
-        self.boton_casos_criticos.hide()   
-
        
         # Lista de todos los elementos del menú principal (para mostrar/ocultar)
         self.main_menu_widgets = [
             self.boton_nueva,
             self.boton_pendiente,
             self.boton_historial,
-            self.boton_datos,
-            self.boton_estadisticas,
-            self.boton_modificar,
-            self.boton_ajustes_modelo,
-            self.boton_casos_criticos
+            self.boton_internos,
         ]
         self.menu_widgets_visibles = list(self.main_menu_widgets)
 
@@ -245,6 +237,10 @@ class VentanaProfesional(QMainWindow):
         self.pantalla_lista_modificar_preguntas = PantallaListaModificarPreguntas()
         self.pantalla_lista_modificar_prompt = PantallaListaModificarPrompt()
         self.pantalla_perfil_interno = PantallaPerfilInternoProfesional()
+        self.pantalla_detalle_solicitud = PantallaDetalleSolicitudProfesional()
+        self.pantalla_resumen_profesional = PantallaResumenProfesional()
+        self.pantalla_resumen_profesional_lectura = PantallaResumenProfesional(solo_lectura=True)
+        self.pantalla_datos = PantallaDatosAdmin()
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)                                  
         self.stacked_widget.addWidget(self.pantalla_lista_solicitud)
@@ -253,6 +249,10 @@ class VentanaProfesional(QMainWindow):
         self.stacked_widget.addWidget(self.pantalla_lista_modificar_prompt)
         self.stacked_widget.addWidget(self.pantalla_perfil)
         self.stacked_widget.addWidget(self.pantalla_perfil_interno)
+        self.stacked_widget.addWidget(self.pantalla_detalle_solicitud)
+        self.stacked_widget.addWidget(self.pantalla_resumen_profesional)
+        self.stacked_widget.addWidget(self.pantalla_resumen_profesional_lectura)
+        self.stacked_widget.addWidget(self.pantalla_datos)
         # Aquí se pueden añadir más pantallas al stacked_widget según sea necesario
 
         self._titulos_por_pantalla = {
@@ -263,6 +263,10 @@ class VentanaProfesional(QMainWindow):
             self.pantalla_lista_modificar_prompt: "Ajustes del modelo",
             self.pantalla_perfil: "Perfil",
             self.pantalla_perfil_interno: "Perfil interno",
+            self.pantalla_detalle_solicitud: "Solicitud",
+            self.pantalla_resumen_profesional: "Resumen de entrevista",
+            self.pantalla_resumen_profesional_lectura: "Resumen de entrevista",
+            self.pantalla_datos: "Datos",
         }
         self.stacked_widget.currentChanged.connect(self._actualizar_titulo_pantalla)
 
@@ -292,6 +296,11 @@ class VentanaProfesional(QMainWindow):
         self.ajustes_menu_layout.setAlignment(Qt.AlignTop)
 
         # Botones de Ajustes
+        self.boton_acerca = QPushButton("Acerca de Inperia")
+        self.boton_acerca.setToolTip("Información de INPERIA")
+        self.boton_acerca.setFont(QFont("Arial", 10))
+        self.boton_acerca.setStyleSheet(self.boton_estilo)
+
         self.boton_perfil = QPushButton("Perfil")
         self.boton_perfil.setToolTip("Ver y editar perfil")
         self.boton_perfil.setFont(QFont("Arial", 10))
@@ -317,6 +326,7 @@ class VentanaProfesional(QMainWindow):
         self.ajustes_menu_layout.addStretch(1)
 
         # Añadir botones al layout de ajustes
+        self.ajustes_menu_layout.addWidget(self.boton_acerca)
         self.ajustes_menu_layout.addWidget(self.boton_perfil)
         self.ajustes_menu_layout.addWidget(self.boton_cerrar_sesion)
 
@@ -329,6 +339,7 @@ class VentanaProfesional(QMainWindow):
         # ------------------- 4. Conexiones de botones -------------------
         self.boton_hamburguesa.clicked.connect(self.movimiento_menu)
         self.boton_ajustes.clicked.connect(self.movimiento_menu_ajustes)
+        self.boton_acerca.clicked.connect(self.mostrar_acerca_inperia)
 
     # ------------------- 5. Movimientos de Menú -------------------
     def obtener_widgets_menu_visibles(self):
@@ -537,6 +548,9 @@ class VentanaProfesional(QMainWindow):
 
     def mostrar_pantalla_perfil_interno(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_perfil_interno)
+
+    def mostrar_acerca_inperia(self):
+        VentanaAcercaInperia(self).exec_()
 
     def establecer_titulo_pantalla(self, titulo):
         self.titulo_pantalla.setText(str(titulo or ""))

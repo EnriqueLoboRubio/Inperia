@@ -17,6 +17,14 @@ class LoginController(QObject):
     def validar_formato_correo(self, correo):
         patron = r"^[\w\.-]+@[\w\.-]+\.\w{2,4}$"
         return re.match(patron, correo) is not None
+
+    @staticmethod
+    def _rol_permitido_en_pantalla(rol_detectado, tipo_pantalla_seleccionada):
+        if tipo_pantalla_seleccionada == "interno":
+            return rol_detectado == "interno"
+        if tipo_pantalla_seleccionada == "profesional":
+            return rol_detectado in {"profesional", "administrador"}
+        return False
     
     def procesar_login(self, correo, contrasena, tipo_pantalla_seleccionada):
 
@@ -36,8 +44,8 @@ class LoginController(QObject):
 
         if usuario_existe:
             if rol_detectado:
-                # Verificar que el rol coincida con la pantalla seleccionada
-                if (rol_detectado == tipo_pantalla_seleccionada):
+                # La pantalla profesional actúa como acceso compartido para profesional y administrador.
+                if self._rol_permitido_en_pantalla(rol_detectado, tipo_pantalla_seleccionada):
                     self.intentos_fallidos = 0  # Resetear contador de intentos fallidos
 
                     # Crear objeto Usuario
@@ -53,7 +61,10 @@ class LoginController(QObject):
                     self.signal_login_exitoso.emit(objeto_usuario, rol_detectado)
                     return
                 else:
-                    self.signal_login_fallido.emit("Tipo de usuario incorrecto para la pantalla seleccionada.")
+                    if tipo_pantalla_seleccionada == "interno":
+                        self.signal_login_fallido.emit("Esta cuenta no puede iniciar sesión desde la pantalla de interno.")
+                    else:
+                        self.signal_login_fallido.emit("Esta cuenta no puede iniciar sesión desde la pantalla de profesional.")
                     return
             else:
                 #Contraseña incorrecta

@@ -41,6 +41,7 @@ BAREMOS_RIESGO = [
 
 class TarjetaInternoAsignado(QFrame):
     ver_perfil_interno = pyqtSignal(object)
+    ver_ultima_entrevista = pyqtSignal(object)
 
     def __init__(self, dato, parent=None):
         super().__init__(parent)
@@ -68,9 +69,11 @@ class TarjetaInternoAsignado(QFrame):
         cabecera.setSpacing(12)
 
         avatar = QPushButton(self._iniciales())
-        avatar.setEnabled(False)
+        avatar.setCursor(Qt.PointingHandCursor)
         avatar.setFixedSize(52, 52)
         avatar.setStyleSheet(ESTILO_BOTON_PERFIL)
+        avatar.setToolTip("Ver perfil del interno")
+        avatar.clicked.connect(lambda: self.ver_perfil_interno.emit(self.interno))
         cabecera.addWidget(avatar, alignment=Qt.AlignTop)
 
         bloque_info = QVBoxLayout()
@@ -90,7 +93,8 @@ class TarjetaInternoAsignado(QFrame):
             f"""
             QLabel {{
                 background-color: {color_bg};
-                color: {color_txt};
+                color: black;
+                border: none;
                 border-radius: 10px;
                 padding: 3px 10px;
                 font-size: 10pt;
@@ -115,19 +119,28 @@ class TarjetaInternoAsignado(QFrame):
 
         bloque_acciones = QHBoxLayout()
         bloque_acciones.setSpacing(8)
-        boton_perfil = QPushButton("Ver perfil completo")
+        boton_ultima_entrevista = QPushButton("Ver última entrevista")
+        boton_ultima_entrevista.setCursor(Qt.PointingHandCursor)
+        boton_ultima_entrevista.setFixedHeight(34)
+        tiene_ultima_entrevista = bool(self.dato.get("id_ultima_entrevista"))
+        boton_ultima_entrevista.setEnabled(tiene_ultima_entrevista)
+        if tiene_ultima_entrevista:
+            boton_ultima_entrevista.setToolTip("Ver la última entrevista en modo lectura")
+            boton_ultima_entrevista.clicked.connect(
+                lambda: self.ver_ultima_entrevista.emit(self.dato)
+            )
+        else:
+            boton_ultima_entrevista.setToolTip("Desactivado: este interno aún no tiene entrevistas.")
+        boton_ultima_entrevista.setStyleSheet(ESTILO_BOTON_SOLICITUD)
+        bloque_acciones.addWidget(boton_ultima_entrevista)
+
+        boton_perfil = QPushButton("Ver perfil")
         boton_perfil.setCursor(Qt.PointingHandCursor)
         boton_perfil.setFixedHeight(38)
         boton_perfil.setStyleSheet(ESTILO_BOTON_SOLICITUD)
+        boton_perfil.setToolTip("Ver perfil del interno")
         boton_perfil.clicked.connect(lambda: self.ver_perfil_interno.emit(self.interno))
         bloque_acciones.addWidget(boton_perfil)
-
-        boton_ultima_entrevista = QPushButton("Ver última entrevista")
-        boton_ultima_entrevista.setFixedHeight(34)
-        boton_ultima_entrevista.setEnabled(False)
-        boton_ultima_entrevista.setToolTip("Proximamente disponible")
-        boton_ultima_entrevista.setStyleSheet(ESTILO_BOTON_SOLICITUD)
-        bloque_acciones.addWidget(boton_ultima_entrevista)
 
         cabecera.addLayout(bloque_acciones, 0)
 
@@ -158,9 +171,9 @@ class TarjetaInternoAsignado(QFrame):
         ultima_entrevista = self._fmt_fecha(self.dato.get("fecha_ultima_entrevista"))
         puntuacion = self.dato.get("puntuacion_ia")
         if puntuacion is None:
-            puntuacion_txt = "Puntuación directa: -"
+            puntuacion_txt = "Puntuación IA: -"
         else:
-            puntuacion_txt = f"Puntuación directa: {float(puntuacion):.2f}"
+            puntuacion_txt = f"Puntuación IA: {float(puntuacion):.2f}"
         fila_detalles.addLayout(
             self._crear_bloque_con_icono(
                 "Última entrevista",
@@ -215,7 +228,12 @@ class TarjetaInternoAsignado(QFrame):
 
         if extra:
             lbl_extra = QLabel(extra)
-            lbl_extra.setStyleSheet(ESTILO_DATO_SECUNDARIO_PERFIL)
+            if "Puntuación" in str(extra):
+                lbl_extra.setStyleSheet(
+                    f"color: {COLOR_IA_MORADO}; font-size: 10pt; font-weight: 600; border: none; background: transparent;"
+                )
+            else:
+                lbl_extra.setStyleSheet(ESTILO_DATO_SECUNDARIO_PERFIL)
             cont.addWidget(lbl_extra)
 
         return cont
@@ -293,6 +311,7 @@ class TarjetaInternoAsignado(QFrame):
 
 class PantallaListaInternosProfesional(QWidget):
     ver_perfil_interno = pyqtSignal(object)
+    ver_ultima_entrevista = pyqtSignal(object)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -306,7 +325,7 @@ class PantallaListaInternosProfesional(QWidget):
 
     def _iniciar_ui(self):
         layout_principal = QVBoxLayout(self)
-        layout_principal.setContentsMargins(35, 20, 35, 15)
+        layout_principal.setContentsMargins(35, 20, 60, 15)
         layout_principal.setSpacing(14)
 
         fila_filtros = QHBoxLayout()
@@ -337,7 +356,7 @@ class PantallaListaInternosProfesional(QWidget):
         self.boton_filtros.setFixedSize(180, 40)
         self.boton_filtros.setCursor(Qt.PointingHandCursor)
         self.boton_filtros.setEnabled(False)
-        self.boton_filtros.setToolTip("Se habilitara cuando se implemente el filtrado avanzado")
+        self.boton_filtros.setToolTip("Desactivado: el filtrado avanzado aún no está disponible.")
         tam_icono_filtros = self.boton_filtros.fontMetrics().height() + 3
         self.boton_filtros.setIcon(QIcon("assets/filtros.png"))
         self.boton_filtros.setIconSize(QSize(tam_icono_filtros, tam_icono_filtros))
@@ -452,6 +471,7 @@ class PantallaListaInternosProfesional(QWidget):
         for dato in self._datos_filtrados[: self._num_visibles]:
             tarjeta = TarjetaInternoAsignado(dato)
             tarjeta.ver_perfil_interno.connect(self.ver_perfil_interno.emit)
+            tarjeta.ver_ultima_entrevista.connect(self.ver_ultima_entrevista.emit)
             self.layout_lista.addWidget(tarjeta)
 
         if self._num_visibles < len(self._datos_filtrados):

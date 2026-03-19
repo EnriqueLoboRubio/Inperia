@@ -35,7 +35,7 @@ class PantallaListaModificarPreguntas(QWidget):
         self.scroll_content_layout = QVBoxLayout(self.scroll_content_widget)
         self.scroll_content_layout.setAlignment(Qt.AlignTop)
         self.scroll_content_layout.setSpacing(20)
-        self.scroll_content_layout.setContentsMargins(50, 20, 50, 0)
+        self.scroll_content_layout.setContentsMargins(50, 20, 60, 0)
 
         self.scroll_area.setWidget(self.scroll_content_widget)
         principal_layout.addWidget(self.scroll_area, 1)

@@ -1,39 +1,8 @@
-import sqlite3
+﻿import sqlite3
 from db.conexion import obtener_conexion
 from db.fecha_utils import normalizar_fecha
 
 # -------------------------------- SOLICITUD ------------------------------- #
-
-_COLUMNAS_SOLICITUD = [
-    "id",
-    "id_interno",
-    "tipo",
-    "motivo",
-    "descripcion",
-    "urgencia",
-    "fecha_creacion",
-    "fecha_inicio",
-    "fecha_fin",
-    "hora_salida",
-    "hora_llegada",
-    "destino",
-    "provincia",
-    "direccion",
-    "cod_pos",
-    "nombre_cp",
-    "telf_cp",
-    "relacion_cp",
-    "direccion_cp",
-    "nombre_cs",
-    "telf_cs",
-    "relacion_cs",
-    "docs",
-    "compromiso",
-    "observaciones",
-    "conclusiones_profesional",
-    "id_profesional",
-    "estado",
-]
 
 _DDL_SOLICITUDES = '''
     CREATE TABLE IF NOT EXISTS solicitudes (
@@ -95,36 +64,17 @@ def _crear_indices_solicitudes(cursor):
     ''')
 
 
-def _migrar_eliminar_conclusiones_ia_si_existe(cursor):
-    cursor.execute("PRAGMA table_info(solicitudes)")
-    columnas_actuales = [fila[1] for fila in cursor.fetchall()]
-    if "conclusiones_ia" not in columnas_actuales:
-        return
-
-    columnas_txt = ", ".join(_COLUMNAS_SOLICITUD)
-    cursor.execute("ALTER TABLE solicitudes RENAME TO solicitudes_vieja")
-    cursor.execute(_DDL_SOLICITUDES)
-    cursor.execute(
-        f"""
-        INSERT INTO solicitudes ({columnas_txt})
-        SELECT {columnas_txt}
-        FROM solicitudes_vieja
-        """
-    )
-    cursor.execute("DROP TABLE solicitudes_vieja")
-
-# Función para crear la tabla de solicitud
+# FunciÃ³n para crear la tabla de solicitud
 def crear_solicitud():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     cursor.execute(_DDL_SOLICITUDES)
-    _migrar_eliminar_conclusiones_ia_si_existe(cursor)
     _crear_indices_solicitudes(cursor)
 
     conexion.commit()
     conexion.close()
 
-# Función para agregar una nueva solicitud a la base de datos
+# FunciÃ³n para agregar una nueva solicitud a la base de datos
 def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_creacion, fecha_inicio, fecha_fin, hora_salida, hora_llegada, 
                       destino, provincia, direccion, cod_pos, 
                       nombre_cp, telf_cp, relacion_cp, direccion_cp, nombre_cs, telf_cs, relacion_cs, 
@@ -157,7 +107,7 @@ def agregar_solicitud(id_interno, tipo, motivo, descripcion, urgencia, fecha_cre
 
     return nuevo_id
 
-# Función para eliminar una solicitud de la base de datos
+# FunciÃ³n para eliminar una solicitud de la base de datos
 def eliminar_solicitud(id):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
@@ -165,7 +115,7 @@ def eliminar_solicitud(id):
     conexion.commit()
     conexion.close()
 
-# Función para encontrar una solicitud por id
+# FunciÃ³n para encontrar una solicitud por id
 def encontrar_solicitud_por_id(id):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
@@ -175,7 +125,7 @@ def encontrar_solicitud_por_id(id):
     
     return solicitud
 
-# Función para encontrar una solicitud pendiente o iniciada por id interno
+# FunciÃ³n para encontrar una solicitud pendiente o iniciada por id interno
 def encontrar_solicitud_pendiente_por_interno(id_interno):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
@@ -332,7 +282,7 @@ def listar_solicitudes_por_interno(id_interno):
     finally:
         conexion.close()
 
-# Función para borrar la tabla de solicitudes (para pruebas)
+# FunciÃ³n para borrar la tabla de solicitudes (para pruebas)
 def borrar_solicitudes():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
@@ -356,6 +306,28 @@ def actualizar_estado_solicitud(id_solicitud, estado):
         return True
     except Exception as e: 
         print(f"Error: No se ha podido crear la solicitud. {e}")       
+        return False
+    finally:
+        conexion.close()
+
+def actualizar_estado_y_conclusiones_solicitud(id_solicitud, estado, conclusiones_profesional):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+
+    try:
+        cursor.execute(
+            '''
+            UPDATE solicitudes
+            SET estado = ?, conclusiones_profesional = ?
+            WHERE id = ?
+            ''',
+            (estado, conclusiones_profesional, id_solicitud),
+        )
+
+        conexion.commit()
+        return cursor.rowcount > 0
+    except Exception as e:
+        print(f"Error: No se ha podido actualizar la solicitud. {e}")
         return False
     finally:
         conexion.close()
@@ -401,3 +373,4 @@ def obtener_estado_solicitud(id_solicitud):
         return None
     finally:
         conexion.close()
+

@@ -50,7 +50,30 @@ class VentanaDetallePregunta(QDialog):
         lbl_titulo.setAlignment(Qt.AlignLeft)
         top_layout.addWidget(lbl_titulo)
 
-        top_layout.addStretch()               
+        top_layout.addStretch()
+        boton_cerrar_superior = QPushButton("✕")
+        boton_cerrar_superior.clicked.connect(self.close)
+        boton_cerrar_superior.setFixedSize(24, 24)
+        boton_cerrar_superior.setStyleSheet(
+            """
+            QPushButton {
+                background: transparent;
+                border: none;
+                color: #666666;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #F1F1F1;
+                border: 1px solid #E0E0E0;
+                border-radius: 12px;
+                color: #111111;
+            }
+            """
+        )
+        boton_cerrar_superior.setCursor(Qt.PointingHandCursor)
+        boton_cerrar_superior.setToolTip("Cerrar detalles de la pregunta")
+        top_layout.addWidget(boton_cerrar_superior)
         
         principal_layout.addLayout(top_layout)   
 
@@ -148,14 +171,7 @@ class VentanaDetallePregunta(QDialog):
         principal_layout.addLayout(audio_layout)
 
         # --- Botón Cerrar ---
-        boton_cerrar = QPushButton("Cerrar")
-        boton_cerrar.clicked.connect(self.close)
-        boton_cerrar.setFont(QFont("Arial", 11))   
-        boton_cerrar.setFixedSize(110,40)
-        boton_cerrar.setStyleSheet(ESTILO_BOTON_SIG_ATR)
-        boton_cerrar.setCursor(Qt.PointingHandCursor)
-        boton_cerrar.setToolTip("Cerrar detalles de la pregunta")
-        principal_layout.addWidget(boton_cerrar, alignment=Qt.AlignCenter)
+        
 
     def reproducir_audio(self, ruta):
         if ruta and os.path.exists(ruta):
