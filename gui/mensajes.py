@@ -248,6 +248,108 @@ class Mensajes:
         # --- EJECUCIÓN ---
         resultado = dialogo.exec_()
         return resultado == QDialog.Accepted
+
+    def mostrar_decision_eliminacion(self, titulo, mensaje, texto_confirmar, texto_secundario):
+        dialogo = QDialog(self.parent)
+        dialogo.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
+        dialogo.setAttribute(Qt.WA_TranslucentBackground)
+        dialogo.setModal(True)
+
+        layout_main = QVBoxLayout(dialogo)
+        layout_main.setContentsMargins(0, 0, 0, 0)
+
+        fondo = QFrame()
+        fondo.setObjectName("FondoDialogo")
+        fondo.setStyleSheet(ESTILO_DIALOGO_ERROR)
+
+        layout_interno = QVBoxLayout(fondo)
+        layout_interno.setContentsMargins(20, 20, 20, 20)
+        layout_interno.setSpacing(10)
+
+        layout_cabecera = QHBoxLayout()
+
+        lbl_icono = QLabel()
+        pixmap = QPixmap("assets/info.png").scaled(
+            30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        lbl_icono.setPixmap(pixmap)
+
+        titulo_lbl = QLabel(titulo)
+        titulo_lbl.setObjectName("TituloError")
+
+        layout_cabecera.addWidget(lbl_icono)
+        layout_cabecera.addWidget(titulo_lbl)
+        layout_cabecera.addStretch()
+
+        lbl_mensaje = QLabel(mensaje)
+        lbl_mensaje.setObjectName("TextoError")
+        lbl_mensaje.setWordWrap(True)
+        lbl_mensaje.setMinimumWidth(340)
+
+        btn_cancelar = QPushButton("Cancelar")
+        btn_secundario = QPushButton(texto_secundario)
+        btn_confirmar = QPushButton(texto_confirmar)
+
+        for boton in (btn_cancelar, btn_secundario, btn_confirmar):
+            boton.setCursor(Qt.PointingHandCursor)
+
+        btn_cancelar.setStyleSheet("""
+            QPushButton {
+                background-color: #555;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 18px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #777; }
+        """)
+
+        btn_secundario.setStyleSheet("""
+            QPushButton {
+                background-color: black;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 18px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #333; }
+        """)
+
+        btn_confirmar.setStyleSheet("""
+            QPushButton {
+                background-color: #792A24;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 18px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #C03930; }
+        """)
+
+        btn_cancelar.clicked.connect(lambda: dialogo.done(0))
+        btn_secundario.clicked.connect(lambda: dialogo.done(2))
+        btn_confirmar.clicked.connect(lambda: dialogo.done(1))
+
+        layout_botones = QHBoxLayout()
+        layout_botones.addStretch()
+        layout_botones.addWidget(btn_cancelar)
+        layout_botones.addWidget(btn_secundario)
+        layout_botones.addWidget(btn_confirmar)
+
+        layout_interno.addLayout(layout_cabecera)
+        layout_interno.addSpacing(10)
+        layout_interno.addWidget(lbl_mensaje)
+        layout_interno.addSpacing(20)
+        layout_interno.addLayout(layout_botones)
+
+        layout_main.addWidget(fondo)
+
+        resultado = dialogo.exec_()
+        if resultado == 1:
+            return "confirmar"
+        if resultado == 2:
+            return "secundario"
+        return "cancelar"
     
     def mostrar_mensaje_error_login(self, mensaje):
         if "CRITICO" in mensaje:        

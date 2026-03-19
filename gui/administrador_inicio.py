@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QEasingCurve, QPropertyAnimation, QSize, Qt
+from PyQt5.QtCore import QEasingCurve, QPropertyAnimation, QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QDialog,
@@ -14,13 +14,23 @@ from PyQt5.QtWidgets import (
 
 from gui.estilos import *
 from gui.pantalla_datos_admin import PantallaDatosAdmin
+from gui.pantalla_lista_solicitud import PantallaListaSolicitud
 from gui.pantalla_lista_modificar_preguntas import PantallaListaModificarPreguntas
 from gui.pantalla_lista_modificar_prompt import PantallaListaModificarPrompt
 from gui.pantalla_lista_usuarios_administrador import PantallaListaUsuariosAdministrador
 from gui.pantalla_perfil import PantallaPerfil
+from gui.pantalla_perfil_interno_profesional import PantallaPerfilInternoProfesional
+from gui.pantalla_detalle_solicitud_profesional import PantallaDetalleSolicitudProfesional
+from gui.pantalla_resumen_profesional import PantallaResumen
+from gui.ventana_acerca_inperia import VentanaAcercaInperia
 
 
 class PantallaBienvenidaAdministrador(QWidget):
+    abrir_usuarios = pyqtSignal()
+    abrir_modelo = pyqtSignal()
+    abrir_preguntas = pyqtSignal()
+    abrir_datos = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self._iniciar_ui()
@@ -37,14 +47,14 @@ class PantallaBienvenidaAdministrador(QWidget):
         self.lbl_titulo.setAlignment(Qt.AlignCenter)
         layout_principal.addWidget(self.lbl_titulo)
 
-        self.lbl_subtitulo = QLabel("Panel de administración de INPERIA")
+        self.lbl_subtitulo = QLabel("Panel de administracion de INPERIA")
         self.lbl_subtitulo.setFont(QFont("Arial", 24, QFont.Bold))
         self.lbl_subtitulo.setAlignment(Qt.AlignCenter)
         self.lbl_subtitulo.setStyleSheet("color: #1F1F1F;")
         layout_principal.addWidget(self.lbl_subtitulo)
 
         self.lbl_descripcion = QLabel(
-            "Desde este espacio podrá gestionar usuarios, configuración del sistema,\n"
+            "Desde este espacio podra gestionar usuarios, configuracion del sistema,\n"
             "el cuestionario y las operaciones de base de datos."
         )
         self.lbl_descripcion.setFont(QFont("Arial", 12))
@@ -59,30 +69,53 @@ class PantallaBienvenidaAdministrador(QWidget):
         fila_tarjetas.addWidget(
             self._crear_tarjeta(
                 "Usuarios",
-                "Gestiona altas y edición de internos, profesionales y administradores.",
+                "Gestiona altas y edicion de internos, profesionales y administradores.",
+                self.abrir_usuarios.emit,
             )
         )
         fila_tarjetas.addWidget(
-            self._crear_tarjeta("Editar modelo", "Configura prompts y parámetros de análisis.")
+            self._crear_tarjeta(
+                "Editar modelo",
+                "Configura prompts y parametros de analisis.",
+                self.abrir_modelo.emit,
+            )
         )
         fila_tarjetas.addWidget(
-            self._crear_tarjeta("Editar preguntas", "Revisa y adapta el cuestionario de entrevista.")
+            self._crear_tarjeta(
+                "Editar preguntas",
+                "Revisa y adapta el cuestionario de entrevista.",
+                self.abrir_preguntas.emit,
+            )
         )
         fila_tarjetas.addWidget(
-            self._crear_tarjeta("Base de datos", "Prepara importaciones y exportaciones del sistema.")
+            self._crear_tarjeta(
+                "Base de datos",
+                "Prepara importaciones y exportaciones del sistema.",
+                self.abrir_datos.emit,
+            )
         )
 
         layout_principal.addLayout(fila_tarjetas)
         layout_principal.addStretch(2)
 
-    def _crear_tarjeta(self, titulo, descripcion):
-        tarjeta = QFrame()
+    def _crear_tarjeta(self, titulo, descripcion, accion):
+        tarjeta = QPushButton()
+        tarjeta.setCursor(Qt.PointingHandCursor)
+        tarjeta.clicked.connect(accion)
         tarjeta.setStyleSheet(
             """
-            QFrame {
+            QPushButton {
                 background-color: #F7F7F7;
                 border: 1px solid #D9D9D9;
                 border-radius: 20px;
+                text-align: left;
+            }
+            QPushButton:hover {
+                background-color: #EFEFEF;
+                border: 1px solid #CFCFCF;
+            }
+            QPushButton:pressed {
+                background-color: #E7E7E7;
             }
             QLabel {
                 background: transparent;
@@ -259,7 +292,7 @@ class VentanaAdministrador(QMainWindow):
         self.boton_usuario = QPushButton()
         self.boton_usuario.setToolTip("Perfil de usuario")
         self.boton_usuario.setFixedSize(50, 50)
-        self.boton_usuario.setIcon(QIcon("assets/justicia.png"))
+        self.boton_usuario.setIcon(QIcon("assets/admin.png"))
         self.boton_usuario.setIconSize(QSize(40, 40))
         self.boton_usuario.setStyleSheet(
             """
@@ -288,14 +321,22 @@ class VentanaAdministrador(QMainWindow):
         self.pantalla_lista_modificar_preguntas = PantallaListaModificarPreguntas()
         self.pantalla_lista_modificar_prompt = PantallaListaModificarPrompt()
         self.pantalla_datos = PantallaDatosAdmin()
+        self.pantalla_lista_solicitudes_profesional = PantallaListaSolicitud()
         self.pantalla_perfil = PantallaPerfil()
+        self.pantalla_perfil_interno = PantallaPerfilInternoProfesional()
+        self.pantalla_detalle_solicitud = PantallaDetalleSolicitudProfesional()
+        self.pantalla_resumen_profesional_lectura = PantallaResumen(solo_lectura=True)
 
         self.stacked_widget.addWidget(self.pantalla_bienvenida)
         self.stacked_widget.addWidget(self.pantalla_lista_usuarios)
         self.stacked_widget.addWidget(self.pantalla_lista_modificar_preguntas)
         self.stacked_widget.addWidget(self.pantalla_lista_modificar_prompt)
         self.stacked_widget.addWidget(self.pantalla_datos)
+        self.stacked_widget.addWidget(self.pantalla_lista_solicitudes_profesional)
         self.stacked_widget.addWidget(self.pantalla_perfil)
+        self.stacked_widget.addWidget(self.pantalla_perfil_interno)
+        self.stacked_widget.addWidget(self.pantalla_detalle_solicitud)
+        self.stacked_widget.addWidget(self.pantalla_resumen_profesional_lectura)
         self.stacked_widget.setCurrentWidget(self.pantalla_bienvenida)
 
         self._titulos_por_pantalla = {
@@ -304,7 +345,11 @@ class VentanaAdministrador(QMainWindow):
             self.pantalla_lista_modificar_preguntas: "Modificar preguntas",
             self.pantalla_lista_modificar_prompt: "Ajustes del modelo",
             self.pantalla_datos: "Datos",
+            self.pantalla_lista_solicitudes_profesional: "Perfil profesional",
             self.pantalla_perfil: "Perfil",
+            self.pantalla_perfil_interno: "Perfil interno",
+            self.pantalla_detalle_solicitud: "Solicitud",
+            self.pantalla_resumen_profesional_lectura: "Resumen de entrevista",
         }
         self.stacked_widget.currentChanged.connect(self._actualizar_titulo_pantalla)
 
@@ -329,13 +374,18 @@ class VentanaAdministrador(QMainWindow):
         self.ajustes_menu_layout.setContentsMargins(10, 20, 10, 10)
         self.ajustes_menu_layout.setAlignment(Qt.AlignTop)
 
+        self.boton_acerca = QPushButton("Acerca de Inperia")
+        self.boton_acerca.setToolTip("Informacion de INPERIA")
+        self.boton_acerca.setFont(QFont("Arial", 10))
+        self.boton_acerca.setStyleSheet(self.boton_estilo)
+
         self.boton_perfil = QPushButton("Perfil")
         self.boton_perfil.setToolTip("Ver perfil")
         self.boton_perfil.setFont(QFont("Arial", 10))
         self.boton_perfil.setStyleSheet(self.boton_estilo)
 
-        self.boton_cerrar_sesion = QPushButton("Cerrar Sesión")
-        self.boton_cerrar_sesion.setToolTip("Cerrar sesión y volver al inicio")
+        self.boton_cerrar_sesion = QPushButton("Cerrar Sesion")
+        self.boton_cerrar_sesion.setToolTip("Cerrar sesion y volver al inicio")
         self.boton_cerrar_sesion.setFont(QFont("Arial", 10))
         self.boton_cerrar_sesion.setStyleSheet(
             """
@@ -354,6 +404,7 @@ class VentanaAdministrador(QMainWindow):
         )
 
         self.ajustes_menu_layout.addStretch(1)
+        self.ajustes_menu_layout.addWidget(self.boton_acerca)
         self.ajustes_menu_layout.addWidget(self.boton_perfil)
         self.ajustes_menu_layout.addWidget(self.boton_cerrar_sesion)
 
@@ -363,6 +414,7 @@ class VentanaAdministrador(QMainWindow):
 
         self.boton_hamburguesa.clicked.connect(self.movimiento_menu)
         self.boton_ajustes.clicked.connect(self.movimiento_menu_ajustes)
+        self.boton_acerca.clicked.connect(self.mostrar_acerca_inperia)
 
     def establecer_usuario(self, usuario):
         self.pantalla_bienvenida.set_usuario(usuario)
@@ -372,6 +424,18 @@ class VentanaAdministrador(QMainWindow):
 
     def mostrar_pantalla_perfil(self):
         self.stacked_widget.setCurrentWidget(self.pantalla_perfil)
+
+    def mostrar_pantalla_perfil_interno(self):
+        self.stacked_widget.setCurrentWidget(self.pantalla_perfil_interno)
+
+    def mostrar_pantalla_detalle_solicitud(self):
+        self.stacked_widget.setCurrentWidget(self.pantalla_detalle_solicitud)
+
+    def mostrar_pantalla_resumen_entrevista(self):
+        self.stacked_widget.setCurrentWidget(self.pantalla_resumen_profesional_lectura)
+
+    def mostrar_acerca_inperia(self):
+        VentanaAcercaInperia(self).exec_()
 
     def _actualizar_titulo_pantalla(self, _index=None):
         actual = self.stacked_widget.currentWidget()
@@ -456,7 +520,7 @@ class VentanaAdministrador(QMainWindow):
         pixmap = QPixmap("assets/error.png").scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         lbl_icono.setPixmap(pixmap)
 
-        titulo = QLabel("Cerrar sesion")
+        titulo = QLabel("Cerrar sesión")
         titulo.setObjectName("TituloError")
 
         layout_cabecera.addWidget(lbl_icono)
@@ -464,8 +528,8 @@ class VentanaAdministrador(QMainWindow):
         layout_cabecera.addStretch()
 
         lbl_mensaje = QLabel(
-            "¿Esta seguro de que quiere cerrar sesion?\n\n"
-            "Perdera los datos no guardados."
+            "¿Está seguro de que quiere cerrar sesión?\n\n"
+            "Perderá los datos no guardados."
         )
         lbl_mensaje.setObjectName("TextoError")
         lbl_mensaje.setWordWrap(True)

@@ -529,18 +529,18 @@ class InternoController(QObject):
         password_confirm = datos["password_confirm"]
 
         if not nombre_nuevo:
-            self.msg.mostrar_advertencia("Atencion", "El nombre no puede estar vacio.")
+            self.msg.mostrar_advertencia("Atención", "El nombre no puede estar vacio.")
             return
 
         if password or password_confirm:
             if password != password_confirm:
-                self.msg.mostrar_advertencia("Atencion", "Las contraseñas no coinciden.")
+                self.msg.mostrar_advertencia("Atención", "Las contraseñas no coinciden.")
                 return
 
         cambio_nombre = nombre_nuevo != nombre_original
         cambio_password = bool(password)
         if not cambio_nombre and not cambio_password:
-            self.msg.mostrar_advertencia("Atencion", "No hay cambios para guardar.")
+            self.msg.mostrar_advertencia("Atención", "No hay cambios para guardar.")
             return
 
         ok = actualizar_usuario(
@@ -549,7 +549,7 @@ class InternoController(QObject):
             contrasena=password if cambio_password else None
         )
         if not ok:
-            self.msg.mostrar_advertencia("Atencion", "No se pudo actualizar el perfil.")
+            self.msg.mostrar_advertencia("Atención", "No se pudo actualizar el perfil.")
             return
 
         self.interno.nombre = nombre_nuevo

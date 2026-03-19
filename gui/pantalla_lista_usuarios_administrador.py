@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -17,6 +17,8 @@ from gui.estilos import *
 
 class TarjetaUsuarioAdministrador(QFrame):
     editar_usuario = pyqtSignal(object)
+    ver_perfil_interno = pyqtSignal(object)
+    ver_perfil_profesional = pyqtSignal(object)
 
     def __init__(self, usuario, parent=None):
         super().__init__(parent)
@@ -83,12 +85,38 @@ class TarjetaUsuarioAdministrador(QFrame):
         bloque_info.addWidget(lbl_email)
         cabecera.addLayout(bloque_info, 1)
 
-        boton_editar = QPushButton("Editar")
+        bloque_acciones = QHBoxLayout()
+        bloque_acciones.setSpacing(8)
+        bloque_acciones.setContentsMargins(0, 0, 0, 0)
+
+        if str(self.usuario.get("rol", "")).strip().lower() == "interno":
+            boton_ver_perfil = QPushButton("Ver perfil")
+            boton_ver_perfil.setCursor(Qt.PointingHandCursor)
+            boton_ver_perfil.setFixedHeight(38)
+            boton_ver_perfil.setStyleSheet(ESTILO_BOTON_SOLICITUD)
+            boton_ver_perfil.setToolTip("Ver perfil del interno en modo lectura")
+            boton_ver_perfil.clicked.connect(lambda: self.ver_perfil_interno.emit(self.usuario))
+            bloque_acciones.addWidget(boton_ver_perfil)
+        elif str(self.usuario.get("rol", "")).strip().lower() == "profesional":
+            boton_ver_perfil = QPushButton("Ver perfil")
+            boton_ver_perfil.setCursor(Qt.PointingHandCursor)
+            boton_ver_perfil.setFixedHeight(38)
+            boton_ver_perfil.setStyleSheet(ESTILO_BOTON_SOLICITUD)
+            boton_ver_perfil.setToolTip("Ver solicitudes asignadas del profesional")
+            boton_ver_perfil.clicked.connect(lambda: self.ver_perfil_profesional.emit(self.usuario))
+            bloque_acciones.addWidget(boton_ver_perfil)
+
+        boton_editar = QPushButton()
         boton_editar.setCursor(Qt.PointingHandCursor)
-        boton_editar.setFixedHeight(38)
-        boton_editar.setStyleSheet(ESTILO_BOTON_SOLICITUD)
+        boton_editar.setFixedSize(45, 45)
+        boton_editar.setIcon(QIcon("assets/editar.png"))
+        boton_editar.setIconSize(QSize(25, 25))
+        boton_editar.setStyleSheet(ESTILO_BOTON_TARJETA)
+        boton_editar.setToolTip("Editar usuario")
         boton_editar.clicked.connect(lambda: self.editar_usuario.emit(self.usuario))
-        cabecera.addWidget(boton_editar)
+        bloque_acciones.addWidget(boton_editar)
+
+        cabecera.addLayout(bloque_acciones)
 
         layout.addLayout(cabecera)
 
@@ -159,6 +187,8 @@ class TarjetaUsuarioAdministrador(QFrame):
 class PantallaListaUsuariosAdministrador(QWidget):
     crear_usuario = pyqtSignal()
     editar_usuario = pyqtSignal(object)
+    ver_perfil_interno = pyqtSignal(object)
+    ver_perfil_profesional = pyqtSignal(object)
     filtros_cambiados = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -276,6 +306,8 @@ class PantallaListaUsuariosAdministrador(QWidget):
         for usuario in self._usuarios_filtrados[: self._num_visibles]:
             tarjeta = TarjetaUsuarioAdministrador(usuario)
             tarjeta.editar_usuario.connect(self.editar_usuario.emit)
+            tarjeta.ver_perfil_interno.connect(self.ver_perfil_interno.emit)
+            tarjeta.ver_perfil_profesional.connect(self.ver_perfil_profesional.emit)
             self.layout_lista.addWidget(tarjeta)
 
         if self._num_visibles < len(self._usuarios_filtrados):

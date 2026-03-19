@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 from db.conexion import obtener_conexion
 from db.fecha_utils import normalizar_fecha
@@ -64,6 +65,86 @@ def eliminar_usuario(email):
     conexion.commit()
     conexion.close()
 
+
+def eliminar_usuario_admin(id_usuario):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute("DELETE FROM usuarios WHERE id = ?", (id_usuario,))
+        conexion.commit()
+        return cursor.rowcount > 0
+    except Exception:
+        conexion.rollback()
+        raise
+    finally:
+        conexion.close()
+
+
+def contar_administradores():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        cursor.execute("SELECT COUNT(*) FROM usuarios WHERE rol = 'administrador'")
+        fila = cursor.fetchone()
+        return int(fila[0]) if fila and fila[0] is not None else 0
+    finally:
+        conexion.close()
+
+
+def anonimizar_usuario_admin(id_usuario, rol):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        rol_norm = str(rol or "").strip().lower()
+        sello = datetime.now().strftime("%Y%m%d%H%M%S")
+        email_anon = f"eliminado_{id_usuario}_{sello}@deleted.local"
+        nombre_anon = f"Usuario eliminado #{id_usuario}"
+
+        cursor.execute(
+            """
+            UPDATE usuarios
+            SET nombre = ?, email = ?, contrasena = ?
+            WHERE id = ?
+            """,
+            (nombre_anon, email_anon, encriptar_contrasena(f"eliminado_{id_usuario}_{sello}"), id_usuario),
+        )
+
+        if rol_norm == "interno":
+            cursor.execute(
+                """
+                UPDATE internos
+                SET situacion_legal = NULL,
+                    delito = NULL,
+                    condena = NULL,
+                    fecha_nac = ?,
+                    fecha_ingreso = NULL,
+                    modulo = NULL,
+                    lugar_nacimiento = NULL,
+                    nombre_contacto_emergencia = NULL,
+                    relacion_contacto_emergencia = NULL,
+                    numero_contacto_emergencia = NULL
+                WHERE id_usuario = ?
+                """,
+                ("1900-01-01", id_usuario),
+            )
+        elif rol_norm == "profesional":
+            cursor.execute(
+                """
+                UPDATE profesionales
+                SET num_colegiado = ?
+                WHERE id_usuario = ?
+                """,
+                (-int(id_usuario), id_usuario),
+            )
+
+        conexion.commit()
+        return True
+    except Exception:
+        conexion.rollback()
+        raise
+    finally:
+        conexion.close()
+
 # Función para encontrar un usuario por su email
 def encontrar_usuario_por_email(email):
     conexion = obtener_conexion()
@@ -126,7 +207,14 @@ def listar_usuarios_admin(filtro_rol=None, texto_busqueda=None):
                 i.num_RC,
                 i.fecha_nac,
                 i.modulo,
-                i.situacion_legal
+                i.situacion_legal,
+                i.delito,
+                i.condena,
+                i.fecha_ingreso,
+                i.lugar_nacimiento,
+                i.nombre_contacto_emergencia,
+                i.relacion_contacto_emergencia,
+                i.numero_contacto_emergencia
             FROM usuarios u
             LEFT JOIN profesionales p ON p.id_usuario = u.id
             LEFT JOIN internos i ON i.id_usuario = u.id
@@ -167,6 +255,15 @@ def agregar_usuario_admin(
     num_colegiado=None,
     num_rc=None,
     fecha_nac=None,
+    situacion_legal=None,
+    delito=None,
+    condena=None,
+    fecha_ingreso=None,
+    modulo=None,
+    lugar_nacimiento=None,
+    nombre_contacto_emergencia=None,
+    relacion_contacto_emergencia=None,
+    numero_contacto_emergencia=None,
 ):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
@@ -197,9 +294,22 @@ def agregar_usuario_admin(
                     fecha_nac, fecha_ingreso, modulo, lugar_nacimiento,
                     nombre_contacto_emergencia, relacion_contacto_emergencia, numero_contacto_emergencia
                 )
-                VALUES (?, ?, NULL, NULL, NULL, ?, NULL, NULL, NULL, NULL, NULL, NULL)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (num_rc, id_usuario, normalizar_fecha(fecha_nac)),
+                (
+                    num_rc,
+                    id_usuario,
+                    situacion_legal,
+                    delito,
+                    condena,
+                    normalizar_fecha(fecha_nac),
+                    normalizar_fecha(fecha_ingreso),
+                    modulo,
+                    lugar_nacimiento,
+                    nombre_contacto_emergencia,
+                    relacion_contacto_emergencia,
+                    numero_contacto_emergencia,
+                ),
             )
 
         conexion.commit()
@@ -220,6 +330,15 @@ def actualizar_usuario_admin(
     num_colegiado=None,
     num_rc=None,
     fecha_nac=None,
+    situacion_legal=None,
+    delito=None,
+    condena=None,
+    fecha_ingreso=None,
+    modulo=None,
+    lugar_nacimiento=None,
+    nombre_contacto_emergencia=None,
+    relacion_contacto_emergencia=None,
+    numero_contacto_emergencia=None,
 ):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
@@ -259,10 +378,25 @@ def actualizar_usuario_admin(
             cursor.execute(
                 """
                 UPDATE internos
-                SET num_RC = ?, fecha_nac = ?
+                SET num_RC = ?, situacion_legal = ?, delito = ?, condena = ?,
+                    fecha_nac = ?, fecha_ingreso = ?, modulo = ?, lugar_nacimiento = ?,
+                    nombre_contacto_emergencia = ?, relacion_contacto_emergencia = ?, numero_contacto_emergencia = ?
                 WHERE id_usuario = ?
                 """,
-                (num_rc, normalizar_fecha(fecha_nac), id_usuario),
+                (
+                    num_rc,
+                    situacion_legal,
+                    delito,
+                    condena,
+                    normalizar_fecha(fecha_nac),
+                    normalizar_fecha(fecha_ingreso),
+                    modulo,
+                    lugar_nacimiento,
+                    nombre_contacto_emergencia,
+                    relacion_contacto_emergencia,
+                    numero_contacto_emergencia,
+                    id_usuario,
+                ),
             )
 
         conexion.commit()

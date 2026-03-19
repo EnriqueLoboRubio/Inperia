@@ -105,7 +105,7 @@ class VentanaDetallePreguntaProfesional(QDialog):
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Dialog)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setModal(True)
-        self.setFixedSize(1000, 850)
+        self.setFixedSize(1000, 950)
 
         root = QVBoxLayout(self)
         root.setContentsMargins(0, 0, 0, 0)

@@ -276,6 +276,7 @@ class PantallaListaSolicitud(QWidget):
     ver_solicitud = pyqtSignal(object)
     asignar_solicitud = pyqtSignal(object)
     filtro_superior_cambiado = pyqtSignal(object)
+    volver = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -287,6 +288,7 @@ class PantallaListaSolicitud(QWidget):
         self._top_activo = None
         self._sincronizando_filtros = False
         self._modo_historial = False
+        self._filtros_superiores_visibles = True
         self._tam_lote = 12
         self._num_visibles = 0
         self._estado_lista = "ok"
@@ -299,7 +301,8 @@ class PantallaListaSolicitud(QWidget):
         layout_principal.setContentsMargins(35, 20, 60, 15)
         layout_principal.setSpacing(14)
 
-        layout_principal.addLayout(self._crear_fila_estados_superior())
+        self.layout_filtros_superiores = self._crear_fila_estados_superior()
+        layout_principal.addLayout(self.layout_filtros_superiores)
         layout_principal.addLayout(self._crear_fila_filtros())
 
         self.scroll = QScrollArea()
@@ -317,6 +320,16 @@ class PantallaListaSolicitud(QWidget):
         self.scroll.setWidget(self.contenedor)
         self.scroll.verticalScrollBar().valueChanged.connect(self._al_scroll_lista)
         layout_principal.addWidget(self.scroll, 1)
+
+        fila_inferior = QHBoxLayout()
+        self.boton_volver = QPushButton("Volver")
+        self.boton_volver.setCursor(Qt.PointingHandCursor)
+        self.boton_volver.setStyleSheet(ESTILO_BOTON_SIG_ATR)
+        self.boton_volver.clicked.connect(self.volver.emit)
+        self.boton_volver.hide()
+        fila_inferior.addWidget(self.boton_volver)
+        fila_inferior.addStretch()
+        layout_principal.addLayout(fila_inferior)
 
     def _crear_fila_estados_superior(self):
         """
@@ -427,13 +440,28 @@ class PantallaListaSolicitud(QWidget):
         self._num_visibles = 0
         self._render_lista()
 
-    def aplicar_filtro_inicial(self, top_activo=None, combo_texto="Todos", solo_sin_profesional=False, modo_historial=False):
+    def aplicar_filtro_inicial(
+        self,
+        top_activo=None,
+        combo_texto="Todos",
+        solo_sin_profesional=False,
+        modo_historial=False,
+        mostrar_filtros_superiores=True,
+        mostrar_boton_volver=False,
+    ):
         self._top_activo = top_activo
         self._modo_historial = modo_historial
+        self.set_filtros_superiores_visibles(mostrar_filtros_superiores)
+        self.boton_volver.setVisible(bool(mostrar_boton_volver))
         self._aplicar_estado_botones_superiores(self._top_activo)
         self._configurar_combo_para_top(self._top_activo, combo_texto)
         self.input_busqueda.clear()
         self._actualizar_lista()
+
+    def set_filtros_superiores_visibles(self, visible):
+        self._filtros_superiores_visibles = bool(visible)
+        for clave, boton in self._botones_top.items():
+            boton.setVisible(self._filtros_superiores_visibles)
 
     def refrescar_tarjetas(self):
         if self._estado_lista != "ok":

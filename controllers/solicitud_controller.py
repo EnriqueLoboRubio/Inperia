@@ -243,5 +243,4 @@ class SolicitudController(QObject):
             
         else:
             # Manejo de error si falla la base de datos
-            #self.vista.mostrar_validacion_error("No se pudo guardar la solicitud en la base de datos.")
             self.msg.mostrar_advertencia("Atención", "No se pudo guardar la solicitud en la base de datos.")
